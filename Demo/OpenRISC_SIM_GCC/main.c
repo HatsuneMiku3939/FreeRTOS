@@ -248,9 +248,6 @@ void prvSetupHardware( void )
 
     // set low 8 port is outout
     set_gpio_direction(0, 0xFFFFFF00);
-
-    // enable IC/DC if present
-    cache_init();
 }
 /*-----------------------------------------------------------*/
 

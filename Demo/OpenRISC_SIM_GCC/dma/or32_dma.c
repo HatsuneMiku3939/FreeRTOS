@@ -125,23 +125,12 @@ static portTASK_FUNCTION( vDmaDemoTask, pvParameters )
             source[i] = rand();
         }
 
-        /* flushing dcache for coherency(update memory) */
-        flush_dcache_range(source,
-                           source + DMA_TRANSFER_WORD);
+        /* move DMA_TRANSFER_WORD words from source to destination */
+        dma_block_transfer(0,
+                           0, (unsigned int)source,
+                           1, (unsigned int)destination,
+                           16, DMA_TRANSFER_WORD, 0);
 
-        portENTER_CRITICAL();
-        {
-            /* move DMA_TRANSFER_WORD words from source to destination */
-            dma_block_transfer(0,
-                               0, (unsigned int)source,
-                               1, (unsigned int)destination,
-                               16, DMA_TRANSFER_WORD, 0);
-        }
-        portEXIT_CRITICAL();
-
-        /* invalidating dcache for coherency(update cache) */
-        invalidate_dcache_range(destination,
-                                destination + DMA_TRANSFER_WORD);
 
         for(i = 0; i < DMA_TRANSFER_WORD; i++)
         {

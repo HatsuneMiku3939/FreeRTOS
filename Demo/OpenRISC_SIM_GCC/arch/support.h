@@ -29,18 +29,4 @@ void report(unsigned long value);
 /* return value by making a syscall */
 extern void or32_exit (int i) __attribute__ ((__noreturn__));
 
-/* cache related functions */
-int cache_init(void);
-void icache_disable(void);
-void icache_enable(void);
-void dcache_disable(void);
-void dcache_enable(void);
-int checkdcache(void);
-int dcache_status(void);
-int checkicache(void);
-int icache_status(void);
-void flush_cache(unsigned long addr, unsigned long size);
-void invalidate_dcache_range(unsigned long addr, unsigned long stop);
-void flush_dcache_range(unsigned long addr, unsigned long stop);
-
 #endif /* SUPPORT_H */
