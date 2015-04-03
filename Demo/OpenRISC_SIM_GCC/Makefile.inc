@@ -1,6 +1,6 @@
 # File to be included in all makefiles
 
-TARGET=or32-elf
+TARGET=or1k-elf
 #-----------------------------------------------------------
 AS		= $(TARGET)-as
 CC		= $(TARGET)-gcc
@@ -10,6 +10,8 @@ OBJDUMP	= $(TARGET)-objdump
 AR		= $(TARGET)-ar
 RANLIB	= $(TARGET)-ranlib
 SIZE	= $(TARGET)-size
+SIM     = $(TARGET)-sim
+GDB     = $(TARGET)-gdb
 
 #-----------------------------------------------------------
 WARNINGS= -Wall -Wextra -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \

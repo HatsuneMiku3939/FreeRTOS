@@ -10,7 +10,7 @@ RTOS_SRC = \
 	$(RTOS_SOURCE_DIR)/list.c \
 	$(RTOS_SOURCE_DIR)/queue.c \
 	$(RTOS_SOURCE_DIR)/tasks.c \
-	$(RTOS_SOURCE_DIR)/portable/MemMang/heap_2.c 
+	$(RTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
 
@@ -20,7 +20,7 @@ APP_SRC = \
 	$(APP_SOURCE_DIR)/blocktim.c \
 	$(APP_SOURCE_DIR)/BlockQ.c \
 	$(APP_SOURCE_DIR)/flash.c \
-	$(APP_SOURCE_DIR)/comtest.c 
+	$(APP_SOURCE_DIR)/comtest.c
 
 PORT_SRC = $(RTOS_SOURCE_DIR)/portable/GCC/OpenRISC/port.c
 PORT_ASM = $(RTOS_SOURCE_DIR)/portable/GCC/OpenRISC/portasm.S
@@ -36,8 +36,8 @@ CFLAGS	+= $(WARNINGS) $(INC) $(DEBUG) \
 		-D__GCC_OpenRISC__ \
 		-fomit-frame-pointer -fno-strict-aliasing -fno-builtin
 
-GCCVER 	= $(shell $(CC) --version | grep gcc | cut -d" " -f9)
-CCPATH	= /home/dmw/works/or32/tools/or32-new
+GCCVER = $(shell $(CC) --version | grep gcc | cut -d" " -f3)
+CCPATH = $(shell which $(CC) | sed 's\#\(.*\)/.*\#\1\#')
 
 #
 # Define all object files.
@@ -49,11 +49,11 @@ DEMO_OBJ = $(DEMO_SRC:.c=.o)
 PORT_ASM_OBJ = $(PORT_ASM:.S=.o)
 ARCH_ASM_OBJ = $(ARCH_ASM:.S=.o)
 
-LDFLAGS	 = -T ./arch/link.ld -Map $(PROG).map
+LDFLAGS	 = -T./arch/link.ld -Map $(PROG).map
 LIBS	 = -L./arch -larch -L./drivers -ldrivers \
-		   -L$(CCPATH)/lib/gcc/$(TARGET)/$(GCCVER) \
-		   -L$(CCPATH)/$(TARGET)/lib \
-		   -lgcc -lc -lm
+		   -L$(CCPATH)/../lib/gcc/$(TARGET)/$(GCCVER) \
+		   -L$(CCPATH)/../$(TARGET)/lib \
+		   -lgcc -lc -lm -lor1k
 
 %.o: %.c
 	@echo "    CC $<"
@@ -68,8 +68,8 @@ all: $(PROG).or32
 
 $(PROG).or32 : $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ) Makefile arch drivers
 	@echo Link....
-	@$(LD) -o $@ $(LDFLAGS) --start-group $(ARCH_ASM_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ) $(LIBS) --end-group 
-	@$(OBJDUMP) -S $(PROG).or32 >> $(PROG).asm	
+	@$(LD) -o $@ $(LDFLAGS) --start-group $(ARCH_ASM_OBJ) $(PORT_ASM_OBJ) $(PORT_OBJ) $(RTOS_OBJ) $(DEMO_OBJ) $(APP_OBJ) $(LIBS) --end-group
+	@$(OBJDUMP) -S $(PROG).or32 >> $(PROG).asm
 	@echo Complete $@
 
 arch: force_true
@@ -80,7 +80,7 @@ drivers: force_true
 
 clean :
 	@rm -f $(RTOS_OBJ) $(DEMO_OBJ) $(PORT_OBJ) $(PORT_ASM_OBJ)
-	@rm -f rtosdemo.or32 
+	@rm -f rtosdemo.or32
 	@rm -f rtosdemo.map
 	@rm -f rtosdemo.asm
 	@rm -f eth0.tx
@@ -92,10 +92,10 @@ force_true:
 
 #-------------------------------------------------------------
 sim: $(PROG).or32
-	or32-elf-sim --nosrv -f sim.cfg $(PROG).or32
+	$(SIM) --nosrv -f sim.cfg $(PROG).or32
 
 debug: $(PROG).or32
-	xterm -e or32-elf-sim -f sim.cfg --srv=9999 &
-	xterm -e or32-elf-gdb $(PROG).or32 &
+	xterm -e $(SIM) -f sim.cfg --srv=9999 &
+	xterm -e $(GDB) $(PROG).or32 &
 
 
