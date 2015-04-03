@@ -86,10 +86,15 @@
 #include "interrupts.h"
 
 /* Demo application task priorities. */
-#define mainCHECK_TASK_PRIORITY     ( tskIDLE_PRIORITY + 4 )
+#define mainCHECK_TASK_PRIORITY     ( tskIDLE_PRIORITY + 9 )
+
+#define mainCOM_TEST_PRIORITY       ( tskIDLE_PRIORITY + 2 )
+#define mainLED_TASK_PRIORITY       ( tskIDLE_PRIORITY + 2 )
+#define mainSEM_TEST_PRIORITY       ( tskIDLE_PRIORITY + 1 )
 #define mainBLOCK_Q_PRIORITY        ( tskIDLE_PRIORITY + 2 )
-#define mainLED_TASK_PRIORITY       ( tskIDLE_PRIORITY + 1 )
-#define mainCOM_TEST_PRIORITY       ( tskIDLE_PRIORITY + 1 )
+#define mainMATH_TASK_PRIORITY      ( tskIDLE_PRIORITY + 0 )
+#define mainQUEUE_POLL_PRIORITY     ( tskIDLE_PRIORITY + 2 )
+#define mainDMA_TASK_PRIORITY       ( tskIDLE_PRIORITY + 0 )
 
 #define mainPRINT_STACK_SIZE        ( ( unsigned short ) 64 )
 
@@ -102,6 +107,9 @@
 /* The LED used by the comtest tasks. See the comtest.c file for more
 information. */
 #define mainCOM_TEST_LED            ( 7 )
+
+/* The base period used by the timer test tasks. */
+#define mainTIMER_TEST_PERIOD           ( 50 )
 
 /*-----------------------------------------------------------*/
 
@@ -141,12 +149,18 @@ int main( int argc, char **argv )
                            mainCOM_TEST_BAUD_RATE,
                            mainCOM_TEST_LED );
     vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
-    vStartIntegerMathTasks( tskIDLE_PRIORITY );
-    vStartDmaDemoTasks( tskIDLE_PRIORITY );
-
+    vStartIntegerMathTasks( mainMATH_TASK_PRIORITY );
     vCreateBlockTimeTasks();
     vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
     vStartDynamicPriorityTasks();
+    vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
+    vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
+
+    /* Create Timer test/demo tasks */
+    vStartTimerDemoTask( mainTIMER_TEST_PERIOD );
+
+    /* Create DMA demo tasks */
+    vStartDmaDemoTasks( mainDMA_TASK_PRIORITY );
 
     /* Create the tasks defined within this file. */
     xTaskCreate( vCheckTask,
@@ -211,6 +225,22 @@ static void vCheckTask( void *pvParameters )
         }
 
         if( xAreDmaDemoTaskStillRunning() != pdTRUE )
+        {
+            ulErrorDetected = pdTRUE;
+        }
+
+        if( xAreSemaphoreTasksStillRunning() != pdTRUE )
+        {
+            ulErrorDetected = pdTRUE;
+        }
+
+        if( xArePollingQueuesStillRunning() != pdTRUE )
+        {
+            ulErrorDetected = pdTRUE;
+        }
+
+        if( xAreTimerDemoTasksStillRunning(
+                    ( portTickType ) mainCHECK_TASK_CYCLE_TIME ) != pdPASS )
         {
             ulErrorDetected = pdTRUE;
         }

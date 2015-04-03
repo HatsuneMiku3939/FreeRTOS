@@ -39,7 +39,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: telnetd.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: telnetd.h,v 1.1.2.2 2003/10/07 13:22:27 adam Exp $
  *
  */
 #ifndef __TELNETD_H__

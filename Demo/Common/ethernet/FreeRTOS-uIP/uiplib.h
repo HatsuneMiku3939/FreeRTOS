@@ -37,7 +37,7 @@
  *
  * This file is part of the uIP TCP/IP stack
  *
- * $Id: uiplib.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uiplib.h,v 1.1 2006/06/07 09:15:19 adam Exp $
  *
  */
 #ifndef __UIPLIB_H__

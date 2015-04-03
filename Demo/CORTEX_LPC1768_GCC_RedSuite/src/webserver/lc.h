@@ -30,7 +30,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: lc.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: lc.h,v 1.2 2006/06/12 08:00:30 adam Exp $
  */
 
 /**

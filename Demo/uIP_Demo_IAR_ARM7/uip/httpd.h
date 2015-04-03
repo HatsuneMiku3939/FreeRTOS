@@ -39,7 +39,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: httpd.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: httpd.h,v 1.4.2.3 2003/10/06 22:56:44 adam Exp $
  *
  */
 

@@ -3,7 +3,7 @@
 /* SOFTUNE WORKBENCH FORMAT                                                  */
 /* C-DEFINITIONS FOR IO-SYMBOLS                                              */
 /* CREATED BY IO-WIZARD V2.27                                                */
-/* $Id: mb96348hs.h 2 2011-07-17 20:13:17Z filepang@gmail.com $ */
+/* $Id: mb96348hs.h,v 1.7 2007/09/20 14:23:33 mwilla Exp $ */
 /* THIS SAMPLE CODE IS PROVIDED AS IS AND IS SUBJECT TO ALTERATIONS. FUJITSU */
 /* MICROELECTRONICS ACCEPTS NO RESPONSIBILITY OR LIABILITY FOR ANY ERRORS OR */
 /* ELIGIBILITY FOR ANY PURPOSES.                                             */

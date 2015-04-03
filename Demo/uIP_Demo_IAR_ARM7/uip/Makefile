@@ -30,7 +30,7 @@
 #
 # This file is part of the uIP TCP/IP stack.
 #
-# $Id: Makefile 2 2011-07-17 20:13:17Z filepang@gmail.com $
+# $Id: Makefile,v 1.8.2.2 2003/10/04 22:54:17 adam Exp $
 #
 
 CC=gcc

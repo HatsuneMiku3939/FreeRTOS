@@ -24,7 +24,7 @@
 #	Xilinx Gnu Tools. This routine also intializes the 
 #	exception and interrupt handlers
 #
-# $Id: crt0.s 2 2011-07-17 20:13:17Z filepang@gmail.com $
+# $Id: crt0.s,v 1.1.4.2 2005/05/26 21:50:39 vasanth Exp $
 # 
 #######################################
 

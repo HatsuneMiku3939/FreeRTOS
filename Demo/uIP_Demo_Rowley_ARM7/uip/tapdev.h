@@ -28,7 +28,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: tapdev.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: tapdev.h,v 1.1.2.1 2003/10/04 22:54:17 adam Exp $
  *
  */
 

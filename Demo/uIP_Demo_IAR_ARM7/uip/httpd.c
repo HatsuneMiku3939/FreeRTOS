@@ -79,7 +79,7 @@ i /footer.plain
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: httpd.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: httpd.c,v 1.28.2.6 2003/10/07 13:22:27 adam Exp $
  *
  */
 

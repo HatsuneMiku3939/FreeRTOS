@@ -28,7 +28,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uIP_Task.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: main.c,v 1.10.2.4 2003/10/21 21:27:51 adam Exp $
  *
  */
 

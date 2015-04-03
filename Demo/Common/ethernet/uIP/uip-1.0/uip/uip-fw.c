@@ -30,7 +30,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: uip-fw.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip-fw.c,v 1.2 2006/06/12 08:00:30 adam Exp $
  */
 /**
  * \addtogroup uip

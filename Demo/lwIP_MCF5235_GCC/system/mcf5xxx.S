@@ -8,7 +8,7 @@
  *
  * Modifications Copyright (c) 2006 Christian Walter <wolti@sil.at>
  *
- * File: $Id: mcf5xxx.S 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * File: $Id: mcf5xxx.S,v 1.3 2006/09/24 22:50:23 wolti Exp $
  */
 
   .global asm_set_ipl

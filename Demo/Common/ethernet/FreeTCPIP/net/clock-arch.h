@@ -28,7 +28,7 @@
  *
  * This file is part of the uIP TCP/IP stack
  *
- * $Id: clock-arch.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: clock-arch.h,v 1.2 2006/06/12 08:00:31 adam Exp $
  */
 
 #ifndef __CLOCK_ARCH_H__
@@ -36,7 +36,7 @@
 
 #include "FreeRTOS.h"
 
-typedef unsigned long clock_time_t;
+typedef portTickType clock_time_t;
 #define CLOCK_CONF_SECOND configTICK_RATE_HZ
 
 #endif /* __CLOCK_ARCH_H__ */

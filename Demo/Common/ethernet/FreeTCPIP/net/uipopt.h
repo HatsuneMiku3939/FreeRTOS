@@ -58,7 +58,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uipopt.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uipopt.h,v 1.11 2009/04/10 00:37:48 adamdunkels Exp $
  *
  */
 #ifndef __UIPOPT_H__

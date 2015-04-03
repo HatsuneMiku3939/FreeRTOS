@@ -30,7 +30,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: pt.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: pt.h,v 1.3 2008/10/14 12:46:39 nvt-se Exp $
  */
 
 /**

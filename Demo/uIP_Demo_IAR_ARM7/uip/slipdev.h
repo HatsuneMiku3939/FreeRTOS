@@ -39,7 +39,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: slipdev.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: slipdev.h,v 1.1.2.3 2003/10/06 22:42:51 adam Exp $
  *
  */
 

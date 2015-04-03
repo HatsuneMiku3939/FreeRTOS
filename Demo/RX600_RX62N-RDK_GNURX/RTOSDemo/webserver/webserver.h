@@ -29,7 +29,7 @@
  *
  * This file is part of the uIP TCP/IP stack
  *
- * $Id: webserver.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: webserver.h,v 1.2 2006/06/11 21:46:38 adam Exp $
  *
  */
 #ifndef __WEBSERVER_H__

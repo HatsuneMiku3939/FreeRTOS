@@ -41,7 +41,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: uip-fw.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip-fw.h,v 1.2 2006/06/12 08:00:30 adam Exp $
  */
 #ifndef __UIP_FW_H__
 #define __UIP_FW_H__

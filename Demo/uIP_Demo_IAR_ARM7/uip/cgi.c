@@ -47,7 +47,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: cgi.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: cgi.c,v 1.23.2.4 2003/10/07 13:22:27 adam Exp $
  *
  */
 

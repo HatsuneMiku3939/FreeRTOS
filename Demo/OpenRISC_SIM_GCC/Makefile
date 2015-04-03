@@ -10,6 +10,7 @@ RTOS_SRC = \
 	$(RTOS_SOURCE_DIR)/list.c \
 	$(RTOS_SOURCE_DIR)/queue.c \
 	$(RTOS_SOURCE_DIR)/tasks.c \
+	$(RTOS_SOURCE_DIR)/timers.c \
 	$(RTOS_SOURCE_DIR)/portable/MemMang/heap_2.c
 
 APP_SOURCE_DIR	= ../Common/Minimal
@@ -20,7 +21,10 @@ APP_SRC = \
 	$(APP_SOURCE_DIR)/blocktim.c \
 	$(APP_SOURCE_DIR)/BlockQ.c \
 	$(APP_SOURCE_DIR)/flash.c \
-	$(APP_SOURCE_DIR)/comtest.c
+	$(APP_SOURCE_DIR)/comtest.c \
+	$(APP_SOURCE_DIR)/semtest.c \
+	$(APP_SOURCE_DIR)/PollQ.c \
+	$(APP_SOURCE_DIR)/TimerDemo.c
 
 PORT_SRC = $(RTOS_SOURCE_DIR)/portable/GCC/OpenRISC/port.c
 PORT_ASM = $(RTOS_SOURCE_DIR)/portable/GCC/OpenRISC/portasm.S

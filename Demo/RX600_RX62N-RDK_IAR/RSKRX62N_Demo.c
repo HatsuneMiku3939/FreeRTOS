@@ -23,7 +23,7 @@
  * Used to check that all the LED's, switches,
  * clock function and AD trigger are working fine.
  *
- * $Revision: 2 $
+ * $Revision: 1556 $
  */
 
 #include "iorx62n.h"

@@ -50,7 +50,7 @@ satisfied for the port to work.
    FreeRTOS port can install a traphandler for the portYIELD() call.
 
 
-$Id: README.txt 2 2011-07-17 20:13:17Z filepang@gmail.com $
+$Id: README.txt,v 1.1 2006/08/29 02:24:03 wolti Exp $
 
 MCF5235 + lwIP port - Copyright (c) 2006 Christian Walter.
 

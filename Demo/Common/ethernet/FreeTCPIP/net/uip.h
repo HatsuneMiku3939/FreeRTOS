@@ -47,7 +47,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uip.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip.h,v 1.24 2009/04/06 13:18:50 nvt-se Exp $
  *
  */
 #ifndef __UIP_H__

@@ -30,7 +30,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: httpd-fs.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: httpd-fs.c,v 1.1 2006/06/07 09:13:08 adam Exp $
  */
 
 #include "httpd.h"

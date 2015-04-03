@@ -1,7 +1,7 @@
 /*
  * Network buffer code based on the MCF523x examples from Freescale.
  *
- * File: $Id: nbuf.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * File: $Id: nbuf.c,v 1.2 2006/08/31 22:28:21 wolti Exp $
  */
 
 /* ------------------------ Platform includes ----------------------------- */

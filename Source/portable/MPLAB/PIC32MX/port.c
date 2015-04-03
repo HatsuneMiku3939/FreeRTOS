@@ -1,41 +1,41 @@
 /*
-    FreeRTOS V6.1.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+	
 
     ***************************************************************************
-    *                                                                         *
-    * If you are:                                                             *
-    *                                                                         *
-    *    + New to FreeRTOS,                                                   *
-    *    + Wanting to learn FreeRTOS or multitasking in general quickly       *
-    *    + Looking for basic training,                                        *
-    *    + Wanting to improve your FreeRTOS skills and productivity           *
-    *                                                                         *
-    * then take a look at the FreeRTOS books - available as PDF or paperback  *
-    *                                                                         *
-    *        "Using the FreeRTOS Real Time Kernel - a Practical Guide"        *
-    *                  http://www.FreeRTOS.org/Documentation                  *
-    *                                                                         *
-    * A pdf reference manual is also available.  Both are usually delivered   *
-    * to your inbox within 20 minutes to two hours when purchased between 8am *
-    * and 8pm GMT (although please allow up to 24 hours in case of            *
-    * exceptional circumstances).  Thank you for your support!                *
-    *                                                                         *
+     *                                                                       *
+     *    FreeRTOS tutorial books are available in pdf and paperback.        *
+     *    Complete, revised, and edited pdf reference manuals are also       *
+     *    available.                                                         *
+     *                                                                       *
+     *    Purchasing FreeRTOS documentation will not only help you, by       *
+     *    ensuring you get running as quickly as possible and with an        *
+     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
+     *    the FreeRTOS project to continue with its mission of providing     *
+     *    professional grade, cross platform, de facto standard solutions    *
+     *    for microcontrollers - completely free of charge!                  *
+     *                                                                       *
+     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
+     *                                                                       *
+     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *                                                                       *
     ***************************************************************************
+
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
     Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    ***NOTE*** The exception to the GPL is included to allow you to distribute
-    a combined work that includes FreeRTOS without being obliged to provide the
-    source code for proprietary components outside of the FreeRTOS kernel.
-    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public 
-    License and the FreeRTOS license exception along with FreeRTOS; if not it 
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained 
+    >>>NOTE<<< The modification to the GPL is included to allow you to
+    distribute a combined work that includes FreeRTOS without being obliged to
+    provide the source code for proprietary components outside of the FreeRTOS
+    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+    more details. You should have received a copy of the GNU General Public
+    License and the FreeRTOS license exception along with FreeRTOS; if not it
+    can be viewed here: http://www.freertos.org/a00114.html and also obtained
     by writing to Richard Barry, contact details for whom are available on the
     FreeRTOS WEB site.
 
@@ -85,11 +85,19 @@ portSTACK_TYPE xISRStack[ configISR_STACK_SIZE ] = { 0 };
 the callers stack, as some functions seem to want to do this. */
 const portBASE_TYPE * const xISRStackTop = &( xISRStack[ configISR_STACK_SIZE - 7 ] );
 
-/* Place the prototype here to ensure the interrupt vector is correctly installed. */
+/* 
+ * Place the prototype here to ensure the interrupt vector is correctly installed. 
+ * Note that because the interrupt is written in assembly, the IPL setting in the
+ * following line of code has no effect.  The interrupt priority is set by the
+ * call to ConfigIntTimer1() in prvSetupTimerInterrupt(). 
+ */
 extern void __attribute__( (interrupt(ipl1), vector(_TIMER_1_VECTOR))) vT1InterruptHandler( void );
 
 /*
- * The software interrupt handler that performs the yield.
+ * The software interrupt handler that performs the yield.  Note that, because
+ * the interrupt is written in assembly, the IPL setting in the following line of
+ * code has no effect.  The interrupt priority is set by the call to 
+ * mConfigIntCoreSW0() in xPortStartScheduler(). 
  */
 void __attribute__( (interrupt(ipl1), vector(_CORE_SOFTWARE_0_VECTOR))) vPortYieldISR( void );
 
@@ -155,7 +163,7 @@ extern void vPortStartFirstTask( void );
 extern void *pxCurrentTCB;
 
 	/* Setup the software interrupt. */
-	mConfigIntCoreSW0( CSW_INT_ON | CSW_INT_PRIOR_1 | CSW_INT_SUB_PRIOR_0 );
+	mConfigIntCoreSW0( CSW_INT_ON | configKERNEL_INTERRUPT_PRIORITY | CSW_INT_SUB_PRIOR_0 );
 
 	/* Setup the timer to generate the tick.  Interrupts will have been 
 	disabled by the time we get here. */
@@ -196,7 +204,13 @@ unsigned portBASE_TYPE uxSavedStatusRegister;
 
 	asm volatile ( "di" );
 	uxSavedStatusRegister = _CP0_GET_STATUS() | 0x01;
-	_CP0_SET_STATUS( ( uxSavedStatusRegister | ( configMAX_SYSCALL_INTERRUPT_PRIORITY << portIPL_SHIFT ) ) );
+	/* This clears the IPL bits, then sets them to 
+	configMAX_SYSCALL_INTERRUPT_PRIORITY.  This function should not be called
+	from an interrupt that has a priority above 
+	configMAX_SYSCALL_INTERRUPT_PRIORITY so, when used correctly, the action
+	can only result in the IPL being unchanged or raised, and therefore never
+	lowered. */
+	_CP0_SET_STATUS( ( ( uxSavedStatusRegister & ( ~portALL_IPL_BITS ) ) ) | ( configMAX_SYSCALL_INTERRUPT_PRIORITY << portIPL_SHIFT ) );
 
 	return uxSavedStatusRegister;
 }

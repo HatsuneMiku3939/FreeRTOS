@@ -41,7 +41,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: fs.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: fs.h,v 1.6.2.3 2003/10/07 13:22:27 adam Exp $
  */
 #ifndef __FS_H__
 #define __FS_H__

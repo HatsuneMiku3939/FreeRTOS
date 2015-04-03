@@ -49,7 +49,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uip.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip.c,v 1.65 2006/06/11 21:46:39 adam Exp $
  *
  */
 

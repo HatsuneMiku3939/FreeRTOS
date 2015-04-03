@@ -56,7 +56,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: timer.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: timer.h,v 1.3 2006/06/11 21:46:39 adam Exp $
  */
 #ifndef __TIMER_H__
 #define __TIMER_H__

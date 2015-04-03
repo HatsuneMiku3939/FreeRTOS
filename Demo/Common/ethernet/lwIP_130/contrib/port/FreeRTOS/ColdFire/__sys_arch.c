@@ -30,7 +30,7 @@
  * Author: Adam Dunkels <adam@sics.se>
  * Modifcations: Christian Walter <wolti@sil.at>
  *
- * $Id: __sys_arch.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: sys_arch.c,v 1.1 2008/08/05 00:10:49 b06862 Exp $
  */
 
 /* ------------------------ System includes ------------------------------- */

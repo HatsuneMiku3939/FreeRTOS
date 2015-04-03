@@ -1,7 +1,7 @@
 /* FFMC-16 IO-MAP HEADER FILE                                                */
 /* ==========================                                                */
 /* CREATED BY IO-WIZARD V2.28                                                */
-/* $Id: mb96356rs.asm 2 2011-07-17 20:13:17Z filepang@gmail.com $ */
+/* $Id: mb96356rs.asm,v 1.8 2008/02/28 09:05:44 mwilla Exp $ */
 /* THIS SAMPLE CODE IS PROVIDED AS IS AND IS SUBJECT TO ALTERATIONS. FUJITSU */
 /* MICROELECTRONICS ACCEPTS NO RESPONSIBILITY OR LIABILITY FOR ANY ERRORS OR */
 /* ELIGIBILITY FOR ANY PURPOSES.                                             */

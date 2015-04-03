@@ -41,7 +41,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uip.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip.c,v 1.15 2008/10/15 08:08:32 adamdunkels Exp $
  *
  */
 

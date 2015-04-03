@@ -30,7 +30,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: psock.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: psock.c,v 1.1 2007/01/04 11:06:40 adamdunkels Exp $
  */
 #include <stdio.h>
 #include <string.h>

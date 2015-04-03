@@ -30,7 +30,7 @@
  * 
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: fsdata.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: fsdata.h,v 1.4.2.1 2003/10/04 22:54:06 adam Exp $
  */
 #ifndef __FSDATA_H__
 #define __FSDATA_H__

@@ -31,7 +31,7 @@
  *
  * Author: Adam Dunkels <adam@sics.se>
  *
- * $Id: tapdev.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: tapdev.c,v 1.7.2.1 2003/10/07 13:23:19 adam Exp $
  */
 
 

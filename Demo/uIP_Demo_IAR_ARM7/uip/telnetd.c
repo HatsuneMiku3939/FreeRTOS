@@ -60,7 +60,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: telnetd.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: telnetd.c,v 1.1.2.2 2003/10/07 13:47:50 adam Exp $
  *
  */
 

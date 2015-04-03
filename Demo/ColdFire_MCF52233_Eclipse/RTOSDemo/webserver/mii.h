@@ -1,7 +1,7 @@
 /*!
  * \file    mii.h
  * \brief   Media Independent Interface (MII) driver
- * \version $Revision: 2 $
+ * \version $Revision: 1.3 $
  * \author  Michael Norman
  * 
  * \warning This driver assumes that FEC0 is used for all MII management

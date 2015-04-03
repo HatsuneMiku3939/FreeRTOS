@@ -1,7 +1,7 @@
 /*!
  * \file    eth.h
  * \brief   Definitions for Ethernet Physical Layer Interface
- * \version $Revision: 2 $
+ * \version $Revision: 1.3 $
  * \author  Michael Norman
  */
 

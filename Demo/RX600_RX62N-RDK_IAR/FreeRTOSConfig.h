@@ -1,38 +1,38 @@
 /*
-    FreeRTOS V6.1.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+	
 
     ***************************************************************************
-    *                                                                         *
-    * If you are:                                                             *
-    *                                                                         *
-    *    + New to FreeRTOS,                                                   *
-    *    + Wanting to learn FreeRTOS or multitasking in general quickly       *
-    *    + Looking for basic training,                                        *
-    *    + Wanting to improve your FreeRTOS skills and productivity           *
-    *                                                                         *
-    * then take a look at the FreeRTOS books - available as PDF or paperback  *
-    *                                                                         *
-    *        "Using the FreeRTOS Real Time Kernel - a Practical Guide"        *
-    *                  http://www.FreeRTOS.org/Documentation                  *
-    *                                                                         *
-    * A pdf reference manual is also available.  Both are usually delivered   *
-    * to your inbox within 20 minutes to two hours when purchased between 8am *
-    * and 8pm GMT (although please allow up to 24 hours in case of            *
-    * exceptional circumstances).  Thank you for your support!                *
-    *                                                                         *
+     *                                                                       *
+     *    FreeRTOS tutorial books are available in pdf and paperback.        *
+     *    Complete, revised, and edited pdf reference manuals are also       *
+     *    available.                                                         *
+     *                                                                       *
+     *    Purchasing FreeRTOS documentation will not only help you, by       *
+     *    ensuring you get running as quickly as possible and with an        *
+     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
+     *    the FreeRTOS project to continue with its mission of providing     *
+     *    professional grade, cross platform, de facto standard solutions    *
+     *    for microcontrollers - completely free of charge!                  *
+     *                                                                       *
+     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
+     *                                                                       *
+     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *                                                                       *
     ***************************************************************************
+
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
     Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    ***NOTE*** The exception to the GPL is included to allow you to distribute
-    a combined work that includes FreeRTOS without being obliged to provide the
-    source code for proprietary components outside of the FreeRTOS kernel.
-    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+    >>>NOTE<<< The modification to the GPL is included to allow you to
+    distribute a combined work that includes FreeRTOS without being obliged to
+    provide the source code for proprietary components outside of the FreeRTOS
+    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
     more details. You should have received a copy of the GNU General Public
     License and the FreeRTOS license exception along with FreeRTOS; if not it
     can be viewed here: http://www.freertos.org/a00114.html and also obtained
@@ -94,12 +94,12 @@
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 
-/* 
+/*
 The interrupt priority used by the kernel itself for the tick interrupt and
-the pended interrupt is set by configKERNEL_INTERRUPT_PRIORITY.  This would 
-normally be the lowest priority (1 in this case).  The maximum interrupt 
+the pended interrupt is set by configKERNEL_INTERRUPT_PRIORITY.  This would
+normally be the lowest priority (1 in this case).  The maximum interrupt
 priority from which FreeRTOS API calls can be made is set by
-configMAX_SYSCALL_INTERRUPT_PRIORITY.  Interrupts that use a priority above this 
+configMAX_SYSCALL_INTERRUPT_PRIORITY.  Interrupts that use a priority above this
 will not be effected by anything the kernel is doing.  Interrupts at or below
 this priority can use FreeRTOS API functions - but *only* those that end in
 "FromISR".  Both these constants are defined in 'PriorityDefinitions.h' so they
@@ -126,15 +126,18 @@ to exclude the API function. */
 #define INCLUDE_uxTaskGetStackHighWaterMark	1
 #define INCLUDE_xTaskGetSchedulerState		1
 
+#define configASSERT( x ) if( ( x ) == pdFALSE ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
+
 extern volatile unsigned long ulHighFrequencyTickCount;
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() portNOP() /* Run time stats use the same timer as the high frequency timer test. */
 #define portGET_RUN_TIME_COUNTER_VALUE() ulHighFrequencyTickCount
 
 
 /* Override some of the priorities set in the common demo tasks.  This is
-required to ensure flase positive timing errors are not reported. */
-#define bktPRIMARY_PRIORITY		( configMAX_PRIORITIES - 2 )
-#define bktSECONDARY_PRIORITY	( configMAX_PRIORITIES - 3 )
+required to ensure false positive timing errors are not reported. */
+#define bktPRIMARY_PRIORITY		( configMAX_PRIORITIES - 3 )
+#define bktSECONDARY_PRIORITY	( configMAX_PRIORITIES - 4 )
+#define intqHIGHER_PRIORITY		( configMAX_PRIORITIES - 3 )
 
 
 /*-----------------------------------------------------------

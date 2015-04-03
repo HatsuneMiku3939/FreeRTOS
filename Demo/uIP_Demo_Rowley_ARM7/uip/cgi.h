@@ -39,7 +39,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: cgi.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: cgi.h,v 1.3.2.4 2003/10/07 13:22:27 adam Exp $
  *
  */
 

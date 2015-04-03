@@ -1,7 +1,7 @@
 /*
  * Definitions for tcp compression routines.
  *
- * $Id: vj.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: vj.h,v 1.2 2006/08/29 18:53:47 wolti Exp $
  *
  * Copyright (c) 1989 Regents of the University of California.
  * All rights reserved.

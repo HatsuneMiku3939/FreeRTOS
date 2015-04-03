@@ -39,7 +39,7 @@
 ;
 ;------------------------------------------------------------------------------
 ;       Copyright (c) 2003-2008 IAR Systems AB.
-;       $Revision: 2 $
+;       $Revision: 3577 $
 ;------------------------------------------------------------------------------
 
 #if !defined(__STANDARD_MODEL__) && !defined(__BANKED_MODEL__) && !defined(__NEAR_MODEL__) && !defined(__FAR_MODEL__)

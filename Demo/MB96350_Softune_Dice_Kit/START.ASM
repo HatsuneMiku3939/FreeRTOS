@@ -1,5 +1,5 @@
 ;====================================================================
-; $Id: START.ASM 2 2011-07-17 20:13:17Z filepang@gmail.com $
+; $Id: START.ASM,v 1.31 2008/02/27 10:23:34 mcuae Exp $
 ;====================================================================
 ; THIS SAMPLE CODE IS PROVIDED AS IS AND IS SUBJECT TO ALTERATIONS.  
 ;  FUJITSU MICROELECTRONICS ACCEPTS NO RESPONSIBILITY OR LIABILITY   
@@ -94,7 +94,7 @@
 ;====================================================================
 ; 3  History
 ;====================================================================
-; $Id: START.ASM 2 2011-07-17 20:13:17Z filepang@gmail.com $
+; $Id: START.ASM,v 1.31 2008/02/27 10:23:34 mcuae Exp $
 
 #define VERSION  "1.31"
 /*

@@ -1,38 +1,38 @@
 /*
-    FreeRTOS V6.1.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+	
 
     ***************************************************************************
-    *                                                                         *
-    * If you are:                                                             *
-    *                                                                         *
-    *    + New to FreeRTOS,                                                   *
-    *    + Wanting to learn FreeRTOS or multitasking in general quickly       *
-    *    + Looking for basic training,                                        *
-    *    + Wanting to improve your FreeRTOS skills and productivity           *
-    *                                                                         *
-    * then take a look at the FreeRTOS books - available as PDF or paperback  *
-    *                                                                         *
-    *        "Using the FreeRTOS Real Time Kernel - a Practical Guide"        *
-    *                  http://www.FreeRTOS.org/Documentation                  *
-    *                                                                         *
-    * A pdf reference manual is also available.  Both are usually delivered   *
-    * to your inbox within 20 minutes to two hours when purchased between 8am *
-    * and 8pm GMT (although please allow up to 24 hours in case of            *
-    * exceptional circumstances).  Thank you for your support!                *
-    *                                                                         *
+     *                                                                       *
+     *    FreeRTOS tutorial books are available in pdf and paperback.        *
+     *    Complete, revised, and edited pdf reference manuals are also       *
+     *    available.                                                         *
+     *                                                                       *
+     *    Purchasing FreeRTOS documentation will not only help you, by       *
+     *    ensuring you get running as quickly as possible and with an        *
+     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
+     *    the FreeRTOS project to continue with its mission of providing     *
+     *    professional grade, cross platform, de facto standard solutions    *
+     *    for microcontrollers - completely free of charge!                  *
+     *                                                                       *
+     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
+     *                                                                       *
+     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *                                                                       *
     ***************************************************************************
+
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
     Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    ***NOTE*** The exception to the GPL is included to allow you to distribute
-    a combined work that includes FreeRTOS without being obliged to provide the
-    source code for proprietary components outside of the FreeRTOS kernel.
-    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+    >>>NOTE<<< The modification to the GPL is included to allow you to
+    distribute a combined work that includes FreeRTOS without being obliged to
+    provide the source code for proprietary components outside of the FreeRTOS
+    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
     more details. You should have received a copy of the GNU General Public
     License and the FreeRTOS license exception along with FreeRTOS; if not it
     can be viewed here: http://www.freertos.org/a00114.html and also obtained
@@ -95,8 +95,8 @@ unsigned portLONG ulBaudRateCount;
 	portENTER_CRITICAL();
 	{
 		/* Create the queues used by the com test task. */
-		xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-		xCharsForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+		xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
+		xCharsForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
 
 		/* Reset UART. */
 		UCA1CTL1 |= UCSWRST;
@@ -105,11 +105,11 @@ unsigned portLONG ulBaudRateCount;
 		UCA1CTL1 = UCSSEL0 | UCSSEL1;
 		
 		/* Setup baud rate low byte. */
-		UCA1BR0 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned portLONG ) 0xff );
+		UCA1BR0 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
 		/* Setup baud rate high byte. */
 		ulBaudRateCount >>= 8UL;
-		UCA1BR1 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned portLONG ) 0xff );
+		UCA1BR1 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
 		/* UCLISTEN sets loopback mode! */
 		UCA1STAT = UCLISTEN;
@@ -152,32 +152,35 @@ signed portBASE_TYPE xReturn;
 	completed and switched itself off. */
 	xReturn = xQueueSend( xCharsForTx, &cOutChar, xBlockTime );
 	UCA1IE |= UCTXIE;
-
+	
 	return xReturn;
 }
 /*-----------------------------------------------------------*/
 
+/* The implementation of this interrupt is provided to demonstrate the use
+of queues from inside an interrupt service routine.  It is *not* intended to
+be an efficient interrupt implementation.  A real application should make use
+of the DMA.  Or, as a minimum, transmission and reception could use a simple
+RAM ring buffer, and synchronise with a task using a semaphore when a complete
+message has been received or transmitted. */
 #pragma vector=USCI_A1_VECTOR
 interrupt void prvUSCI_A1_ISR( void )
 {
-signed portCHAR cChar;
-portBASE_TYPE xTaskWoken = pdFALSE;
+signed char cChar;
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
-	while( ( UCA1IFG & UCRXIFG ) != 0 )
+	if( ( UCA1IFG & UCRXIFG ) != 0 )
 	{
 		/* Get the character from the UART and post it on the queue of Rxed
 		characters. */
 		cChar = UCA1RXBUF;
 		xQueueSendFromISR( xRxedChars, &cChar, &xHigherPriorityTaskWoken );
-	}
-	
-	/* If there is a Tx interrupt pending and the tx interrupts are enabled. */
-	if( ( UCA1IFG & UCTXIFG ) != 0 )
+	}	
+	else if( ( UCA1IFG & UCTXIFG ) != 0 )
 	{
 		/* The previous character has been transmitted.  See if there are any
 		further characters waiting transmission. */
-		if( xQueueReceiveFromISR( xCharsForTx, &cChar, &xTaskWoken ) == pdTRUE )
+		if( xQueueReceiveFromISR( xCharsForTx, &cChar, &xHigherPriorityTaskWoken ) == pdTRUE )
 		{
 			/* There was another character queued - transmit it now. */
 			UCA1TXBUF = cChar;
@@ -189,7 +192,7 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 			UCA1IE &= ~UCTXIE;
 		}
 	}
-
+	
 	__bic_SR_register_on_exit( SCG1 + SCG0 + OSCOFF + CPUOFF );
 	
 	/* If writing to a queue caused a task to unblock, and the unblocked task

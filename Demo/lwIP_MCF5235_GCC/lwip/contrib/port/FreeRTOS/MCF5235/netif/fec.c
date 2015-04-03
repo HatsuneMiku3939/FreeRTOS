@@ -32,7 +32,7 @@
  *  - Avoid copying the buffers - this requires changeing the nbuf driver code
  *    to use the lwIP pbuf buffer implementation.
  *
- * File: $Id: fec.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * File: $Id: fec.c,v 1.3 2006/08/29 18:53:46 wolti Exp $
  */
 
 /* ------------------------ System includes ------------------------------- */

@@ -1,7 +1,7 @@
 /*! 
  * \file    eth.h
  * \brief   Definitinos for Ethernet Frames
- * \version $Revision: 2 $
+ * \version $Revision: 1.2 $
  * \author  Michael Norman
  */
 

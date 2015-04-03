@@ -39,7 +39,7 @@
  *
  * This file is part of the Contiki desktop OS.
  *
- * $Id: telnetd-shell.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: telnetd-shell.c,v 1.1.2.1 2003/10/06 22:56:22 adam Exp $
  *
  */
 

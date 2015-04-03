@@ -50,7 +50,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uipopt.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uipopt.h,v 1.16.2.5 2003/10/07 13:22:51 adam Exp $
  *
  */
 

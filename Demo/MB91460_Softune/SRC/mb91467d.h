@@ -16,7 +16,7 @@
 /*                 (C) Fujitsu Microelectronics Europe GmbH                  */
 /* ************************************************************************* */
 /* ---------------------------------------------------------------------- */
-/* $Id: mb91467d.h 2 2011-07-17 20:13:17Z filepang@gmail.com $ */
+/* $Id: mb91467D.h,v 1.13 2007/08/08 10:56:26 mwilla Exp $ */
 /* ---------------------------------------------------------------------- */
 /*                      */
 /* Id: mb91467D.iow,v 1.1 2005/10/14 11:25:42 umarke Exp  */
@@ -50,7 +50,7 @@
 /*      - RBSYNC, CBSYNCx  */
 /* Id: mb91467D.iow,v 1.9 2006/02/27 11:56:23 umarke Exp  */
 /*      - changed Adress of REGSEL */
-/* $Id: mb91467d.h 2 2011-07-17 20:13:17Z filepang@gmail.com $  */
+/* $Id: mb91467D.h,v 1.13 2007/08/08 10:56:26 mwilla Exp $  */
 /*      - Grouped CANPRE_CPCKS */
 /*      - Bitdescription of HLRC added */
 
@@ -2417,7 +2417,7 @@ BSV2       .EQU 0x14800C
 /*                 (C) Fujitsu Microelectronics Europe GmbH                  */
 /* ************************************************************************* */
 /* ---------------------------------------------------------------------- */
-/* $Id: mb91467d.h 2 2011-07-17 20:13:17Z filepang@gmail.com $ */
+/* $Id: mb91467D.h,v 1.13 2007/08/08 10:56:26 mwilla Exp $ */
 /* ---------------------------------------------------------------------- */
 /*                      */
 /* Id: mb91467D.iow,v 1.1 2005/10/14 11:25:42 umarke Exp  */
@@ -2451,7 +2451,7 @@ BSV2       .EQU 0x14800C
 /*      - RBSYNC, CBSYNCx  */
 /* Id: mb91467D.iow,v 1.9 2006/02/27 11:56:23 umarke Exp  */
 /*      - changed Adress of REGSEL */
-/* $Id: mb91467d.h 2 2011-07-17 20:13:17Z filepang@gmail.com $  */
+/* $Id: mb91467D.h,v 1.13 2007/08/08 10:56:26 mwilla Exp $  */
 /*      - Grouped CANPRE_CPCKS */
 /*      - Bitdescription of HLRC added */
 /* BIT-STRUCTURE-DEFINITIONS */

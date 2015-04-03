@@ -45,7 +45,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uip.h 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip.h,v 1.36.2.7 2003/10/07 13:47:51 adam Exp $
  *
  */
 

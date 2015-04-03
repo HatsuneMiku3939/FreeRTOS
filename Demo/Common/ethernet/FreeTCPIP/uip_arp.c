@@ -54,7 +54,7 @@
  *
  * This file is part of the uIP TCP/IP stack.
  *
- * $Id: uip_arp.c 2 2011-07-17 20:13:17Z filepang@gmail.com $
+ * $Id: uip_arp.c,v 1.5 2008/02/07 01:35:00 adamdunkels Exp $
  *
  */
 #include "net/uip_arp.h"
