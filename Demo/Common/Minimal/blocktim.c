@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -67,11 +67,11 @@
 
 /* Task priorities.  Allow these to be overridden. */
 #ifndef bktPRIMARY_PRIORITY
-	#define bktPRIMARY_PRIORITY			( 3 )
+	#define bktPRIMARY_PRIORITY		( configMAX_PRIORITIES - 3 )
 #endif
 
 #ifndef bktSECONDARY_PRIORITY
-	#define bktSECONDARY_PRIORITY		( 2 )
+	#define bktSECONDARY_PRIORITY	( configMAX_PRIORITIES - 4 )
 #endif
 
 /* Task behaviour. */

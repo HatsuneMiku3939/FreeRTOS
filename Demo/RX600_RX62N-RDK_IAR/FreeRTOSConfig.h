@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -93,6 +93,11 @@
 #define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 7 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
+/* Software timer definitions. */
+#define configUSE_TIMERS				1
+#define configTIMER_TASK_PRIORITY		( 3 )
+#define configTIMER_QUEUE_LENGTH		5
+#define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE )
 
 /*
 The interrupt priority used by the kernel itself for the tick interrupt and
