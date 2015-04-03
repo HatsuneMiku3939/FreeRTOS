@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -208,8 +208,8 @@
 	addiu		sp,	sp,	portCONTEXT_SIZE
 
 	mtc0		k0, _CP0_STATUS
-	ehb
 	mtc0 		k1, _CP0_EPC
+	ehb
 	eret 
 	nop
 

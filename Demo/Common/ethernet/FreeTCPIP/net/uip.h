@@ -69,6 +69,10 @@
 
 	typedef uip_ip6addr_t	uip_ipaddr_t;
 #else /* UIP_CONF_IPV6 */
+	#ifdef __CC_ARM
+		__packed /* The ARM compiler insists on this being packed, but with other compilers packing it generates a warning as it will be packed anyway. */
+	#endif
+
 	typedef union			uip_ip4addr_t
 	{
 		u8_t	u8[4];	/* Initializer, must come first!!! */
@@ -2165,6 +2169,16 @@ u16_t	uip_udpchksum( void );
  * \return The ICMP checksum of the ICMP packet in uip_buf
  */
 u16_t	uip_icmp6chksum( void );
+
+/* Events that can get posted to the uIP event queue.  These are events
+originating from the Ethernet interface or from a timer. */
+#define uipETHERNET_RX_EVENT		0x01UL
+#define	uipETHERNET_TX_EVENT		0x02UL
+#define uipARP_TIMER_EVENT			0x04UL
+#define uipPERIODIC_TIMER_EVENT		0x08UL
+#define uipAPPLICATION_SEND_EVENT	0x10UL
+
+
 #endif /* __UIP_H__ */
 
 /** @} */
