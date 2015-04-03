@@ -22,7 +22,8 @@ const int UART_BAUDS[1] = {UART0_BAUD_RATE};
                 lsr = REG8(UART_BASE_ADR[core] + UART_LSR); \
         } while ((lsr & UART_LSR_THRE) != UART_LSR_THRE)
 
-#define CHECK_FOR_CHAR(core) (REG8(UART_BASE_ADR[core] + UART_LSR) & UART_LSR_DR)
+#define CHECK_FOR_CHAR(core) \
+	(REG8(UART_BASE_ADR[core] + UART_LSR) & UART_LSR_DR)
 
 #define WAIT_FOR_CHAR(core)         \
          do { \
@@ -35,13 +36,18 @@ void uart_init(int core)
     float float_divisor;
 
     /* Reset receiver and transmiter */
-    REG8(UART_BASE_ADR[core] + UART_FCR) = UART_FCR_ENABLE_FIFO | UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT | UART_FCR_TRIGGER_14;
+    REG8(UART_BASE_ADR[core] + UART_FCR) = UART_FCR_ENABLE_FIFO |
+					   UART_FCR_CLEAR_RCVR |
+					   UART_FCR_CLEAR_XMIT |
+					   UART_FCR_TRIGGER_14;
 
     /* Disable all interrupts */
     REG8(UART_BASE_ADR[core] + UART_IER) = 0x00;
 
     /* Set 8 bit char, 1 stop bit, no parity */
-    REG8(UART_BASE_ADR[core] + UART_LCR) = UART_LCR_WLEN8 & ~(UART_LCR_STOP | UART_LCR_PARITY);
+    REG8(UART_BASE_ADR[core] + UART_LCR) = UART_LCR_WLEN8 &
+					   ~(UART_LCR_STOP |
+					   UART_LCR_PARITY);
 
     /* Set baud rate */
     float_divisor = (float) IN_CLK/(16 * UART_BAUDS[core]);

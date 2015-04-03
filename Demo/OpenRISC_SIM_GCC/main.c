@@ -119,7 +119,8 @@ static void prvSetupHardware(void);
 
 void vApplicationIdleHook( void );
 void vApplicationTickHook( void );
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName );
+void vApplicationStackOverflowHook( xTaskHandle *pxTask,
+                                    signed char *pcTaskName );
 void vApplicationMallocFailedHook( void );
 
 /*-----------------------------------------------------------*/
@@ -136,7 +137,9 @@ int main( int argc, char **argv )
 
     /* Create the standard demo application tasks.  See the WEB documentation
     for more information on these tasks. */
-    vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
+    vAltStartComTestTasks( mainCOM_TEST_PRIORITY,
+                           mainCOM_TEST_BAUD_RATE,
+                           mainCOM_TEST_LED );
     vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
     vStartIntegerMathTasks( tskIDLE_PRIORITY );
     vStartDmaDemoTasks( tskIDLE_PRIORITY );
@@ -146,7 +149,12 @@ int main( int argc, char **argv )
     vStartDynamicPriorityTasks();
 
     /* Create the tasks defined within this file. */
-    xTaskCreate( vCheckTask, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+    xTaskCreate( vCheckTask,
+                 ( signed char * ) "Check",
+                 configMINIMAL_STACK_SIZE,
+                 NULL,
+                 mainCHECK_TASK_PRIORITY,
+                 NULL );
 
     vTaskStartScheduler();
 
@@ -174,14 +182,14 @@ static void vCheckTask( void *pvParameters )
         vTaskDelayUntil( &xLastExecutionTime, mainCHECK_TASK_CYCLE_TIME );
 
         /* Has an error been found in any of the standard demo tasks? */
-
         if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
         {
             ulErrorDetected = pdTRUE;
         }
 
-        /* FIXME, xAreComTestTasksStillRunning assumed that UART TX is loopbacked to RX
-        but, current Or1ksim does not surrpot UART loopback. so, ignore it.*/
+        /* xAreComTestTasksStillRunning assumed that UART TX
+         * is loopbacked to RX but, current Or1ksim does not surrpot
+         * UART loopback. so, ignore it.*/
         if( xAreComTestTasksStillRunning() != pdTRUE )
         {
             // ulErrorDetected = pdTRUE;
@@ -210,17 +218,11 @@ static void vCheckTask( void *pvParameters )
         if(ulErrorDetected == pdTRUE)
         {
             // something was wrong. report negative indicator
-            // const char *message = "vCheckTask Error detected!\n\r";
-            // vSerialPutString(NULL, (const signed char*)message, strlen(message));
-
             report(0xDEADBEEF);
         }
         else
         {
             // we have no error. report positive indicator
-            // const char *message = "vCheckTask OK!\n\r";
-            // vSerialPutString(NULL, (const signed char*)message, strlen(message));
-
             report(0x00000000);
         }
 
@@ -262,7 +264,8 @@ void vApplicationTickHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( xTaskHandle *pxTask,
+                                    signed char *pcTaskName )
 {
     /* prevent compiler warning */
     pxTask = pxTask;

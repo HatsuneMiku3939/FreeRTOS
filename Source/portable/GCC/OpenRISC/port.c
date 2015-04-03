@@ -98,11 +98,16 @@ inline void vPortEnableInterrupts( void );
  *
  * See header file for description.
  */
-portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack,
+                                       pdTASK_CODE pxCode,
+                                       void *pvParameters )
 {
     unsigned portLONG uTaskSR = mfspr(SPR_SR);
-    uTaskSR |= SPR_SR_SM;                       // Supervisor mode
-    uTaskSR |= (SPR_SR_TEE | SPR_SR_IEE);       // Tick interrupt enable, All External interupt enable
+
+    // Supervisor mode
+    uTaskSR |= SPR_SR_SM;
+    // Tick interrupt enable, All External interupt enable
+    uTaskSR |= (SPR_SR_TEE | SPR_SR_IEE);
 
     // allocate redzone
     pxTopOfStack -= REDZONE_SIZE/4;
@@ -149,8 +154,8 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 portBASE_TYPE xPortStartScheduler( void )
 {
     if(setjmp((void *)jmpbuf) == 0) {
-        /* Start the timer that generates the tick ISR.  Interrupts are disabled
-        here already. */
+        /* Start the timer that generates the tick ISR.
+     * Interrupts are disabled here already. */
         prvSetupTimerInterrupt();
 
         /* Start the first task. */
@@ -217,8 +222,11 @@ portBASE_TYPE xPortStartScheduler( void )
 
 void vPortEndScheduler( void )
 {
-    mtspr(SPR_SR, mfspr(SPR_SR) & (~SPR_SR_TEE));   // Tick stop
-    longjmp((void *)jmpbuf, 1);                     // return to xPortStartScheduler
+    // Tick stop
+    mtspr(SPR_SR, mfspr(SPR_SR) & (~SPR_SR_TEE));
+
+    // return to xPortStartScheduler
+    longjmp((void *)jmpbuf, 1);
 }
 
 /*
@@ -226,7 +234,8 @@ void vPortEndScheduler( void )
  */
 static void prvSetupTimerInterrupt( void )
 {
-    const unsigned portLONG ulTickPeriod = configCPU_CLOCK_HZ / configTICK_RATE_HZ;
+    const unsigned portLONG ulTickPeriod =
+        configCPU_CLOCK_HZ / configTICK_RATE_HZ;
 
     // Disable tick timer exception recognition
     mtspr(SPR_SR, mfspr(SPR_SR) & ~SPR_SR_TEE);
@@ -235,7 +244,8 @@ static void prvSetupTimerInterrupt( void )
     mtspr(SPR_TTMR, mfspr(SPR_TTMR) & ~(SPR_TTMR_IP));
 
     // Set period of one cycle, restartable mode
-    mtspr(SPR_TTMR, SPR_TTMR_IE | SPR_TTMR_RT | (ulTickPeriod & SPR_TTMR_PERIOD));
+    mtspr(SPR_TTMR,
+      SPR_TTMR_IE | SPR_TTMR_RT | (ulTickPeriod & SPR_TTMR_PERIOD));
 
     // Reset counter
     mtspr(SPR_TTCR, 0);
@@ -246,12 +256,14 @@ static void prvSetupTimerInterrupt( void )
 
 inline void vPortDisableInterrupts( void )
 {
-    mtspr(SPR_SR, mfspr(SPR_SR) & ~(SPR_SR_TEE|SPR_SR_IEE));    // Tick, interrupt stop
+    // Tick, interrupt stop
+    mtspr(SPR_SR, mfspr(SPR_SR) & ~(SPR_SR_TEE|SPR_SR_IEE));
 }
 
 inline void vPortEnableInterrupts( void )
 {
-    mtspr(SPR_SR, mfspr(SPR_SR) | (SPR_SR_TEE|SPR_SR_IEE));     // Tick, interrupt start
+    // Tick, interrupt start
+    mtspr(SPR_SR, mfspr(SPR_SR) | (SPR_SR_TEE|SPR_SR_IEE));
 }
 
 /*

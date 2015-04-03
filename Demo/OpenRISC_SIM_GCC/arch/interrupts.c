@@ -66,7 +66,8 @@ void int_main(void) {
     unsigned long i;
 
     // vPortDisableInterrupts();
-    picsr = mfspr(SPR_PICSR);   // process only the interrupts asserted at signal catch, ignore all during process
+    // process only the interrupts asserted at signal catch, ignore all during process
+    picsr = mfspr(SPR_PICSR);
     i = 0;
     while(i < 32) {
         if((picsr & (0x01L << i)) && (int_handlers[i].handler != 0)) {
@@ -75,8 +76,10 @@ void int_main(void) {
         i++;
     }
 
-    mtspr(SPR_PICSR, 0);    // clear interrupt status: all modules have level interrupts, which have to be cleared by software,
-                            // thus this is safe, since non processed interrupts will get re-asserted soon enough
+    // clear interrupt status: all modules have level interrupts,
+    // which have to be cleared by software, thus this is safe,
+    // since non processed interrupts will get re-asserted soon enough
+    mtspr(SPR_PICSR, 0);
 
     // vPortEnableInterrupts();
 }
@@ -173,16 +176,24 @@ void misc_int_handler(int arg) {
 
 static void syscall_enter_critical(void) {
     unsigned int exception_sr = mfspr(SPR_ESR_BASE);
-    exception_sr &= (~SPR_SR_IEE);      // disable all external interrupt
-    exception_sr &= (~SPR_SR_TEE);      // disable tick timer interrupt
+
+    // disable all external interrupt
+    exception_sr &= (~SPR_SR_IEE);
+
+    // disable tick timer interrupt
+    exception_sr &= (~SPR_SR_TEE);
 
     mtspr(SPR_ESR_BASE, exception_sr);
 }
 
 static void syscall_exit_critical(void) {
     unsigned int exception_sr = mfspr(SPR_ESR_BASE);
-    exception_sr |= SPR_SR_IEE;     // enable all external interrupt
-    exception_sr |= SPR_SR_TEE;     // enable tick timer interrupt
+
+    // enable all external interrupt
+    exception_sr |= SPR_SR_IEE;
+
+    // enable tick timer interrupt
+    exception_sr |= SPR_SR_TEE;
 
     mtspr(SPR_ESR_BASE, exception_sr);
 }

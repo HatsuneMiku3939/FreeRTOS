@@ -89,10 +89,16 @@ void vStartDmaDemoTasks( unsigned portBASE_TYPE uxPriority )
     checker = pdTRUE;
 
     /* First create the structure used to pass parameters to the demo tasks. */
-    pxDmaDemoParamter = ( xDmaDemoParameters * ) pvPortMalloc( sizeof( xDmaDemoParameters ) );
+    pxDmaDemoParamter = ( xDmaDemoParameters * )
+            pvPortMalloc( sizeof( xDmaDemoParameters ) );
 
     /* create demo task */
-    xTaskCreate( vDmaDemoTask, ( signed char * ) "DmaDemo", dmaSTACK_SIZE, ( void * ) pxDmaDemoParamter, uxPriority, ( xTaskHandle * ) NULL );
+    xTaskCreate( vDmaDemoTask,
+                 ( signed char * ) "DmaDemo",
+                 dmaSTACK_SIZE,
+                 ( void * ) pxDmaDemoParamter,
+                 uxPriority,
+                 ( xTaskHandle * ) NULL );
 }
 /*-----------------------------------------------------------*/
 
@@ -120,7 +126,8 @@ static portTASK_FUNCTION( vDmaDemoTask, pvParameters )
         }
 
         /* flushing dcache for coherency(update memory) */
-        flush_dcache_range((unsigned long)source, (unsigned long)(source + DMA_TRANSFER_WORD));
+        flush_dcache_range(source,
+                           source + DMA_TRANSFER_WORD);
 
         portENTER_CRITICAL();
         {
@@ -129,12 +136,12 @@ static portTASK_FUNCTION( vDmaDemoTask, pvParameters )
                                0, (unsigned int)source,
                                1, (unsigned int)destination,
                                16, DMA_TRANSFER_WORD, 0);
-
         }
         portEXIT_CRITICAL();
 
         /* invalidating dcache for coherency(update cache) */
-        invalidate_dcache_range((unsigned long)destination, (unsigned long)(destination + DMA_TRANSFER_WORD));
+        invalidate_dcache_range(destination,
+                                destination + DMA_TRANSFER_WORD);
 
         for(i = 0; i < DMA_TRANSFER_WORD; i++)
         {
