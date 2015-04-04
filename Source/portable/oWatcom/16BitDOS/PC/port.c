@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -290,11 +290,6 @@ void ( __interrupt __far *pxOriginalTickISR )();
 	/* The tick timer is back how DOS wants it.  We can re-enable
 	interrupts without the scheduler being called. */
 	portENABLE_INTERRUPTS();
-
-	/* This will free up all the memory used by the scheduler.
-	exiting back to dos with INT21 AH=4CH will do this anyway so
-	it is not necessary to call this. */
-	vTaskCleanUpResources(); 
 }
 /*-----------------------------------------------------------*/
 
