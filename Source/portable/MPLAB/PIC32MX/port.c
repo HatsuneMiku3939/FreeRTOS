@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -65,11 +65,10 @@
 /* Bits within various registers. */
 #define portIE_BIT					( 0x00000001 )
 #define portEXL_BIT					( 0x00000002 )
-#define portSW0_ENABLE				( 0x00000100 )
 
 /* The EXL bit is set to ensure interrupts do not occur while the context of
 the first task is being restored. */
-#define portINITIAL_SR				( portIE_BIT | portEXL_BIT | portSW0_ENABLE )
+#define portINITIAL_SR				( portIE_BIT | portEXL_BIT )
 
 /* Records the interrupt nesting depth.  This starts at one as it will be
 decremented to 0 when the first task starts. */
@@ -83,7 +82,7 @@ portSTACK_TYPE xISRStack[ configISR_STACK_SIZE ] = { 0 };
 
 /* The top of stack value ensures there is enough space to store 6 registers on 
 the callers stack, as some functions seem to want to do this. */
-const portBASE_TYPE * const xISRStackTop = &( xISRStack[ configISR_STACK_SIZE - 7 ] );
+const portSTACK_TYPE * const xISRStackTop = &( xISRStack[ configISR_STACK_SIZE - 7 ] );
 
 /* 
  * Place the prototype here to ensure the interrupt vector is correctly installed. 

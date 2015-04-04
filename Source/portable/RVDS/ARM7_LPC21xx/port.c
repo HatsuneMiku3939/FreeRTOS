@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -117,6 +117,10 @@ portSTACK_TYPE *pxOriginalTOS;
 	Remember where the top of the (simulated) stack is before we place 
 	anything on it. */
 	pxOriginalTOS = pxTopOfStack;
+	
+	/* To ensure asserts in tasks.c don't fail, although in this case the assert
+	is not really required. */
+	pxTopOfStack--;
 
 	/* First on the stack is the return address - which in this case is the
 	start of the task.  The offset is added to make the return address appear
