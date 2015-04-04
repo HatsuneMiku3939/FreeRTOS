@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.1 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
 
 
     ***************************************************************************
@@ -83,6 +83,7 @@ extern "C" {
 #define portCRITICAL_NESTING_IN_TCB     1
 #define portINSTRUCTION_SIZE            ( ( portSTACK_TYPE ) 4 )
 #define portNO_CRITICAL_SECTION_NESTING ( ( portSTACK_TYPE ) 0 )
+#define portPOINTER_SIZE_TYPE						unsigned long
 
 #define portYIELD_FROM_ISR()            portYIELD()
 #define portYIELD()     \
@@ -94,16 +95,30 @@ extern "C" {
 
 
 /*-----------------------------------------------------------*/
-#define portDISABLE_INTERRUPTS()    { extern inline void vPortDisableInterrupts( void ); vPortDisableInterrupts(); }
-#define portENABLE_INTERRUPTS()     { extern inline void vPortEnableInterrupts( void );  vPortEnableInterrupts();  }
+#define portDISABLE_INTERRUPTS() { \
+    extern inline void vPortDisableInterrupts( void ); \
+    vPortDisableInterrupts(); \
+}
+#define portENABLE_INTERRUPTS() { \
+    extern inline void vPortEnableInterrupts( void ); \
+    vPortEnableInterrupts(); \
+}
 
-#define portENTER_CRITICAL()        { extern void vTaskEnterCritical( void ); vTaskEnterCritical();  }
-#define portEXIT_CRITICAL()         { extern void vTaskExitCritical( void );  vTaskExitCritical();   }
+#define portENTER_CRITICAL() { \
+	extern void vTaskEnterCritical( void ); \
+	vTaskEnterCritical(); \
+}
+#define portEXIT_CRITICAL() { \
+    extern void vTaskExitCritical( void ); \
+    vTaskExitCritical(); \
+}
 /*-----------------------------------------------------------*/
 
 /* Task function macros as described on the FreeRTOS.org WEB site. */
-#define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) void vFunction( void *pvParameters )
-#define portTASK_FUNCTION( vFunction, pvParameters ) void vFunction( void *pvParameters )
+#define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) \
+	void vFunction( void *pvParameters )
+#define portTASK_FUNCTION( vFunction, pvParameters ) \
+	void vFunction( void *pvParameters )
 
 /*
     Context layout
