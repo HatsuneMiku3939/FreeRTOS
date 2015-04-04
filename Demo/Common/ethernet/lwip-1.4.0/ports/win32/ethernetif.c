@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -453,6 +453,15 @@ struct xEthernetIf *pxEthernetIf;
   
 		/* initialize the hardware */
 		prvLowLevelInit( pxNetIf );
+
+		/* Was an interface opened? */
+		if( pxOpenedInterfaceHandle == NULL )
+		{
+			/* Probably an invalid adapter number was defined in 
+			FreeRTOSConfig.h. */
+			xReturn = ERR_VAL;
+			configASSERT( pxOpenedInterfaceHandle );
+		}
 	}
 
 	return xReturn;

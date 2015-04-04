@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.0.2 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
 
 
     ***************************************************************************
@@ -389,7 +389,6 @@ static long lChangedTimerPeriodAlready = pdFALSE;
 		if( lChangedTimerPeriodAlready == pdFALSE )
 		{
 			lChangedTimerPeriodAlready = pdTRUE;
-			printf( "%s", pcStatusMessage );
 			
 			/* This call to xTimerChangePeriod() uses a zero block time.  
 			Functions called from inside of a timer callback function must 
@@ -524,7 +523,7 @@ void vApplicationMallocFailedHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -561,7 +560,6 @@ volatile size_t xFreeHeapSpace;
 		xTimerStart( xLED2Timer, portMAX_DELAY );
 		
 		xFreeHeapSpace = xPortGetFreeHeapSize();
-		printf( "%d bytes of FreeRTOS heap remain unused\nconfigTOTAL_HEAP_SIZE can be reduced\n", xFreeHeapSpace );
 		
 		if( xFreeHeapSpace > 100 )
 		{
@@ -624,6 +622,12 @@ const unsigned long ulSysTickPendingBit = 0x04000000UL;
 	
 	/* How many times has it overflowed? */
 	ulTickCount = xTaskGetTickCountFromISR();
+
+	/* This is called from the context switch, so will be called from a
+	critical section.  xTaskGetTickCountFromISR() contains its own critical
+	section, and the ISR safe critical sections are not designed to nest,
+	so reset the critical section. */
+	portSET_INTERRUPT_MASK_FROM_ISR();
 	
 	/* Is there a SysTick interrupt pending? */
 	if( ( *pulInterruptCTRLState & ulSysTickPendingBit ) != 0UL )
