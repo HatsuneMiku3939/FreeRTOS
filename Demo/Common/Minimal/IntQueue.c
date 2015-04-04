@@ -1,6 +1,6 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.1.1 - Copyright (C) 2012 Real Time Engineers Ltd.
+
 
     ***************************************************************************
      *                                                                       *
@@ -40,15 +40,28 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 /*
@@ -217,7 +230,7 @@ void vStartInterruptQueueTasks( void )
 	xTaskCreate( prvHigherPriorityNormallyEmptyTask, ( signed portCHAR * ) "H2QRx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyEmptyTask2 );
 	xTaskCreate( prvLowerPriorityNormallyEmptyTask, ( signed portCHAR * ) "LQRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
 	xTaskCreate( prv1stHigherPriorityNormallyFullTask, ( signed portCHAR * ) "H1QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK1, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask1 );
-	xTaskCreate( prv2ndHigherPriorityNormallyFullTask, ( signed portCHAR * ) "H1QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask2 );
+	xTaskCreate( prv2ndHigherPriorityNormallyFullTask, ( signed portCHAR * ) "H2QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask2 );
 	xTaskCreate( prvLowerPriorityNormallyFullTask, ( signed portCHAR * ) "LQRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
 
 	/* Create the queues that are accessed by multiple tasks and multiple
@@ -280,7 +293,7 @@ static void prvQueueAccessLogError( unsigned portBASE_TYPE uxLine )
 
 static void prvHigherPriorityNormallyEmptyTask( void *pvParameters )
 {
-unsigned portBASE_TYPE uxRxed, ux, uxTask1, uxTask2, uxErrorCount1 = 0, uxErrorCount2 = 0;
+unsigned portBASE_TYPE uxRxed, ux, uxTask1, uxTask2, uxInterrupts, uxErrorCount1 = 0, uxErrorCount2 = 0;
 
 	/* The timer should not be started until after the scheduler has started.
 	More than one task is running this code so we check the parameter value
@@ -317,6 +330,7 @@ unsigned portBASE_TYPE uxRxed, ux, uxTask1, uxTask2, uxErrorCount1 = 0, uxErrorC
 
 				uxTask1 = 0;
 				uxTask2 = 0;
+				uxInterrupts = 0;
 
 				/* Loop through the array, checking that both tasks have
 				placed values into the array, and that no values are missing.
@@ -339,6 +353,10 @@ unsigned portBASE_TYPE uxRxed, ux, uxTask1, uxTask2, uxErrorCount1 = 0, uxErrorC
 						{
 							/* Value was placed into the array by task 2. */
 							uxTask2++;
+						}
+						else if( ucNormallyEmptyReceivedValues[ ux ] == intqSECOND_INTERRUPT )
+						{
+							uxInterrupts++;
 						}
 					}
 				}
@@ -369,6 +387,11 @@ unsigned portBASE_TYPE uxRxed, ux, uxTask1, uxTask2, uxErrorCount1 = 0, uxErrorC
 				else
 				{
 					uxErrorCount2 = 0;
+				}
+
+				if( uxInterrupts == 0 )
+				{
+					prvQueueAccessLogError( __LINE__ );
 				}
 
 				/* Clear the array again, ready to start a new cycle. */
@@ -441,7 +464,7 @@ unsigned portBASE_TYPE uxValue, uxRxed;
 
 static void prv1stHigherPriorityNormallyFullTask( void *pvParameters )
 {
-unsigned portBASE_TYPE uxValueToTx, ux;
+unsigned portBASE_TYPE uxValueToTx, ux, uxInterrupts;
 
 	/* The parameters are not being used so avoid compiler warnings. */
 	( void ) pvParameters;
@@ -499,6 +522,9 @@ unsigned portBASE_TYPE uxValueToTx, ux;
 			task recognises a time out when it is unsuspended. */
 			xWasSuspended = pdTRUE;
 
+			/* Check interrupts are also sending. */
+			uxInterrupts = 0U;
+
 			/* Start at 1 as we expect position 0 to be unused. */
 			for( ux = 1; ux < intqNUM_VALUES_TO_LOG; ux++ )
 			{
@@ -507,6 +533,17 @@ unsigned portBASE_TYPE uxValueToTx, ux;
 					/* A value was missing. */
 					prvQueueAccessLogError( __LINE__ );
 				}
+				else if( ucNormallyFullReceivedValues[ ux ] == intqSECOND_INTERRUPT )
+				{
+					uxInterrupts++;
+				}
+			}
+
+			if( uxInterrupts == 0 )
+			{
+				/* No writes from interrupts were found.  Are interrupts
+				actually running? */
+				prvQueueAccessLogError( __LINE__ );
 			}
 
 			/* Reset the array ready for the next cycle. */
