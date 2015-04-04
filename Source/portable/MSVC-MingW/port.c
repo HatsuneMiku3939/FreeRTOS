@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.1-rc1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -40,15 +40,28 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 /* Scheduler includes. */
@@ -77,7 +90,6 @@ static void prvProcessSimulatedInterrupts( void );
  * Interrupt handlers used by the kernel itself.  These are executed from the
  * simulated interrupt handler thread.
  */
-static unsigned long prvProcessDeleteThreadInterrupt( void );
 static unsigned long prvProcessYieldInterrupt( void );
 static unsigned long prvProcessTickInterrupt( void );
 
@@ -150,7 +162,7 @@ portTickType xMinimumWindowsBlockTime = ( portTickType ) 20;
 		{
 			Sleep( portTICK_RATE_MS );
 		}
-	
+
 		WaitForSingleObject( pvInterruptEventMutex, INFINITE );
 
 		/* The timer has expired, generate the simulated tick event. */
@@ -204,7 +216,6 @@ xThreadState *pxThreadState;
 	/* Install the interrupt handlers used by the scheduler itself. */
 	vPortSetInterruptHandler( portINTERRUPT_YIELD, prvProcessYieldInterrupt );
 	vPortSetInterruptHandler( portINTERRUPT_TICK, prvProcessTickInterrupt );
-	vPortSetInterruptHandler( portINTERRUPT_DELETE_THREAD, prvProcessDeleteThreadInterrupt );
 
 	/* Create the events and mutexes that are used to synchronise all the
 	threads. */
@@ -267,12 +278,6 @@ xThreadState *pxThreadState;
 	/* Would not expect to return from prvProcessSimulatedInterrupts(), so should 
 	not get here. */
 	return 0;
-}
-/*-----------------------------------------------------------*/
-
-static unsigned long prvProcessDeleteThreadInterrupt( void )
-{
-	return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
@@ -361,15 +366,7 @@ void *pvObjectList[ 2 ];
 			{
 				/* Suspend the old thread. */
 				pxThreadState = ( xThreadState *) *( ( unsigned long * ) pvOldCurrentTCB );
-
-				if( ( ulSwitchRequired & ( 1 << portINTERRUPT_DELETE_THREAD ) ) != pdFALSE )
-				{
-					TerminateThread( pxThreadState->pvThread, 0 );
-				}
-				else
-				{
-					SuspendThread( pxThreadState->pvThread );
-				}							
+				SuspendThread( pxThreadState->pvThread );
 
 				/* Obtain the state of the task now selected to enter the 
 				Running state. */
@@ -387,23 +384,13 @@ void vPortDeleteThread( void *pvTaskToDelete )
 {
 xThreadState *pxThreadState;
 
-	if( pvTaskToDelete == pxCurrentTCB )
-	{
-		/* The task is deleting itself, and so the thread that is running now
-		is also to be deleted.  This has to be deferred until this thread is
-		no longer running, so its done in the simulated interrupt handler thread. */
-		vPortGenerateSimulatedInterrupt( portINTERRUPT_DELETE_THREAD );
-	}
-	else
-	{
-		WaitForSingleObject( pvInterruptEventMutex, INFINITE );
+	WaitForSingleObject( pvInterruptEventMutex, INFINITE );
 
-		/* Find the handle of the thread being deleted. */
-		pxThreadState = ( xThreadState * ) ( *( unsigned long *) pvTaskToDelete );
-		TerminateThread( pxThreadState->pvThread, 0 );
+	/* Find the handle of the thread being deleted. */
+	pxThreadState = ( xThreadState * ) ( *( unsigned long *) pvTaskToDelete );
+	TerminateThread( pxThreadState->pvThread, 0 );
 
-		ReleaseMutex( pvInterruptEventMutex );
-	}
+	ReleaseMutex( pvInterruptEventMutex );
 }
 /*-----------------------------------------------------------*/
 

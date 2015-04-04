@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.1 - Copyright (C) 2012 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -40,15 +40,28 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 /*-----------------------------------------------------------
@@ -121,7 +134,7 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 	
 	/* Offset added to account for the way the MCU uses the stack on entry/exit
 	of interrupts, and to ensure alignment. */
-	pxTopOfStack -= 2;
+	pxTopOfStack--;
 		
 	*pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
 	pxTopOfStack--;
@@ -133,7 +146,7 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
 	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
 
-	/* A save method is being used that requiers each task to maintain its
+	/* A save method is being used that requires each task to maintain its
 	own exec return value. */
 	pxTopOfStack--;
 	*pxTopOfStack = portINITIAL_EXEC_RETURN;

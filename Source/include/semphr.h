@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.1 - Copyright (C) 2012 Real Time Engineers Ltd.
 
 
     ***************************************************************************
@@ -40,22 +40,35 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 #ifndef SEMAPHORE_H
 #define SEMAPHORE_H
 
 #ifndef INC_FREERTOS_H
-	#error "#include FreeRTOS.h" must appear in source files before "#include semphr.h"
+	#error "include FreeRTOS.h" must appear in source files before "include semphr.h"
 #endif
 
 #include "queue.h"
@@ -718,7 +731,22 @@ typedef xQueueHandle xSemaphoreHandle;
  * \page vSemaphoreDelete vSemaphoreDelete
  * \ingroup Semaphores
  */
-#define vSemaphoreDelete( xSemaphore ) vQueueDelete( ( xQueueHandle ) xSemaphore )
+#define vSemaphoreDelete( xSemaphore ) vQueueDelete( ( xQueueHandle ) ( xSemaphore ) )
+
+/**
+ * semphr.h
+ * <pre>xTaskHandle xSemaphoreGetMutexHolder( xSemaphoreHandle xMutex );</pre>
+ *
+ * If xMutex is indeed a mutex type semaphore, return the current mutex holder.
+ * If xMutex is not a mutex type semaphore, or the mutex is available (not held
+ * by a task), return NULL.
+ *
+ * Note: This Is is a good way of determining if the calling task is the mutex 
+ * holder, but not a good way of determining the identity of the mutex holder as
+ * the holder may change between the function exiting and the returned value
+ * being tested.
+ */
+#define xSemaphoreGetMutexHolder( xSemaphore ) xQueueGetMutexHolder( ( xSemaphore ) )
 
 #endif /* SEMAPHORE_H */
 

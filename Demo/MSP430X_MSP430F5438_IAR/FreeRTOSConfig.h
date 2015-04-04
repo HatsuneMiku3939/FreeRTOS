@@ -1,6 +1,6 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.1.1 - Copyright (C) 2012 Real Time Engineers Ltd.
+
 
     ***************************************************************************
      *                                                                       *
@@ -40,15 +40,28 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 #ifndef FREERTOS_CONFIG_H
@@ -69,7 +82,8 @@
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				1
-#define configCPU_CLOCK_HZ				( 25000000UL )	
+#define configCPU_CLOCK_HZ				( 25000000UL )
+#define configLFXT_CLOCK_HZ       		( 32768L )
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
 #define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 10 * 1024 ) )
@@ -125,7 +139,7 @@ The timer is configured to interrupt each time it overflows so a count of
 overflows can be kept - that way a 32 bit time value can be constructed from
 the timers current count value and the number of overflows. */
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vConfigureTimerForRunTimeStats()
-	
+
 /* Construct a 32 bit time value for use as the run time stats time base.  This
 comes from the current value of a 16 bit timer combined with the number of times
 the timer has overflowed. */

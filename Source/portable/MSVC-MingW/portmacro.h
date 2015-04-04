@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.1.0 - Copyright (C) 2011 Real Time Engineers Ltd.
+    FreeRTOS V7.1.1-rc1 - Copyright (C) 2011 Real Time Engineers Ltd.
 	
 
     ***************************************************************************
@@ -40,15 +40,28 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
+    
+    ***************************************************************************
+     *                                                                       *
+     *    Having a problem?  Start by reading the FAQ "My application does   *
+     *    not run, what could be wrong?                                      *
+     *                                                                       *
+     *    http://www.FreeRTOS.org/FAQHelp.html                               *
+     *                                                                       *
+    ***************************************************************************
 
-    http://www.FreeRTOS.org - Documentation, latest information, license and
-    contact details.
+    
+    http://www.FreeRTOS.org - Documentation, training, latest information, 
+    license and contact details.
+    
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    http://www.SafeRTOS.com - A version that is certified for use in safety
-    critical systems.
-
-    http://www.OpenRTOS.com - Commercial support, development, porting,
-    licensing and training services.
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
+    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
+    provide a safety engineered and independently SIL3 certified version under 
+    the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
 #ifndef PORTMACRO_H
@@ -84,7 +97,7 @@
 #define portYIELD()					vPortGenerateSimulatedInterrupt( portINTERRUPT_YIELD )
 
 void vPortDeleteThread( void *pvThreadToDelete );
-#define traceTASK_DELETE( pxTCB )	vPortDeleteThread( pxTCB )
+#define portCLEAN_UP_TCB( pxTCB )	vPortDeleteThread( pxTCB )
 #define portDISABLE_INTERRUPTS()
 #define portENABLE_INTERRUPTS()
 
@@ -102,7 +115,6 @@ void vPortExitCritical( void );
 
 #define portINTERRUPT_YIELD				( 0UL )
 #define portINTERRUPT_TICK				( 1UL )
-#define portINTERRUPT_DELETE_THREAD		( 2UL )
 
 /* 
  * Raise a simulated interrupt represented by the bit mask in ulInterruptMask.
