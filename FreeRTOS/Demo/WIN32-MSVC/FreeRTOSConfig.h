@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -44,15 +46,15 @@
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
     
-    http://www.FreeRTOS.org - Documentation, training, latest information, 
-    license and contact details.
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
+    and contact details.  
     
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
@@ -104,7 +106,7 @@
 #define configTIMER_QUEUE_LENGTH		20
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE * 2 )
 
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 7 )
+#define configMAX_PRIORITIES			( 7 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 
@@ -127,8 +129,14 @@ to exclude the API function. */
 #define INCLUDE_xTimerGetTimerDaemonTaskHandle	1
 #define INCLUDE_xTaskGetIdleTaskHandle		1
 #define INCLUDE_pcTaskGetTaskName			1
+#define INCLUDE_eTaskStateGet				1
 
 extern void vAssertCalled( void );
 #define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled()
+
+/* configUSE_PORT_OPTIMISED_TASK_SELECTION is only available in the MSVC 
+version of the Win32 simulator projects.  It will be ignored in the GCC
+version. */
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION 1
 
 #endif /* FREERTOS_CONFIG_H */

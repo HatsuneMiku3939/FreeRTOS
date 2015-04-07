@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -44,15 +46,15 @@
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
     
-    http://www.FreeRTOS.org - Documentation, training, latest information, 
-    license and contact details.
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
+    and contact details.  
     
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
@@ -82,7 +84,7 @@
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				0
 #define configUSE_TICK_HOOK				1
-#define configCPU_CLOCK_HZ				( ( unsigned long ) 50000000 )
+#define configCPU_CLOCK_HZ				( 50000000UL )
 #define configTICK_RATE_HZ				( ( portTickType ) 1000 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 80 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 24000 ) )
@@ -98,7 +100,7 @@
 #define configGENERATE_RUN_TIME_STATS	1
 #define configUSE_MALLOC_FAILED_HOOK	1
 
-#define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 5 )
+#define configMAX_PRIORITIES			( 5UL )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 /* Set the following definitions to 1 to include the API function, or zero
@@ -125,5 +127,9 @@ extern volatile unsigned long ulHighFrequencyTimerTicks;
 to zero. */
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() ( ulHighFrequencyTimerTicks = 0UL )
 #define portGET_RUN_TIME_COUNTER_VALUE()	ulHighFrequencyTimerTicks
+
+/* Use Cortex-M3 optimised task selection rather than the generic C code
+version. */
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION	1
 
 #endif /* FREERTOS_CONFIG_H */
