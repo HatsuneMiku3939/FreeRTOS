@@ -4,10 +4,12 @@
  * The FreeRTOS+FAT SL license terms are different to the FreeRTOS license 
  * terms.
  * 
- * FreeRTOS+FAT SL uses a dual license model that allows the software to be used
- * under a pure GPL open source license (as opposed to the modified GPL licence
- * under which FreeRTOS is distributed) or a commercial license.  Details of 
- * both license options follow:
+ * FreeRTOS+FAT SL uses a dual license model that allows the software to be used 
+ * under a standard GPL open source license, or a commercial license.  The 
+ * standard GPL license (unlike the modified GPL license under which FreeRTOS 
+ * itself is distributed) requires that all software statically linked with 
+ * FreeRTOS+FAT SL is also distributed under the same GPL V2 license terms.  
+ * Details of both license options follow:
  * 
  * - Open source licensing -
  * FreeRTOS+FAT SL is a free download and may be used, modified, evaluated and
@@ -70,7 +72,7 @@ uint8_t _f_result ( uint8_t testnum, uint32_t result )
   }
   else
   {
-    printf( "FAILED! Error code: %u\r\n", result );
+    printf( "FAILED! Error code: %u\r\n", ( unsigned int ) result );
     all_tests_passed = 0u;
   }
 

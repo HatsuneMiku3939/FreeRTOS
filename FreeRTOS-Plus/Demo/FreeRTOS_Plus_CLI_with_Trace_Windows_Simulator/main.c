@@ -1,48 +1,37 @@
 /*
-    FreeRTOS V7.4.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.0 - Copyright (C) 2013 Real Time Engineers Ltd.
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
 
-    >>>>>>NOTE<<<<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.
+    >>! NOTE: The modification to the GPL is included to allow you to distribute
+    >>! a combined work that includes FreeRTOS without being obliged to provide
+    >>! the source code for proprietary components outside of the FreeRTOS
+    >>! kernel.
 
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-    details. You should have received a copy of the GNU General Public License
-    and the FreeRTOS license exception along with FreeRTOS; if not it can be
-    viewed here: http://www.freertos.org/a00114.html and also obtained by
-    writing to Real Time Engineers Ltd., contact details for whom are available
-    on the FreeRTOS WEB site.
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
 
@@ -55,21 +44,22 @@
      *                                                                       *
     ***************************************************************************
 
-
     http://www.FreeRTOS.org - Documentation, books, training, latest versions,
     license and Real Time Engineers Ltd. contact details.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool, and our new
-    fully thread aware and reentrant UDP/IP stack.
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
 
     http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
-    Integrity Systems, who sell the code with commercial support,
-    indemnification and middleware, under the OpenRTOS brand.
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
 
     http://www.SafeRTOS.com - High Integrity Systems also provide a safety
     engineered and independently SIL3 certified version for use in safety and
     mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 /*
@@ -84,6 +74,9 @@
  * meaningful units.  See the documentation page for the Windows simulator for
  * an explanation of the slow timing:
  * http://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
+ *
+ * Documentation for this demo can be found on:
+ * http://www.freertos.org/FreeRTOS-Plus/FreeRTOS_Plus_Trace/Free_RTOS_Plus_Trace_CLI_Example.shtml
  ******************************************************************************
  *
  * This is a simple FreeRTOS Windows simulator project that makes it easy to
@@ -110,11 +103,6 @@
  * then consumes the message from the queue and prints "message received" to
  * the screen before returning to block on the queue once again.  This
  * sequencing is clearly visible in the recorded FreeRTOS+Trace data.
- *
- * Finally, a trace monitoring task is also created that prints out a message
- * when it determines that the status of the trace has changed since it last
- * executed.  It prints out a message when the trace has started, when the
- * trace has stopped, and periodically when the trace is executing.
  *
  */
 
@@ -167,11 +155,22 @@ extern void vRegisterCLICommands( void );
 /* The queue used by both tasks. */
 static xQueueHandle xQueue = NULL;
 
+/* The user trace event posted to the trace recording on each tick interrupt.
+Note tick events will not appear in the trace recording with regular period
+because this project runs in a Windows simulator, and does not therefore
+exhibit deterministic behaviour. */
+traceLabel xTickTraceUserEvent;
+
 /*-----------------------------------------------------------*/
 
 int main( void )
 {
 const uint32_t ulLongTime_ms = 250UL;
+
+	/* Initialise the trace recorder and create the label used to post user
+	events to the trace recording on each tick interrupt. */
+	vTraceInitTraceData();
+	xTickTraceUserEvent = xTraceOpenLabel( "tick" );
 
 	/* Create the queue used to pass messages from the queue send task to the
 	queue receive task. */
@@ -194,10 +193,6 @@ const uint32_t ulLongTime_ms = 250UL;
 	/* Create the task that handles the CLI on a UDP port.  The port number
 	is set using the configUDP_CLI_PORT_NUMBER setting in FreeRTOSConfig.h. */
 	xTaskCreate( vUDPCommandInterpreterTask, ( signed char * ) "CLI", configMINIMAL_STACK_SIZE, NULL, mainUDP_CLI_TASK_PRIORITY, NULL );
-
-	/* Create the task that monitors the trace recording status, printing
-	periodic information to the display. */
-	vTraceStartStatusMonitor();
 
 	/* Register commands with the FreeRTOS+CLI command interpreter. */
 	vRegisterCLICommands();
@@ -293,4 +288,13 @@ const unsigned long ulLongSleep = 1000UL;
 	}
 }
 /*-----------------------------------------------------------*/
+
+void vApplicationTickHook( void )
+{
+	/* Write a user event to the trace log.  
+	Note tick events will not appear in the trace recording with regular period
+	because this project runs in a Windows simulator, and does not therefore
+	exhibit deterministic behaviour. */
+	vTraceUserEvent( xTickTraceUserEvent );					
+}
 

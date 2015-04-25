@@ -1,48 +1,37 @@
 /*
-    FreeRTOS V7.4.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.0 - Copyright (C) 2013 Real Time Engineers Ltd.
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
 
-    >>>>>>NOTE<<<<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.
+    >>! NOTE: The modification to the GPL is included to allow you to distribute
+    >>! a combined work that includes FreeRTOS without being obliged to provide
+    >>! the source code for proprietary components outside of the FreeRTOS
+    >>! kernel.
 
     FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
-    details. You should have received a copy of the GNU General Public License
-    and the FreeRTOS license exception along with FreeRTOS; if not it can be
-    viewed here: http://www.freertos.org/a00114.html and also obtained by
-    writing to Real Time Engineers Ltd., contact details for whom are available
-    on the FreeRTOS WEB site.
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
 
@@ -55,21 +44,22 @@
      *                                                                       *
     ***************************************************************************
 
-
-    http://www.FreeRTOS.org - Documentation, books, training, latest versions, 
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
     license and Real Time Engineers Ltd. contact details.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool, and our new
-    fully thread aware and reentrant UDP/IP stack.
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
 
-    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High 
-    Integrity Systems, who sell the code with commercial support, 
-    indemnification and middleware, under the OpenRTOS brand.
-    
-    http://www.SafeRTOS.com - High Integrity Systems also provide a safety 
-    engineered and independently SIL3 certified version for use in safety and 
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
     mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 #ifndef PORTMACRO_H
@@ -122,20 +112,39 @@ extern "C" {
 #define portSW0_BIT					( 0x01 << 8 )
 
 /* This clears the IPL bits, then sets them to 
-configMAX_SYSCALL_INTERRUPT_PRIORITY.  This function should not be called
-from an interrupt, so therefore will not be called with an IPL setting
-above configMAX_SYSCALL_INTERRUPT_PRIORITY.  Therefore, when used correctly, the 
-instructions in this macro can only result in the IPL being raised, and 
-therefore never lowered. */
-#define portDISABLE_INTERRUPTS()										\
-{																		\
-unsigned long ulStatus;													\
-																		\
-	/* Mask interrupts at and below the kernel interrupt priority. */	\
-	ulStatus = _CP0_GET_STATUS();										\
-	ulStatus &= ~portALL_IPL_BITS;										\
-	_CP0_SET_STATUS( ( ulStatus | ( configMAX_SYSCALL_INTERRUPT_PRIORITY << portIPL_SHIFT ) ) ); \
-}
+configMAX_SYSCALL_INTERRUPT_PRIORITY.  	An extra check is performed if 
+configASSERT() is defined to ensure an assertion handler does not inadvertently 
+attempt to lower the IPL when the call to assert was triggered because the IPL 
+value was found to be above	configMAX_SYSCALL_INTERRUPT_PRIORITY when an ISR
+safe FreeRTOS API function was executed.  ISR safe FreeRTOS API functions are
+those that end in FromISR.  FreeRTOS maintains a separate interrupt API to
+ensure API function and interrupt entry is as fast and as simple as possible. */
+#ifdef configASSERT
+	#define portDISABLE_INTERRUPTS()											\
+	{																			\
+	unsigned long ulStatus;														\
+																				\
+		/* Mask interrupts at and below the kernel interrupt priority. */		\
+		ulStatus = _CP0_GET_STATUS();											\
+																				\
+		/* Is the current IPL below configMAX_SYSCALL_INTERRUPT_PRIORITY? */	\
+		if( ( ( ulStatus & portALL_IPL_BITS ) >> portIPL_SHIFT ) < configMAX_SYSCALL_INTERRUPT_PRIORITY )	\
+		{																		\
+			ulStatus &= ~portALL_IPL_BITS;										\
+			_CP0_SET_STATUS( ( ulStatus | ( configMAX_SYSCALL_INTERRUPT_PRIORITY << portIPL_SHIFT ) ) ); \
+		}																		\
+	}
+#else /* configASSERT */
+	#define portDISABLE_INTERRUPTS()										\
+	{																		\
+	unsigned long ulStatus;													\
+																			\
+		/* Mask interrupts at and below the kernel interrupt priority. */	\
+		ulStatus = _CP0_GET_STATUS();										\
+		ulStatus &= ~portALL_IPL_BITS;										\
+		_CP0_SET_STATUS( ( ulStatus | ( configMAX_SYSCALL_INTERRUPT_PRIORITY << portIPL_SHIFT ) ) ); \
+	}
+#endif /* configASSERT */
 
 #define portENABLE_INTERRUPTS()											\
 {																		\
@@ -182,13 +191,18 @@ extern void vPortClearInterruptMaskFromISR( unsigned portBASE_TYPE );
 
 #define portYIELD()								\
 {												\
-unsigned long ulStatus;							\
+unsigned long ulCause;							\
 												\
 	/* Trigger software interrupt. */			\
-	ulStatus = _CP0_GET_CAUSE();				\
-	ulStatus |= portSW0_BIT;					\
-	_CP0_SET_CAUSE( ulStatus );					\
+	ulCause = _CP0_GET_CAUSE();					\
+	ulCause |= portSW0_BIT;						\
+	_CP0_SET_CAUSE( ulCause );					\
 }
+
+#ifdef configASSERT
+	#define portCURRENT_INTERRUPT_PRIORITY ( ( _CP0_GET_STATUS() & portALL_IPL_BITS ) >> portIPL_SHIFT )
+	#define portASSERT_IF_INTERRUPT_PRIORITY_INVALID() configASSERT( portCURRENT_INTERRUPT_PRIORITY <= configMAX_SYSCALL_INTERRUPT_PRIORITY )
+#endif /* configASSERT */
 
 
 #define portNOP()	asm volatile ( 	"nop" )

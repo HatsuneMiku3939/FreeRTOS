@@ -97,18 +97,6 @@
     <ClCompile Include="..\Common\Minimal\QueueSet.c">
       <Filter>Demo App Source\Common Demo Tasks</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\FreeRTOS-Plus\FreeRTOS-Plus-Trace\trcUser.c">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\FreeRTOS-Plus\FreeRTOS-Plus-Trace\trcBase.c">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\FreeRTOS-Plus\FreeRTOS-Plus-Trace\trcKernel.c">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\FreeRTOS-Plus\FreeRTOS-Plus-Trace\trcPort.c">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
-    </ClCompile>
     <ClCompile Include="Run-time-stats-utils.c">
       <Filter>Demo App Source</Filter>
     </ClCompile>
@@ -117,6 +105,30 @@
     </ClCompile>
     <ClCompile Include="..\..\Source\croutine.c">
       <Filter>FreeRTOS Source\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\trcKernel.c">
+      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\trcUser.c">
+      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\trcBase.c">
+      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\trcKernelPort.c">
+      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\FreeRTOS-Plus\Source\FreeRTOS-Plus-Trace\trcHardwarePort.c">
+      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Common\Minimal\QueueOverwrite.c">
+      <Filter>Demo App Source\Common Demo Tasks</Filter>
+    </ClCompile>
+    <ClCompile Include="main_full.c">
+      <Filter>Demo App Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main_blinky.c">
+      <Filter>Demo App Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -156,11 +168,11 @@
     <ClInclude Include="..\..\Source\include\timer_test.h">
       <Filter>FreeRTOS Source\Include</Filter>
     </ClInclude>
-    <ClInclude Include="Trace_Recorder_Configuration\trcConfig.h">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    <ClInclude Include="Trace_Recorder_Configuration\trcHardwarePort.h">
+      <Filter>Configuration Files</Filter>
     </ClInclude>
-    <ClInclude Include="Trace_Recorder_Configuration\trcPort.h">
-      <Filter>Demo App Source\FreeRTOS+Trace Recorder</Filter>
+    <ClInclude Include="Trace_Recorder_Configuration\trcConfig.h">
+      <Filter>Configuration Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
