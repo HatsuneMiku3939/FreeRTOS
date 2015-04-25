@@ -293,7 +293,7 @@ void vTickHandler( void )
 
     /* Increment the RTOS tick count, then look for the highest priority
        task that is ready to run. */
-    vTaskIncrementTick();
+    xTaskIncrementTick();
 
     // The cooperative scheduler requires a normal simple Tick ISR to
     // simply increment the system tick.
