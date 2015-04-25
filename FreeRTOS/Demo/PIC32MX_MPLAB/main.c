@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -229,7 +229,7 @@ volatile unsigned long ul = 0;
 	( void ) pcFile;
 	( void ) ulLine;
 
-	taskENTER_CRITICAL();
+	__asm volatile( "di" );
 	{
 		/* Set ul to a non-zero value using the debugger to step out of this
 		function. */
@@ -238,5 +238,5 @@ volatile unsigned long ul = 0;
 			portNOP();
 		}
 	}
-	taskEXIT_CRITICAL();
+	__asm volatile( "ei" );
 }

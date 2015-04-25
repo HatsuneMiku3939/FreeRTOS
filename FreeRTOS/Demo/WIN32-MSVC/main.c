@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -80,11 +80,10 @@
  * application.  It is provided as a convenient development and demonstration
  * test bed only.  This was tested using Windows XP on a dual core laptop.
  *
- * In this example, one simulated millisecond will take approximately 40ms to
- * execute, and Windows will not be running the FreeRTOS simulator threads
- * continuously, so the timing information in the FreeRTOS+Trace logs have no
- * meaningful units.  See the documentation page for the Windows simulator for
- * an explanation of the slow timing:
+ * Windows will not be running the FreeRTOS simulator threads continuously, so 
+ * the timing information in the FreeRTOS+Trace logs have no meaningful units.  
+ * See the documentation page for the Windows simulator for an explanation of 
+ * the slow timing:
  * http://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
  * - READ THE WEB DOCUMENTATION FOR THIS PORT FOR MORE INFORMATION ON USING IT -
  *******************************************************************************

@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -114,10 +114,10 @@ struct freertos_sockaddr
 
 	#define FreeRTOS_inet_ntoa( ulIPAddress, pucBuffer )									\
 										sprintf( ( char * ) ( pucBuffer ), "%d.%d.%d.%d",	\
-											( ( ulIPAddress ) & 0xffUL ),					\
-											( ( ( ulIPAddress ) >> 8UL ) & 0xffUL ),		\
-											( ( ( ulIPAddress ) >> 16UL ) & 0xffUL ),		\
-											( ( ( ulIPAddress ) >> 24UL ) & 0xffUL ) )
+											( int ) ( ( ulIPAddress ) & 0xffUL ),			\
+											( int ) ( ( ( ulIPAddress ) >> 8UL ) & 0xffUL ),\
+											( int ) ( ( ( ulIPAddress ) >> 16UL ) & 0xffUL ),\
+											( int ) ( ( ( ulIPAddress ) >> 24UL ) & 0xffUL ) )
 
 #else /* ipconfigBYTE_ORDER */
 

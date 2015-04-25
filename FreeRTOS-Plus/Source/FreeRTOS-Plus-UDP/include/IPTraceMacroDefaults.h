@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -164,7 +164,7 @@ http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_UDP/UDP_IP_Trace.shtml */
 #endif
 
 #ifndef	iptraceWAITING_FOR_TX_DMA_DESCRIPTOR
-	#define iptraceWAITING_FOR_TX_DMA_DESCRIPTOR
+	#define iptraceWAITING_FOR_TX_DMA_DESCRIPTOR()
 #endif
 
 #ifndef ipconfigINCLUDE_EXAMPLE_FREERTOS_PLUS_TRACE_CALLS
@@ -174,4 +174,21 @@ http://www.FreeRTOS.org/FreeRTOS-Plus/FreeRTOS_Plus_UDP/UDP_IP_Trace.shtml */
 #ifndef iptraceFAILED_TO_NOTIFY_SELECT_GROUP
 	#define iptraceFAILED_TO_NOTIFY_SELECT_GROUP( xSocket )
 #endif
+
+#ifndef iptraceRECVFROM_TIMEOUT
+	#define iptraceRECVFROM_TIMEOUT()
+#endif
+
+#ifndef iptraceNO_BUFFER_FOR_SENDTO
+	#define iptraceNO_BUFFER_FOR_SENDTO()
+#endif
+
+#ifndef iptraceSENDTO_SOCKET_NOT_BOUND
+	#define iptraceSENDTO_SOCKET_NOT_BOUND()
+#endif
+
+#ifndef iptraceSENDTO_DATA_TOO_LONG
+	#define iptraceSENDTO_DATA_TOO_LONG()
+#endif
+
 #endif /* UDP_TRACE_MACRO_DEFAULTS_H */

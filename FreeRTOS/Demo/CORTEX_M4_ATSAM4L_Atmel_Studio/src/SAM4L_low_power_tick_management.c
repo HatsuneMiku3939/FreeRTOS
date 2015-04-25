@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -253,7 +253,7 @@ asynchronous timer (AST), as the tick is generated from the low power AST and
 not the SysTick as would normally be the case on a Cortex-M. */
 void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime )
 {
-uint32_t ulAlarmValue, ulCompleteTickPeriods;
+uint32_t ulAlarmValue, ulCompleteTickPeriods, ulInterruptStatus;
 eSleepModeStatus eSleepAction;
 portTickType xModifiableIdleTime;
 enum sleepmgr_mode xSleepMode;
@@ -284,8 +284,7 @@ enum sleepmgr_mode xSleepMode;
 
 	/* Enter a critical section but don't use the taskENTER_CRITICAL() method as
 	that will mask interrupts that should exit sleep mode. */
-	__asm volatile( "cpsid i		\n\t"
-					"dsb			\n\t" );
+	ulInterruptStatus = cpu_irq_save();
 
 	/* The tick flag is set to false before sleeping.  If it is true when sleep
 	mode is exited then sleep mode was probably exited because the tick was
@@ -303,7 +302,7 @@ enum sleepmgr_mode xSleepMode;
 
 		/* Re-enable interrupts - see comments above the cpsid instruction()
 		above. */
-		__asm volatile( "cpsie i" );
+		cpu_irq_restore( ulInterruptStatus );
 	}
 	else
 	{
@@ -345,7 +344,7 @@ enum sleepmgr_mode xSleepMode;
 
 		/* Re-enable interrupts - see comments above the cpsid instruction()
 		above. */
-		__asm volatile( "cpsie i" );
+		cpu_irq_restore( ulInterruptStatus );
 
 		if( ulTickFlag != pdFALSE )
 		{

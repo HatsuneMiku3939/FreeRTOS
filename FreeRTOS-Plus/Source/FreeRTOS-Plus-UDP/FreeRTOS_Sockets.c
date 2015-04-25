@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -932,19 +932,21 @@ uint16_t usReturn;
 
 	/* Assign the next port in the range. */
 	taskENTER_CRITICAL();
-		usNextPortToUse++;
-	taskEXIT_CRITICAL();
-
-	/* Has it overflowed? */
-	if( usNextPortToUse == 0U )
 	{
-		/* Don't go right back to the start of the dynamic/private port
-		range numbers as any persistent sockets are likely to have been
-		create first so the early port numbers may still be in use. */
-		usNextPortToUse = socketAUTO_PORT_ALLOCATION_RESET_NUMBER;
-	}
+		usNextPortToUse++;
 
-	usReturn = FreeRTOS_htons( usNextPortToUse );
+		/* Has it overflowed? */
+		if( usNextPortToUse == 0U )
+		{
+			/* Don't go right back to the start of the dynamic/private port
+			range numbers as any persistent sockets are likely to have been
+			create first so the early port numbers may still be in use. */
+			usNextPortToUse = socketAUTO_PORT_ALLOCATION_RESET_NUMBER;
+		}
+
+		usReturn = FreeRTOS_htons( usNextPortToUse );
+	}
+	taskEXIT_CRITICAL();
 
 	return usReturn;
 } /* Tested */

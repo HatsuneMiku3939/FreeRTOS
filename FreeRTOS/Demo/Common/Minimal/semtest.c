@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -135,7 +135,8 @@ const portTickType xBlockTime = ( portTickType ) 100;
 	if( pxFirstSemaphoreParameters != NULL )
 	{
 		/* Create the semaphore used by the first two tasks. */
-		vSemaphoreCreateBinary( pxFirstSemaphoreParameters->xSemaphore );
+		pxFirstSemaphoreParameters->xSemaphore = xSemaphoreCreateBinary();
+		xSemaphoreGive( pxFirstSemaphoreParameters->xSemaphore );
 
 		if( pxFirstSemaphoreParameters->xSemaphore != NULL )
 		{
@@ -159,7 +160,8 @@ const portTickType xBlockTime = ( portTickType ) 100;
 	pxSecondSemaphoreParameters = ( xSemaphoreParameters * ) pvPortMalloc( sizeof( xSemaphoreParameters ) );
 	if( pxSecondSemaphoreParameters != NULL )
 	{
-		vSemaphoreCreateBinary( pxSecondSemaphoreParameters->xSemaphore );
+		pxSecondSemaphoreParameters->xSemaphore = xSemaphoreCreateBinary();
+		xSemaphoreGive( pxSecondSemaphoreParameters->xSemaphore );
 
 		if( pxSecondSemaphoreParameters->xSemaphore != NULL )
 		{

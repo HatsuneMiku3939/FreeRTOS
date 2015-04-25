@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -153,7 +153,7 @@ int main( void )
 static void prvCheckTask( void *pvParameters )
 {
 portTickType xNextWakeTime;
-const portTickType xCycleFrequency = 5000 / portTICK_RATE_MS;
+const portTickType xCycleFrequency = 2500 / portTICK_RATE_MS;
 char *pcStatusMessage = "OK";
 
 	/* Just to remove compiler warning. */

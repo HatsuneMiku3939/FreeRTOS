@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -60,6 +60,7 @@
 
 /* FreeRTOS+UDP includes. */
 #include "FreeRTOS_UDP_IP.h"
+#include "FreeRTOS_IP_Private.h"
 #include "NetworkInterface.h"
 
 /* For an Ethernet interrupt to be able to obtain a network buffer there must

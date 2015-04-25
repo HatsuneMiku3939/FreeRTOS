@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -156,7 +156,7 @@ uint32_t ulCount = 0UL;
 					
 					/* Short delay to prevent the messages streaming up the
 					console too quickly. */
-					vTaskDelay( 5 );
+					vTaskDelay( 50 );
 					ulCount++;
 
 				} while( ( lReturned != SOCKET_ERROR ) && ( ulCount < 10UL ) );
@@ -166,7 +166,7 @@ uint32_t ulCount = 0UL;
 			closesocket( xClientSocket );
 
 			/* Delay for a short time before starting over. */
-			vTaskDelay( 50 );
+			vTaskDelay( 250 );
 		}
 	}
 }

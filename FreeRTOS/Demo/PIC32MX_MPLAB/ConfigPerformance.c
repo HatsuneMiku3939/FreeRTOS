@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -112,7 +112,7 @@ unsigned long ulStatus;
 	unsigned long ulCacheStatus;
 #endif
 
-	/* Disable interrupts - not taskDISABLE_INTERRUPTS() cannot be used here as
+	/* Disable interrupts - note taskDISABLE_INTERRUPTS() cannot be used here as
 	FreeRTOS does not globally disable interrupt. */
 	ulStatus = _CP0_GET_STATUS();
 	_CP0_SET_STATUS( ulStatus & ~hwGLOBAL_INTERRUPT_BIT );
@@ -227,7 +227,7 @@ __OSCCONbits_t xOSCCONBits;
 
 static void prvConfigureWaitStates( void )
 {
-unsigned long ulInterruptStatus, ulSystemClock = configCPU_CLOCK_HZ - 1;
+unsigned long ulSystemClock = configCPU_CLOCK_HZ - 1;
 unsigned long ulWaitStates, ulCHECONVal;
 
 	/* 1 wait state for every hwMAX_FLASH_SPEED MHz. */
