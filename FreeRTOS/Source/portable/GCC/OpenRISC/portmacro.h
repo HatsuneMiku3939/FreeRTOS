@@ -98,7 +98,7 @@ extern "C" {
 /*-----------------------------------------------------------*/
 #define portSTACK_GROWTH                -1
 #define portTICK_RATE_MS                ( \
-	(portTickType) 1000 / configSYSTICK_CLOCK_HZ \
+	(portTickType) 1000 / configTICK_RATE_HZ \
 )
 #define portBYTE_ALIGNMENT              4
 #define portCRITICAL_NESTING_IN_TCB     1
