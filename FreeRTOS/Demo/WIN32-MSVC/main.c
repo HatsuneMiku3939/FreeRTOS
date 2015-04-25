@@ -1,7 +1,7 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V7.4.0 - Copyright (C) 2013 Real Time Engineers Ltd.
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
     http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
@@ -29,20 +29,23 @@
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
     Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
+
+    >>>>>>NOTE<<<<<< The modification to the GPL is included to allow you to
     distribute a combined work that includes FreeRTOS without being obliged to
     provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    kernel.
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+    details. You should have received a copy of the GNU General Public License
+    and the FreeRTOS license exception along with FreeRTOS; if not itcan be
+    viewed here: http://www.freertos.org/a00114.html and also obtained by
+    writing to Real Time Engineers Ltd., contact details for whom are available
+    on the FreeRTOS WEB site.
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,18 +55,21 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions, 
+    license and Real Time Engineers Ltd. contact details.
+
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, and our new
+    fully thread aware and reentrant UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High 
+    Integrity Systems, who sell the code with commercial support, 
+    indemnification and middleware, under the OpenRTOS brand.
+    
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety 
+    engineered and independently SIL3 certified version for use in safety and 
+    mission critical applications that require provable dependability.
 */
 
 /*
@@ -96,6 +102,7 @@
 
 /* Standard includes. */
 #include <stdio.h>
+#include <stdlib.h>
 
 /* Kernel includes. */
 #include <FreeRTOS.h>
@@ -117,18 +124,19 @@
 #include "countsem.h"
 #include "death.h"
 #include "dynamic.h"
+#include "QueueSet.h"
 
 /* Priorities at which the tasks are created. */
-#define mainCHECK_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
-#define mainQUEUE_POLL_PRIORITY		( tskIDLE_PRIORITY + 1 )
-#define mainSEM_TEST_PRIORITY		( tskIDLE_PRIORITY + 1 )
-#define mainBLOCK_Q_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define mainCREATOR_TASK_PRIORITY   ( tskIDLE_PRIORITY + 3 )
-#define mainFLASH_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
-#define mainuIP_TASK_PRIORITY		( tskIDLE_PRIORITY + 2 )
-#define mainINTEGER_TASK_PRIORITY   ( tskIDLE_PRIORITY )
-#define mainGEN_QUEUE_TASK_PRIORITY	( tskIDLE_PRIORITY )
-#define mainFLOP_TASK_PRIORITY		( tskIDLE_PRIORITY )
+#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 1 )
+#define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 1 )
+#define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
+#define mainBLOCK_Q_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainCREATOR_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+#define mainFLASH_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
+#define mainuIP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define mainINTEGER_TASK_PRIORITY		( tskIDLE_PRIORITY )
+#define mainGEN_QUEUE_TASK_PRIORITY		( tskIDLE_PRIORITY )
+#define mainFLOP_TASK_PRIORITY			( tskIDLE_PRIORITY )
 
 #define mainTIMER_TEST_PERIOD			( 50 )
 
@@ -165,6 +173,7 @@ int main( void )
 	vStartTimerDemoTask( mainTIMER_TEST_PERIOD );
 	vStartCountingSemaphoreTasks();
 	vStartDynamicPriorityTasks();
+	vStartQueueSetTasks();
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation.  This then allows them to 
@@ -175,6 +184,10 @@ int main( void )
 	/* Create the semaphore that will be deleted in the idle task hook.  This
 	is done purely to test the use of vSemaphoreDelete(). */
 	xMutexToDelete = xSemaphoreCreateMutex();
+
+	/* Start the trace recording - the recording is written to a file if
+	configASSERT() is called. */
+	vTraceStart();
 
 	/* Start the scheduler itself. */
 	vTaskStartScheduler();
@@ -250,6 +263,10 @@ const portTickType xCycleFrequency = 1000 / portTICK_RATE_MS;
 		{
 			pcStatusMessage = "Error: Dynamic\r\n";
 		}
+		else if( xAreQueueSetTasksStillRunning() != pdPASS )
+		{
+			pcStatusMessage = "Error: Queue set\r\n";
+		}
 
 		/* This is the only task that uses stdout so its ok to call printf() 
 		directly. */
@@ -282,6 +299,7 @@ const unsigned long ulMSToSleep = 15;
 xTaskHandle xIdleTaskHandle, xTimerTaskHandle, xTestTask;
 signed char *pcTaskName;
 const unsigned char ucConstQueueNumber = 0xaaU, ucConstTaskNumber = 0x55U;
+void *pvAllocated;
 
 /* These three functions are only meant for use by trace code, and not for
 direct use from application code, hence their prototypes are not in queue.h. */
@@ -375,15 +393,18 @@ extern unsigned portBASE_TYPE uxTaskGetTaskNumber( xTaskHandle xTask );
 				pcStatusMessage = "Error: Returned test task state was incorrect 3";
 			}
 		}
-
 	}
+
+	/* Exercise heap_4 a bit.  The malloc failed hook will trap failed 
+	allocations so there is no need to test here. */
+	pvAllocated = pvPortMalloc( ( rand() % 100 ) + 1 );
+	vPortFree( pvAllocated );
 }
 /*-----------------------------------------------------------*/
 
 void vApplicationMallocFailedHook( void )
 {
-	/* Can be implemented if required, but probably not required in this 
-	environment and running this demo. */
+	vAssertCalled();
 }
 /*-----------------------------------------------------------*/
 
@@ -399,12 +420,22 @@ void vApplicationTickHook( void )
 	/* Call the periodic timer test, which tests the timer API functions that
 	can be called from an ISR. */
 	vTimerPeriodicISRTests();
+
+	/* Write to a queue that is in use as part of the queue set demo to 
+	demonstrate using queue sets from an ISR. */
+	vQueueSetAccessQueueSetFromISR();
 }
 /*-----------------------------------------------------------*/
 
 void vAssertCalled( void )
 {
 	taskDISABLE_INTERRUPTS();
+
+	/* Stop the trace recording. */
+	vTraceStop();
+	vTracePortSave();
+		
 	for( ;; );
 }
+/*-----------------------------------------------------------*/
 
