@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -86,6 +87,15 @@
 /* Constants required to set up the initial stack. */
 #define portINITIAL_XPSR			( 0x01000000 )
 
+/* Let the user override the pre-loading of the initial LR with the address of
+prvTaskExitError() in case is messes up unwinding of the stack in the
+debugger. */
+#ifdef configTASK_RETURN_ADDRESS
+	#define portTASK_RETURN_ADDRESS	configTASK_RETURN_ADDRESS
+#else
+	#define portTASK_RETURN_ADDRESS	prvTaskExitError
+#endif
+
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
 static unsigned portBASE_TYPE uxCriticalNesting = 0xaaaaaaaa;
@@ -107,6 +117,11 @@ void vPortSVCHandler( void ) __attribute__ (( naked ));
  */
 static void vPortStartFirstTask( void ) __attribute__ (( naked ));
 
+/*
+ * Used to catch tasks that attempt to return from their implementing function.
+ */
+static void prvTaskExitError( void );
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -120,11 +135,27 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 	*pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
 	pxTopOfStack--;
 	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
-	pxTopOfStack -= 6;	/* LR, R12, R3..R1 */
+	pxTopOfStack--;
+	*pxTopOfStack = ( portSTACK_TYPE ) portTASK_RETURN_ADDRESS;	/* LR */
+	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
 	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
 	pxTopOfStack -= 8; /* R11..R4. */
 
 	return pxTopOfStack;
+}
+/*-----------------------------------------------------------*/
+
+static void prvTaskExitError( void )
+{
+	/* A function that implements a task must not exit or attempt to return to
+	its caller as there is nothing to return to.  If a task wants to exit it 
+	should instead call vTaskDelete( NULL ).
+	
+	Artificially force an assert() to be triggered if configASSERT() is 
+	defined, then stop here so application writers can catch the error. */
+	configASSERT( uxCriticalNesting == ~0UL );
+	portDISABLE_INTERRUPTS();	
+	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
@@ -158,14 +189,14 @@ void vPortSVCHandler( void )
 
 void vPortStartFirstTask( void )
 {
+	/* The MSP stack is not reset as, unlike on M3/4 parts, there is no vector
+	table offset register that can be used to locate the initial stack value.
+	Not all M0 parts have the application vector table at address 0. */
 	__asm volatile(
-					" movs r0, #0x00 	\n" /* Locate the top of stack. */
-					" ldr r0, [r0] 		\n"
-					" msr msp, r0		\n" /* Set the msp back to the start of the stack. */
 					" cpsie i			\n" /* Globally enable interrupts. */
 					" svc 0				\n" /* System call to start first task. */
 					" nop				\n"
-				);
+				  );
 }
 /*-----------------------------------------------------------*/
 
@@ -231,6 +262,31 @@ void vPortExitCritical( void )
 }
 /*-----------------------------------------------------------*/
 
+unsigned long ulSetInterruptMaskFromISR( void )
+{
+	__asm volatile(
+					" mrs r0, PRIMASK	\n"
+					" cpsid i			\n"
+					" bx lr				  "
+				  );
+
+	/* To avoid compiler warnings.  This line will never be reached. */
+	return 0;
+}
+/*-----------------------------------------------------------*/
+
+void vClearInterruptMaskFromISR( unsigned long ulMask )
+{
+	__asm volatile(
+					" msr PRIMASK, r0	\n"
+					" bx lr				  "
+				  );
+				  
+	/* Just to avoid compiler warning. */
+	( void ) ulMask;
+}
+/*-----------------------------------------------------------*/
+
 void xPortPendSVHandler( void )
 {
 	/* This is a naked function. */
@@ -281,9 +337,9 @@ void xPortPendSVHandler( void )
 
 void xPortSysTickHandler( void )
 {
-unsigned long ulDummy;
+unsigned long ulPreviousMask;
 
-	ulDummy = portSET_INTERRUPT_MASK_FROM_ISR();
+	ulPreviousMask = portSET_INTERRUPT_MASK_FROM_ISR();
 	{
 		/* Increment the RTOS tick. */
 		if( xTaskIncrementTick() != pdFALSE )
@@ -292,7 +348,7 @@ unsigned long ulDummy;
 			*(portNVIC_INT_CTRL) = portNVIC_PENDSVSET;
 		}
 	}
-	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulDummy );
+	portCLEAR_INTERRUPT_MASK_FROM_ISR( ulPreviousMask );
 }
 /*-----------------------------------------------------------*/
 

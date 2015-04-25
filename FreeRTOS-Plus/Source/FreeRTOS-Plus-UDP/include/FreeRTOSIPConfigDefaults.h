@@ -1,5 +1,6 @@
 /*
- * FreeRTOS+UDP V1.0.0 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
  * terms are different to the FreeRTOS license terms.
@@ -137,6 +138,18 @@ from the FreeRTOSIPConfig.h configuration header file. */
 
 #ifndef ipconfigFREERTOS_PLUS_NABTO
 	#define ipconfigFREERTOS_PLUS_NABTO 0
+#endif
+
+#ifndef ipconfigNABTO_TASK_STACK_SIZE
+	#define ipconfigNABTO_TASK_STACK_SIZE ( configMINIMAL_STACK_SIZE * 2 )
+#endif
+
+#ifndef ipconfigNABTO_TASK_PRIORITY
+	#define ipconfigNABTO_TASK_PRIORITY	 ( ipconfigUDP_TASK_PRIORITY + 1 )
+#endif
+
+#ifndef ipconfigSUPPORT_SELECT_FUNCTION
+	#define ipconfigSUPPORT_SELECT_FUNCTION 0
 #endif
 
 #endif /* FREERTOS_DEFAULT_IP_CONFIG_H */

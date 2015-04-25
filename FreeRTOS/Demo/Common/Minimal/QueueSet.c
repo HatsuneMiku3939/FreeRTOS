@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -75,6 +76,7 @@
  * queuesetINITIAL_ISR_TX_VALUE to ULONG_MAX.
  */
 
+
 /* Standard includes. */
 #include <stdlib.h>
 #include <limits.h>
@@ -105,14 +107,18 @@ in the range of 0xffff to ULONG_MAX. */
 /* The priorities used in this demo. */
 #define queuesetLOW_PRIORITY	( tskIDLE_PRIORITY )
 #define queuesetMEDIUM_PRIORITY ( queuesetLOW_PRIORITY + 1 )
-#define queuesetHIGH_PRIORITY	( queuesetMEDIUM_PRIORITY + 1 )
 
 /* For test purposes the priority of the sending task is changed after every
 queuesetPRIORITY_CHANGE_LOOPS number of values are sent to a queue. */
-#define queuesetPRIORITY_CHANGE_LOOPS	100UL
+#define queuesetPRIORITY_CHANGE_LOOPS	( ( queuesetNUM_QUEUES_IN_SET * queuesetQUEUE_LENGTH ) * 2 )
 
 /* The ISR sends to the queue every queuesetISR_TX_PERIOD ticks. */
 #define queuesetISR_TX_PERIOD	( 100UL )
+
+/* A delay inserted when the Tx task changes its priority to be above the idle
+task priority to ensure the idle priority tasks get some CPU time before the
+next iteration of the queue set Tx task. */
+#define queuesetTX_LOOP_DELAY	( 200 / portTICK_RATE_MS )
 
 /* The allowable maximum deviation between a received value and the expected
 received value.  A deviation will occur when data is received from a queue
@@ -123,6 +129,13 @@ the received value. */
 /* Ignore values that are at the boundaries of allowable values to make the
 testing of limits easier (don't have to deal with wrapping values). */
 #define queuesetIGNORED_BOUNDARY	( queuesetALLOWABLE_RX_DEVIATION * 2 )
+
+typedef enum
+{
+	eEqualPriority = 0,	/* Tx and Rx tasks have the same priority. */
+	eTxHigherPriority,	/* The priority of the Tx task is above that of the Rx task. */
+	eTxLowerPriority	/* The priority of the Tx task is below that of the Rx task. */
+} eRelativePriorities;
 
 /*
  * The task that periodically sends to the queue set.
@@ -153,13 +166,25 @@ static void prvSendToQueueInSetFromISR( void );
  * Create the queues and add them to a queue set before resuming the Tx
  * task.
  */
-static void prvSetupTest( xTaskHandle xQueueSetSendingTask );
+static void prvSetupTest( void );
 
 /*
  * Checks a value received from a queue falls within the range of expected
  * values.
  */
 static portBASE_TYPE prvCheckReceivedValueWithinExpectedRange( unsigned long ulReceived, unsigned long ulExpectedReceived );
+
+/*
+ * Increase test coverage by occasionally change the priorities of the two tasks
+ * relative to each other. */
+static void prvChangeRelativePriorities( void );
+
+/*
+ * Local pseudo random number seed and return functions.  Used to avoid calls
+ * to the standard library.
+ */
+static unsigned long prvRand( void );
+static void prvSRand( unsigned long ulSeed );
 
 /*-----------------------------------------------------------*/
 
@@ -193,17 +218,19 @@ xAreQueeuSetTasksStillRunning() function can check it is incrementing as
 expected. */
 static volatile unsigned long ulISRTxValue = queuesetINITIAL_ISR_TX_VALUE;
 
+/* Used by the pseudo random number generator. */
+static unsigned long ulNextRand = 0;
+
+/* The task handles are stored so their priorities can be changed. */
+xTaskHandle xQueueSetSendingTask, xQueueSetReceivingTask;
+
 /*-----------------------------------------------------------*/
 
 void vStartQueueSetTasks( void )
 {
-xTaskHandle xQueueSetSendingTask;
-
-	/* Create the two queues.  The handle of the sending task is passed into
-	the receiving task using the task parameter.  The receiving task uses the
-	handle to resume the sending task after it has created the queues. */
+	/* Create the tasks. */
 	xTaskCreate( prvQueueSetSendingTask, ( signed char * ) "SetTx", configMINIMAL_STACK_SIZE, NULL, queuesetMEDIUM_PRIORITY, &xQueueSetSendingTask );
-	xTaskCreate( prvQueueSetReceivingTask, ( signed char * ) "SetRx", configMINIMAL_STACK_SIZE, ( void * ) xQueueSetSendingTask, queuesetMEDIUM_PRIORITY, NULL );
+	xTaskCreate( prvQueueSetReceivingTask, ( signed char * ) "SetRx", configMINIMAL_STACK_SIZE, ( void * ) xQueueSetSendingTask, queuesetMEDIUM_PRIORITY, &xQueueSetReceivingTask );
 
 	/* It is important that the sending task does not attempt to write to a
 	queue before the queue has been created.  It is therefore placed into the
@@ -264,25 +291,24 @@ portBASE_TYPE xReturn = pdPASS, x;
 
 static void prvQueueSetSendingTask( void *pvParameters )
 {
-unsigned long ulTaskTxValue = 0;
-portBASE_TYPE xQueueToWriteTo;
+unsigned long ulTaskTxValue = 0, ulQueueToWriteTo;
 xQueueHandle xQueueInUse;
-unsigned portBASE_TYPE uxPriority = queuesetMEDIUM_PRIORITY, ulLoops = 0;
 
 	/* Remove compiler warning about the unused parameter. */
 	( void ) pvParameters;
 
-	srand( ( unsigned int ) &ulTaskTxValue );
+	/* Seed mini pseudo random number generator. */
+	prvSRand( ( unsigned long ) &ulTaskTxValue );
 
 	for( ;; )
 	{
 		/* Generate the index for the queue to which a value is to be sent. */
-		xQueueToWriteTo = rand() % queuesetNUM_QUEUES_IN_SET;
-		xQueueInUse = xQueues[ xQueueToWriteTo ];
+		ulQueueToWriteTo = prvRand() % queuesetNUM_QUEUES_IN_SET;
+		xQueueInUse = xQueues[ ulQueueToWriteTo ];
 
 		/* Note which index is being written to to ensure all the queues are
 		used. */
-		( ulQueueUsedCounter[ xQueueToWriteTo ] )++;
+		( ulQueueUsedCounter[ ulQueueToWriteTo ] )++;
 
 		/* Send to the queue to unblock the task that is waiting for data to
 		arrive on a queue within the queue set to which this queue belongs. */
@@ -302,19 +328,56 @@ unsigned portBASE_TYPE uxPriority = queuesetMEDIUM_PRIORITY, ulLoops = 0;
 			ulTaskTxValue = 0;
 		}
 
-		/* Occasionally change the task priority relative to the priority of
-		the receiving task. */
-		ulLoops++;
-		if( ulLoops >= queuesetPRIORITY_CHANGE_LOOPS )
-		{
-			ulLoops = 0;
-			uxPriority++;
-			if( uxPriority > queuesetHIGH_PRIORITY )
-			{
-				uxPriority = queuesetLOW_PRIORITY;
-			}
+		/* Increase test coverage by occasionally change the priorities of the
+		two tasks relative to each other. */
+		prvChangeRelativePriorities();
+	}
+}
+/*-----------------------------------------------------------*/
 
-			vTaskPrioritySet( NULL, uxPriority );
+static void prvChangeRelativePriorities( void )
+{
+static unsigned portBASE_TYPE ulLoops = 0;
+static eRelativePriorities ePriorities = eEqualPriority;
+
+	/* Occasionally change the task priority relative to the priority of
+	the receiving task. */
+	ulLoops++;
+	if( ulLoops >= queuesetPRIORITY_CHANGE_LOOPS )
+	{
+		ulLoops = 0;
+
+		switch( ePriorities )
+		{
+			case eEqualPriority:
+				/* Both tasks are running with medium priority.  Now lower the
+				priority of the receiving task so the Tx task has the higher
+				relative priority. */
+				vTaskPrioritySet( xQueueSetReceivingTask, queuesetLOW_PRIORITY );
+				ePriorities = eTxHigherPriority;
+				break;
+
+			case eTxHigherPriority:
+				/* The Tx task is running with a higher priority than the Rx
+				task.  Switch the priorities around so the Rx task has the
+				higher relative priority. */
+				vTaskPrioritySet( xQueueSetReceivingTask, queuesetMEDIUM_PRIORITY );
+				vTaskPrioritySet( xQueueSetSendingTask, queuesetLOW_PRIORITY );
+				ePriorities = eTxLowerPriority;
+				break;
+
+			case eTxLowerPriority:
+				/* The Tx task is running with a lower priority than the Rx
+				task.  Make the priorities equal again. */
+				vTaskPrioritySet( xQueueSetSendingTask, queuesetMEDIUM_PRIORITY );
+				ePriorities = eEqualPriority;
+
+				/* When both tasks are using a non-idle priority the queue set
+				tasks will starve idle priority tasks of execution time - so
+				relax a bit before the next iteration to minimise the impact. */
+				vTaskDelay( queuesetTX_LOOP_DELAY );
+
+				break;
 		}
 	}
 }
@@ -324,14 +387,13 @@ static void prvQueueSetReceivingTask( void *pvParameters )
 {
 unsigned long ulReceived;
 xQueueHandle xActivatedQueue;
-xTaskHandle xQueueSetSendingTask;
 
-	/* The handle to the sending task is passed in using the task parameter. */
-	xQueueSetSendingTask = ( xTaskHandle ) pvParameters;
+	/* Remove compiler warnings. */
+	( void ) pvParameters;
 
 	/* Create the queues and add them to the queue set before resuming the Tx
 	task. */
-	prvSetupTest( xQueueSetSendingTask );
+	prvSetupTest();
 
 	for( ;; )
 	{
@@ -419,17 +481,11 @@ static unsigned long ulExpectedReceivedFromTask = 0, ulExpectedReceivedFromISR =
 		{
 			/* The value received is at the lower limit of the expected range.
 			Don't test it and expect to receive one higher next time. */
-			ulExpectedReceivedFromISR++;
 		}
 		else if( ( ULONG_MAX - ulReceived ) <= queuesetIGNORED_BOUNDARY )
 		{
 			/* The value received is at the higher limit of the expected range.
 			Don't test it and expect to wrap soon. */
-			ulExpectedReceivedFromISR++;
-			if( ulExpectedReceivedFromISR == 0 )
-			{
-				ulExpectedReceivedFromISR = queuesetINITIAL_ISR_TX_VALUE;
-			}
 		}
 		else
 		{
@@ -438,11 +494,15 @@ static unsigned long ulExpectedReceivedFromTask = 0, ulExpectedReceivedFromISR =
 			{
 				xQueueSetTasksStatus = pdFAIL;
 			}
-			else
-			{
-				/* It is expected to receive an incrementing value. */
-				ulExpectedReceivedFromISR++;
-			}
+		}
+
+		configASSERT( xQueueSetTasksStatus );
+
+		/* It is expected to receive an incrementing number. */
+		ulExpectedReceivedFromISR++;
+		if( ulExpectedReceivedFromISR == 0 )
+		{
+			ulExpectedReceivedFromISR = queuesetINITIAL_ISR_TX_VALUE;
 		}
 	}
 	else
@@ -452,17 +512,11 @@ static unsigned long ulExpectedReceivedFromTask = 0, ulExpectedReceivedFromISR =
 		{
 			/* The value received is at the lower limit of the expected range.
 			Don't test it, and expect to receive one higher next time. */
-			ulExpectedReceivedFromTask++;
 		}
 		else if( ( ( queuesetINITIAL_ISR_TX_VALUE - 1 ) - ulReceived ) <= queuesetIGNORED_BOUNDARY )
 		{
 			/* The value received is at the higher limit of the expected range.
 			Don't test it and expect to wrap soon. */
-			ulExpectedReceivedFromTask++;
-			if( ulExpectedReceivedFromTask >= queuesetINITIAL_ISR_TX_VALUE )
-			{
-				ulExpectedReceivedFromTask = 0;
-			}
 		}
 		else
 		{
@@ -471,11 +525,15 @@ static unsigned long ulExpectedReceivedFromTask = 0, ulExpectedReceivedFromISR =
 			{
 				xQueueSetTasksStatus = pdFAIL;
 			}
-			else
-			{
-				/* It is expected to receive an incrementing value. */
-				ulExpectedReceivedFromTask++;
-			}
+		}
+
+		configASSERT( xQueueSetTasksStatus );
+
+		/* It is expected to receive an incrementing number. */
+		ulExpectedReceivedFromTask++;
+		if( ulExpectedReceivedFromTask >= queuesetINITIAL_ISR_TX_VALUE )
+		{
+			ulExpectedReceivedFromTask = 0;
 		}
 	}
 }
@@ -555,7 +613,7 @@ static portBASE_TYPE xQueueToWriteTo = 0;
 }
 /*-----------------------------------------------------------*/
 
-static void prvSetupTest( xTaskHandle xQueueSetSendingTask )
+static void prvSetupTest( void )
 {
 portBASE_TYPE x;
 unsigned long ulValueToSend = 0;
@@ -637,3 +695,17 @@ unsigned long ulValueToSend = 0;
 	/* Let the ISR access the queues also. */
 	xSetupComplete = pdTRUE;
 }
+/*-----------------------------------------------------------*/
+
+static unsigned long prvRand( void )
+{
+	ulNextRand = ( ulNextRand * 1103515245UL ) + 12345UL;
+    return ( ulNextRand / 65536UL ) % 32768UL;
+}
+/*-----------------------------------------------------------*/
+
+static void prvSRand( unsigned long ulSeed )
+{
+    ulNextRand = ulSeed;
+}
+

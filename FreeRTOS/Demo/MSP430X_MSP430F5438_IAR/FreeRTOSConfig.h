@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -86,7 +87,7 @@
 #define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 10 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 10 )
-#define configUSE_TRACE_FACILITY		0
+#define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
 #define configIDLE_SHOULD_YIELD			1
 #define configUSE_MUTEXES				1
@@ -116,6 +117,12 @@ to exclude the API function. */
 #define INCLUDE_vTaskSuspend			1
 #define INCLUDE_vTaskDelayUntil			1
 #define INCLUDE_vTaskDelay				1
+
+/* This demo makes use of one or more example stats formatting functions.  These
+format the raw data provided by the uxTaskGetSystemState() function in to human
+readable ASCII form.  See the notes in the implementation of vTaskList() within 
+FreeRTOS/Source/tasks.c for limitations. */
+#define configUSE_STATS_FORMATTING_FUNCTIONS	1
 
 /* The MSP430X port uses a callback function to configure its tick interrupt.
 This allows the application to choose the tick interrupt source.

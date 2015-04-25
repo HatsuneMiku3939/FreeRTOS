@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -161,7 +162,7 @@ int main( void )
 	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, mainLCD_TASK_PRIORITY, NULL );
 
 	/* Create a task that writes to LEDs 8 to 15. */
-	xTaskCreate( vLEDTask, "LCDTask", configMINIMAL_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
+	xTaskCreate( vLEDTask, "LEDTask", configMINIMAL_STACK_SIZE, NULL, mainLED_TASK_PRIORITY, NULL );
 
 	/* Create some of the standard demo tasks.  These just test the port and
 	demonstrate how the FreeRTOS API can be used.  They do not provide any

@@ -1,5 +1,6 @@
 /*
- * FreeRTOS+UDP V1.0.0 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
  * terms are different to the FreeRTOS license terms.
@@ -202,6 +203,10 @@ pcap_if_t *pxAllNetworkInterfaces;
 			{
 				vNetworkBufferRelease( pxNetworkBuffer );
 				iptraceETHERNET_RX_EVENT_LOST();
+			}
+			else
+			{
+				iptraceNETWORK_INTERFACE_RECEIVE();
 			}
 		}
 		else
@@ -435,6 +440,10 @@ eFrameProcessingResult_t eResult;
 							the task level function here. */
 							vNetworkBufferRelease( pxNetworkBuffer );
 							iptraceETHERNET_RX_EVENT_LOST();
+						}
+						else
+						{
+							iptraceNETWORK_INTERFACE_RECEIVE();
 						}
 					}
 					else

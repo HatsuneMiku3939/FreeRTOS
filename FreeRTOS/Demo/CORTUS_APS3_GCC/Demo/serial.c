@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -96,7 +97,6 @@ static void prvRxHandler( void ) __attribute__((noinline));
 transmitted. */
 static xQueueHandle xRxedChars;
 static xQueueHandle xCharsForTx;
-extern unsigned portBASE_TYPE *pxVectorTable;
 /*-----------------------------------------------------------*/
 
 xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
@@ -112,9 +112,7 @@ xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned port
 		uart1->tx_mask = 0;
 		uart1->rx_mask = 1;
 		irq[IRQ_UART1_TX].ien = 1;
-		irq[IRQ_UART1_TX].ipl = portSYSTEM_INTERRUPT_PRIORITY_LEVEL;
 		irq[IRQ_UART1_RX].ien = 1;
-		irq[IRQ_UART1_RX].ipl = portSYSTEM_INTERRUPT_PRIORITY_LEVEL;
 	}
 
 	return ( xComPortHandle ) 0;

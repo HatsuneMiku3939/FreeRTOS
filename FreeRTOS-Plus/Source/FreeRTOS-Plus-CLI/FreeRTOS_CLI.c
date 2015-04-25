@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+CLI V1.0.1 (C) 2012 Real Time Engineers ltd.
+ * FreeRTOS+CLI V1.0.2 (C) 2013 Real Time Engineers ltd.  All rights reserved.
  *
  * This file is part of the FreeRTOS+CLI distribution.  The FreeRTOS+CLI license 
  * terms are different to the FreeRTOS license terms.
@@ -206,7 +206,7 @@ size_t xCommandStringLength;
 	else
 	{
 		/* pxCommand was NULL, the command was not found. */
-		strncpy( ( char * ) pcWriteBuffer, ( const char * const ) "Command not recognised.  Enter \"help\" to view a list of available commands.\r\n\r\n", xWriteBufferLen );
+		strncpy( ( char * ) pcWriteBuffer, ( const char * const ) "Command not recognised.  Enter 'help' to view a list of available commands.\r\n\r\n", xWriteBufferLen );
 		xReturn = pdFALSE;
 	}
 

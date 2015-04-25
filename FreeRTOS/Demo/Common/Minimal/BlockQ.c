@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -85,15 +86,6 @@
  * a context switch occurs (tasks of the same priority will time slice).
  *
  */
-
-/*
-
-Changes from V4.1.1
-
-	+ The second set of tasks were created the wrong way around.  This has been
-	  corrected.
-*/
-
 
 #include <stdlib.h>
 

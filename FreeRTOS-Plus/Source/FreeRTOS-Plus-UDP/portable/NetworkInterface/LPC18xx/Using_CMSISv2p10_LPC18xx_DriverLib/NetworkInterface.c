@@ -1,5 +1,6 @@
 /*
- * FreeRTOS+UDP V1.0.0 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
  * terms are different to the FreeRTOS license terms.
@@ -57,10 +58,6 @@
 
 /* Demo includes. */
 #include "NetworkInterface.h"
-
-#if configMAC_INTERRUPT_PRIORITY > configMAC_INTERRUPT_PRIORITY
-	#error configMAC_INTERRUPT_PRIORITY must be greater than or equal to configMAC_INTERRUPT_PRIORITY (higher numbers mean lower logical priority)
-#endif
 
 #ifndef configNUM_RX_ETHERNET_DMA_DESCRIPTORS
 	#error configNUM_RX_ETHERNET_DMA_DESCRIPTORS must be defined in FreeRTOSConfig.h to set the number of RX DMA descriptors

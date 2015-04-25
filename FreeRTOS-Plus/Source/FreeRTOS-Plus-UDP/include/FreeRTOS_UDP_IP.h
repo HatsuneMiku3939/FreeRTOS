@@ -1,5 +1,6 @@
 /*
- * FreeRTOS+UDP V1.0.0 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.1 (C) 2013 Real Time Engineers ltd.
+ * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
  * terms are different to the FreeRTOS license terms.
@@ -105,6 +106,10 @@ void vApplicationIPNetworkEventHook( eIPCallbackEvent_t eNetworkEvent );
 void vApplicationPingReplyHook( ePingReplyStatus_t eStatus, uint16_t usIdentifier );
 void FreeRTOS_ReleaseUDPPayloadBuffer( void *pvBuffer );
 uint8_t * FreeRTOS_GetMACAddress( void );
+
+#if ( ipconfigFREERTOS_PLUS_NABTO == 1 )
+	portBASE_TYPE xStartNabtoTask( void );
+#endif
 
 #endif /* FREERTOS_IP_H */
 

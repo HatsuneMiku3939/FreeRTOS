@@ -1,5 +1,6 @@
 /*
-    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.3 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -120,6 +121,15 @@ occurred while the SysTick counter is stopped during tickless idle
 calculations. */
 #define portMISSED_COUNTS_FACTOR			( 45UL )
 
+/* Let the user override the pre-loading of the initial LR with the address of
+prvTaskExitError() in case is messes up unwinding of the stack in the
+debugger. */
+#ifdef configTASK_RETURN_ADDRESS
+	#define portTASK_RETURN_ADDRESS	configTASK_RETURN_ADDRESS
+#else
+	#define portTASK_RETURN_ADDRESS	prvTaskExitError
+#endif
+
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
 static unsigned portBASE_TYPE uxCriticalNesting = 0xaaaaaaaa;
@@ -148,6 +158,11 @@ static void prvPortStartFirstTask( void ) __attribute__ (( naked ));
  */
  static void vPortEnableVFP( void ) __attribute__ (( naked ));
 
+/*
+ * Used to catch tasks that attempt to return from their implementing function.
+ */
+static void prvTaskExitError( void );
+
 /*-----------------------------------------------------------*/
 
 /*
@@ -174,7 +189,7 @@ static void prvPortStartFirstTask( void ) __attribute__ (( naked ));
 #endif /* configUSE_TICKLESS_IDLE */
 
 /*
- * Used by the portASSERT_IF_INTERRUPT_PRIORITY_INVALID() macro to ensure 
+ * Used by the portASSERT_IF_INTERRUPT_PRIORITY_INVALID() macro to ensure
  * FreeRTOS API functions are not called from interrupts that have been assigned
  * a priority above configMAX_SYSCALL_INTERRUPT_PRIORITY.
  */
@@ -202,7 +217,7 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 	pxTopOfStack--;
 	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
 	pxTopOfStack--;
-	*pxTopOfStack = 0;	/* LR */
+	*pxTopOfStack = ( portSTACK_TYPE ) portTASK_RETURN_ADDRESS;	/* LR */
 
 	/* Save code space by skipping register initialisation. */
 	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
@@ -216,6 +231,20 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 	pxTopOfStack -= 8;	/* R11, R10, R9, R8, R7, R6, R5 and R4. */
 
 	return pxTopOfStack;
+}
+/*-----------------------------------------------------------*/
+
+static void prvTaskExitError( void )
+{
+	/* A function that implements a task must not exit or attempt to return to
+	its caller as there is nothing to return to.  If a task wants to exit it
+	should instead call vTaskDelete( NULL ).
+
+	Artificially force an assert() to be triggered if configASSERT() is
+	defined, then stop here so application writers can catch the error. */
+	configASSERT( uxCriticalNesting == ~0UL );
+	portDISABLE_INTERRUPTS();
+	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
@@ -406,7 +435,7 @@ void xPortPendSVHandler( void )
 	(
 	"	mrs r0, psp							\n"
 	"										\n"
-	"	ldr	r3, pxCurrentTCBConst				\n" /* Get the location of the current TCB. */
+	"	ldr	r3, pxCurrentTCBConst			\n" /* Get the location of the current TCB. */
 	"	ldr	r2, [r3]						\n"
 	"										\n"
 	"	tst r14, #0x10						\n" /* Is the task using the FPU context?  If so, push high vfp registers. */
@@ -435,6 +464,14 @@ void xPortPendSVHandler( void )
 	"	vldmiaeq r0!, {s16-s31}				\n"
 	"										\n"
 	"	msr psp, r0							\n"
+	"										\n"
+	#ifdef WORKAROUND_PMU_CM001 /* XMC4000 specific errata workaround. */
+		#if WORKAROUND_PMU_CM001 == 1
+	"			push { r14 }				\n"
+	"			pop { pc }					\n"
+		#endif
+	#endif
+	"										\n"
 	"	bx r14								\n"
 	"										\n"
 	"	.align 2							\n"
@@ -500,8 +537,16 @@ void xPortSysTickHandler( void )
 		to be unsuspended then abandon the low power entry. */
 		if( eTaskConfirmSleepModeStatus() == eAbortSleep )
 		{
+			/* Restart from whatever is left in the count register to complete
+			this tick period. */
+			portNVIC_SYSTICK_LOAD_REG = portNVIC_SYSTICK_CURRENT_VALUE_REG;
+
 			/* Restart SysTick. */
 			portNVIC_SYSTICK_CTRL_REG = portNVIC_SYSTICK_CLK_BIT | portNVIC_SYSTICK_INT_BIT | portNVIC_SYSTICK_ENABLE_BIT;
+
+			/* Reset the reload register to the value required for normal tick
+			periods. */
+			portNVIC_SYSTICK_LOAD_REG = ulTimerCountsForOneTick - 1UL;
 
 			/* Re-enable interrupts - see comments above the cpsid instruction()
 			above. */
@@ -546,12 +591,24 @@ void xPortSysTickHandler( void )
 
 			if( ( portNVIC_SYSTICK_CTRL_REG & portNVIC_SYSTICK_COUNT_FLAG_BIT ) != 0 )
 			{
+				unsigned long ulCalculatedLoadValue;
+				
 				/* The tick interrupt has already executed, and the SysTick
 				count reloaded with ulReloadValue.  Reset the
 				portNVIC_SYSTICK_LOAD_REG with whatever remains of this tick
 				period. */
-				portNVIC_SYSTICK_LOAD_REG = ( ulTimerCountsForOneTick - 1UL ) - ( ulReloadValue - portNVIC_SYSTICK_CURRENT_VALUE_REG );
+				ulCalculatedLoadValue = ( ulTimerCountsForOneTick - 1UL ) - ( ulReloadValue - portNVIC_SYSTICK_CURRENT_VALUE_REG );
 
+				/* Don't allow a tiny value, or values that have somehow 
+				underflowed because the post sleep hook did something 
+				that took too long. */
+				if( ( ulCalculatedLoadValue < ulStoppedTimerCompensation ) || ( ulCalculatedLoadValue > ulTimerCountsForOneTick ) )
+				{
+					ulCalculatedLoadValue = ( ulTimerCountsForOneTick - 1UL );
+				}
+				
+				portNVIC_SYSTICK_LOAD_REG = ulCalculatedLoadValue;
+				
 				/* The tick interrupt handler will already have pended the tick
 				processing in the kernel.  As the pending tick will be
 				processed as soon as this function exits, the tick value
