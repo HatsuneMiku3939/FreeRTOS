@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
 
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -44,15 +46,15 @@
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
 
-    http://www.FreeRTOS.org - Documentation, training, latest information,
-    license and contact details.
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license
+    and contact details.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
@@ -86,12 +88,18 @@ extern "C" {
 #define portMAX_DELAY   (portTickType)0xffffffff
 
 #if( configUSE_16_BIT_TICKS == 1 )
-    #effor "configUSE_16_BIT_TICKS must be 0"
+    #error "configUSE_16_BIT_TICKS must be 0"
+#endif
+
+#ifndef configSYSTICK_CLOCK_HZ
+	#define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
 #endif
 
 /*-----------------------------------------------------------*/
 #define portSTACK_GROWTH                -1
-#define portTICK_RATE_MS                ( (portTickType) 1000 / configTICK_RATE_HZ )
+#define portTICK_RATE_MS                ( \
+	(portTickType) 1000 / configSYSTICK_CLOCK_HZ \
+)
 #define portBYTE_ALIGNMENT              4
 #define portCRITICAL_NESTING_IN_TCB     1
 #define portINSTRUCTION_SIZE            ( ( portSTACK_TYPE ) 4 )
