@@ -1,6 +1,6 @@
 #include "port_spr_defs.h"
-#include "portmacro.h"
 #include "FreeRTOSConfig.h"
+#include "portmacro.h"
 
 
     .file       "portasm.S"
