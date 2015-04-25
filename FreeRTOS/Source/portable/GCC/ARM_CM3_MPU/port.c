@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
 
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -40,27 +42,27 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
-
+    
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
-
-    http://www.FreeRTOS.org - Documentation, training, latest information,
-    license and contact details.
-
+    
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
+    and contact details.  
+    
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell
-    the code with commercial support, indemnification, and middleware, under
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
+    the code with commercial support, indemnification, and middleware, under 
     the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under
+    provide a safety engineered and independently SIL3 certified version under 
     the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
@@ -178,6 +180,7 @@ void MPU_vTaskDelayUntil( portTickType * const pxPreviousWakeTime, portTickType 
 void MPU_vTaskDelay( portTickType xTicksToDelay );
 unsigned portBASE_TYPE MPU_uxTaskPriorityGet( xTaskHandle pxTask );
 void MPU_vTaskPrioritySet( xTaskHandle pxTask, unsigned portBASE_TYPE uxNewPriority );
+eTaskState MPU_eTaskStateGet( xTaskHandle pxTask );
 void MPU_vTaskSuspend( xTaskHandle pxTaskToSuspend );
 signed portBASE_TYPE MPU_xTaskIsTaskSuspended( xTaskHandle xTask );
 void MPU_vTaskResume( xTaskHandle pxTaskToResume );
@@ -729,6 +732,19 @@ portBASE_TYPE xRunningPrivileged = prvRaisePrivilege();
 
 		vTaskPrioritySet( pxTask, uxNewPriority );
         portRESET_PRIVILEGE( xRunningPrivileged );
+	}
+#endif
+/*-----------------------------------------------------------*/
+
+#if ( INCLUDE_eTaskStateGet == 1 )
+	eTaskState MPU_eTaskStateGet( xTaskHandle pxTask )
+	{
+    portBASE_TYPE xRunningPrivileged = prvRaisePrivilege();
+	eTaskState eReturn;
+
+		eReturn = eTaskStateGet( pxTask );
+        portRESET_PRIVILEGE( xRunningPrivileged );
+		return eReturn;
 	}
 #endif
 /*-----------------------------------------------------------*/

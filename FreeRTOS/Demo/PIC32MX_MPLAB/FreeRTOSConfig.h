@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -44,15 +46,15 @@
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
     
-    http://www.FreeRTOS.org - Documentation, training, latest information, 
-    license and contact details.
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
+    and contact details.  
     
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
@@ -81,28 +83,29 @@
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
 
-#define configUSE_PREEMPTION			1
-#define configUSE_IDLE_HOOK				0
-#define configUSE_TICK_HOOK				0
-#define configTICK_RATE_HZ				( ( portTickType ) 1000 )
-#define configCPU_CLOCK_HZ				( ( unsigned long ) 80000000UL )  
-#define configPERIPHERAL_CLOCK_HZ		( ( unsigned long ) 40000000UL )
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
-#define configMINIMAL_STACK_SIZE		( 190 )
-#define configISR_STACK_SIZE			( 400 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) 28000 )
-#define configMAX_TASK_NAME_LEN			( 8 )
-#define configUSE_TRACE_FACILITY		0
-#define configUSE_16_BIT_TICKS			0
-#define configIDLE_SHOULD_YIELD			1
-#define configUSE_MUTEXES				1
-#define configCHECK_FOR_STACK_OVERFLOW	2
-#define configQUEUE_REGISTRY_SIZE		0
-#define configUSE_RECURSIVE_MUTEXES		1
-#define configUSE_MALLOC_FAILED_HOOK	1
-#define configUSE_APPLICATION_TASK_TAG	0
-#define configUSE_COUNTING_SEMAPHORES	1
-#define configGENERATE_RUN_TIME_STATS	0
+#define configUSE_PREEMPTION					1
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION	1
+#define configUSE_IDLE_HOOK						0
+#define configUSE_TICK_HOOK						0
+#define configTICK_RATE_HZ						( ( portTickType ) 1000 )
+#define configCPU_CLOCK_HZ						( 80000000UL )
+#define configPERIPHERAL_CLOCK_HZ				( 40000000UL )
+#define configMAX_PRIORITIES					( 5UL )
+#define configMINIMAL_STACK_SIZE				( 190 )
+#define configISR_STACK_SIZE					( 400 )
+#define configTOTAL_HEAP_SIZE					( ( size_t ) 28000 )
+#define configMAX_TASK_NAME_LEN					( 8 )
+#define configUSE_TRACE_FACILITY				0
+#define configUSE_16_BIT_TICKS					0
+#define configIDLE_SHOULD_YIELD					1
+#define configUSE_MUTEXES						1
+#define configCHECK_FOR_STACK_OVERFLOW			2
+#define configQUEUE_REGISTRY_SIZE				0
+#define configUSE_RECURSIVE_MUTEXES				1
+#define configUSE_MALLOC_FAILED_HOOK			1
+#define configUSE_APPLICATION_TASK_TAG			0
+#define configUSE_COUNTING_SEMAPHORES			1
+#define configGENERATE_RUN_TIME_STATS			0
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES 			0

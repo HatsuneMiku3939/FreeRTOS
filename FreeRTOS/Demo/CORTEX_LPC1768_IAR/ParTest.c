@@ -1,6 +1,8 @@
 /*
-    FreeRTOS V7.2.0 - Copyright (C) 2012 Real Time Engineers Ltd.
-	
+    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+
+    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
+    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
@@ -40,27 +42,27 @@
     FreeRTOS WEB site.
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
-     *    not run, what could be wrong?                                      *
+     *    not run, what could be wrong?"                                     *
      *                                                                       *
      *    http://www.FreeRTOS.org/FAQHelp.html                               *
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest information, 
-    license and contact details.
-    
+
+    http://www.FreeRTOS.org - Documentation, training, latest versions, license
+    and contact details.
+
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
+    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell
+    the code with commercial support, indemnification, and middleware, under
     the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
+    provide a safety engineered and independently SIL3 certified version under
     the SafeRTOS brand: http://www.SafeRTOS.com.
 */
 
@@ -116,7 +118,7 @@ void vParTestSetLED( unsigned long ulLEDIn, signed long xValue )
 		{
 			GPIO0->FIOSET = partstLED2_OUTPUT;
 		}
-	}	
+	}
 }
 /*-----------------------------------------------------------*/
 
@@ -142,8 +144,8 @@ unsigned long ulCurrentState;
 	else if( ulLEDIn == 1 )
 	{
 		/* If this bit is already set, clear it, and visa versa. */
-		ulCurrentState = GPIO1->FIOPIN;
-		if( ulCurrentState & partstLED1_OUTPUT )
+		ulCurrentState = GPIO0->FIOPIN;
+		if( ulCurrentState & partstLED2_OUTPUT )
 		{
 			GPIO0->FIOCLR = partstLED2_OUTPUT;
 		}
@@ -151,7 +153,7 @@ unsigned long ulCurrentState;
 		{
 			GPIO0->FIOSET = partstLED2_OUTPUT;
 		}
-	}	
+	}
 }
 /*-----------------------------------------------------------*/
 
