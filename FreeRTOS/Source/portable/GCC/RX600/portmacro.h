@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.4.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.4.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
     http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -39,7 +39,7 @@
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
     details. You should have received a copy of the GNU General Public License
-    and the FreeRTOS license exception along with FreeRTOS; if not itcan be
+    and the FreeRTOS license exception along with FreeRTOS; if not it can be
     viewed here: http://www.freertos.org/a00114.html and also obtained by
     writing to Real Time Engineers Ltd., contact details for whom are available
     on the FreeRTOS WEB site.
@@ -115,10 +115,20 @@ portSTACK_TYPE and portBASE_TYPE. */
 #define portTICK_RATE_MS			( ( portTickType ) 1000 / configTICK_RATE_HZ )		
 #define portNOP()					__asm volatile( "NOP" )
 
-/* The location of the software interrupt register.  Software interrupts use
-vector 27. */
-#define portITU_SWINTR			( ( unsigned char * ) 0x000872E0 )
-#define portYIELD()				*portITU_SWINTR = 0x01; portNOP(); portNOP(); portNOP(); portNOP(); portNOP()
+/* Yield equivalent to "*portITU_SWINTR = 0x01; ( void ) *portITU_SWINTR;"
+where portITU_SWINTR is the location of the software interrupt register
+(0x000872E0).  Don't rely on the assembler to select a register, so instead 
+save and restore clobbered registers manually. */
+#define portYIELD()							\
+	__asm volatile 							\
+	(										\
+		"PUSH.L	R10					\n"		\
+		"MOV.L	#0x872E0, R10		\n"		\
+		"MOV.B	#0x1, [R10]			\n"		\
+		"MOV.L	[R10], R10			\n"		\
+		"POP	R10					\n"		\
+	)
+
 #define portYIELD_FROM_ISR( x )	if( x != pdFALSE ) portYIELD()
 
 /*
@@ -134,8 +144,8 @@ vector 27. */
 /* The critical nesting functions defined within tasks.c. */
 extern void vTaskEnterCritical( void );
 extern void vTaskExitCritical( void );
-#define portENTER_CRITICAL()	vTaskEnterCritical();
-#define portEXIT_CRITICAL()		vTaskExitCritical();
+#define portENTER_CRITICAL()	vTaskEnterCritical()
+#define portEXIT_CRITICAL()		vTaskExitCritical()
 
 /* As this port allows interrupt nesting... */
 unsigned long ulPortGetIPL( void ) __attribute__((naked));

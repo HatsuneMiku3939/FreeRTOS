@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.4.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.4.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
     http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -39,7 +39,7 @@
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
     details. You should have received a copy of the GNU General Public License
-    and the FreeRTOS license exception along with FreeRTOS; if not itcan be
+    and the FreeRTOS license exception along with FreeRTOS; if not it can be
     viewed here: http://www.freertos.org/a00114.html and also obtained by
     writing to Real Time Engineers Ltd., contact details for whom are available
     on the FreeRTOS WEB site.
@@ -56,19 +56,19 @@
     ***************************************************************************
 
 
-    http://www.FreeRTOS.org - Documentation, books, training, latest versions, 
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
     license and Real Time Engineers Ltd. contact details.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool, and our new
     fully thread aware and reentrant UDP/IP stack.
 
-    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High 
-    Integrity Systems, who sell the code with commercial support, 
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems, who sell the code with commercial support,
     indemnification and middleware, under the OpenRTOS brand.
-    
-    http://www.SafeRTOS.com - High Integrity Systems also provide a safety 
-    engineered and independently SIL3 certified version for use in safety and 
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
     mission critical applications that require provable dependability.
 */
 
@@ -111,9 +111,17 @@ volatile unsigned short usCriticalNesting = portINITIAL_CRITICAL_NESTING;
 /*-----------------------------------------------------------*/
 
 /*
- * Sets up the periodic ISR used for the RTOS tick.
+ * Sets up the periodic ISR used for the RTOS tick using the interval timer.
+ * The application writer can define configSETUP_TICK_INTERRUPT() (in
+ * FreeRTOSConfig.h) such that their own tick interrupt configuration is used
+ * in place of prvSetupTimerInterrupt().
  */
 static void prvSetupTimerInterrupt( void );
+#ifndef configSETUP_TICK_INTERRUPT
+	/* The user has not provided their own tick interrupt configuration so use
+    the definition in this file (which uses the interval timer). */
+	#define configSETUP_TICK_INTERRUPT() prvSetupTimerInterrupt()
+#endif /* configSETUP_TICK_INTERRUPT */
 
 /*
  * Defined in portasm.s87, this function starts the scheduler by loading the
@@ -154,7 +162,7 @@ unsigned long *pulLocal;
 		/* The start address / PSW value is also written in as a 32bit value,
 		so leave a space for the second two bytes. */
 		pxTopOfStack--;
-	
+
 		/* Task function start address combined with the PSW. */
 		pulLocal = ( unsigned long * ) pxTopOfStack;
 		*pulLocal = ( ( ( unsigned long ) pxCode ) | ( portPSW << 24UL ) );
@@ -190,7 +198,7 @@ unsigned long *pulLocal;
 	*pxTopOfStack = ( portSTACK_TYPE ) 0x0F00;
 	pxTopOfStack--;
 
-	/* Finally the remaining general purpose registers DE and BC */
+	/* The remaining general purpose registers DE and BC */
 	*pxTopOfStack = ( portSTACK_TYPE ) 0xDEDE;
 	pxTopOfStack--;
 	*pxTopOfStack = ( portSTACK_TYPE ) 0xBCBC;
@@ -198,9 +206,9 @@ unsigned long *pulLocal;
 
 	/* Finally the critical section nesting count is set to zero when the task
 	first starts. */
-	*pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;	
+	*pxTopOfStack = ( portSTACK_TYPE ) portNO_CRITICAL_SECTION_NESTING;
 
-	/* Return a pointer to the top of the stack that has beene generated so it
+	/* Return a pointer to the top of the stack that has been generated so it
 	can	be stored in the task control block for the task. */
 	return pxTopOfStack;
 }
@@ -210,20 +218,25 @@ portBASE_TYPE xPortStartScheduler( void )
 {
 	/* Setup the hardware to generate the tick.  Interrupts are disabled when
 	this function is called. */
-	prvSetupTimerInterrupt();
+	configSETUP_TICK_INTERRUPT();
 
 	/* Restore the context of the first task that is going to run. */
 	vPortStartFirstTask();
 
-	/* Execution should not reach here as the tasks are now running! */
+	/* Execution should not reach here as the tasks are now running!
+	prvSetupTimerInterrupt() is called here to prevent the compiler outputting
+	a warning about a statically declared function not being referenced in the
+	case that the application writer has provided their own tick interrupt
+	configuration routine (and defined configSETUP_TICK_INTERRUPT() such that
+	their own routine will be called in place of prvSetupTimerInterrupt()). */
+	prvSetupTimerInterrupt();
 	return pdTRUE;
 }
 /*-----------------------------------------------------------*/
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the RL78/G13 port will get stopped.  If required simply
-	disable the tick interrupt here. */
+	/* It is unlikely that the RL78 port will get stopped. */
 }
 /*-----------------------------------------------------------*/
 
@@ -233,32 +246,51 @@ const unsigned short usClockHz = 15000UL; /* Internal clock. */
 const unsigned short usCompareMatch = ( usClockHz / configTICK_RATE_HZ ) + 1UL;
 
 	/* Use the internal 15K clock. */
-	OSMC = 0x16U;
+	OSMC = ( unsigned char ) 0x16;
 
-	/* Supply the RTC clock. */
-	RTCEN = 1U;
-	
-	/* Disable ITMC operation. */
-	ITMC = 0x0000;
-	
-	/* Disable INTIT interrupt. */
-	ITMK = 1U;
-	
-	/* Set INTIT high priority */
-	ITPR1 = 1U;
-	ITPR0 = 1U;
-	
-	/* Set interval. */
-	ITMC = usCompareMatch;
+	#ifdef RTCEN
+	{
+		/* Supply the interval timer clock. */
+		RTCEN = ( unsigned char ) 1U;
 
-	/* Clear INIT interrupt. */
-	ITIF = 0U;
-	
-	/* Enable INTIT interrupt. */
-	ITMK = 0U;
-	
-	/* Enable IT operation. */
-	ITMC |= 0x8000;
+		/* Disable INTIT interrupt. */
+		ITMK = ( unsigned char ) 1;
+
+		/* Disable ITMC operation. */
+		ITMC = ( unsigned char ) 0x0000;
+
+		/* Clear INIT interrupt. */
+		ITIF = ( unsigned char ) 0;
+
+		/* Set interval and enable interrupt operation. */
+		ITMC = usCompareMatch | 0x8000U;
+
+		/* Enable INTIT interrupt. */
+		ITMK = ( unsigned char ) 0;
+	}
+	#endif
+
+	#ifdef TMKAEN
+	{
+		/* Supply the interval timer clock. */
+		TMKAEN = ( unsigned char ) 1U;
+
+		/* Disable INTIT interrupt. */
+		TMKAMK = ( unsigned char ) 1;
+
+		/* Disable ITMC operation. */
+		ITMC = ( unsigned char ) 0x0000;
+
+		/* Clear INIT interrupt. */
+		TMKAIF = ( unsigned char ) 0;
+
+		/* Set interval and enable interrupt operation. */
+		ITMC = usCompareMatch | 0x8000U;
+
+		/* Enable INTIT interrupt. */
+		TMKAMK = ( unsigned char ) 0;
+	}
+	#endif
 }
 /*-----------------------------------------------------------*/
 

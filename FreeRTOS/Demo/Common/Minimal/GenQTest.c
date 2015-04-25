@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.4.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.4.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
     http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -39,7 +39,7 @@
     WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
     FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
     details. You should have received a copy of the GNU General Public License
-    and the FreeRTOS license exception along with FreeRTOS; if not itcan be
+    and the FreeRTOS license exception along with FreeRTOS; if not it can be
     viewed here: http://www.freertos.org/a00114.html and also obtained by
     writing to Real Time Engineers Ltd., contact details for whom are available
     on the FreeRTOS WEB site.
@@ -134,7 +134,7 @@ static void prvHighPriorityMutexTask( void *pvParameters );
 
 /* Flag that will be latched to pdTRUE should any unexpected behaviour be
 detected in any of the tasks. */
-static portBASE_TYPE xErrorDetected = pdFALSE;
+static volatile portBASE_TYPE xErrorDetected = pdFALSE;
 
 /* Counters that are incremented on each cycle of a test.  This is used to
 detect a stalled task - a test that is no longer running. */
@@ -587,7 +587,7 @@ static unsigned portLONG ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
 	/* Errors detected in the task itself will have latched xErrorDetected
 	to true. */
 
-	return !xErrorDetected;
+	return ( portBASE_TYPE ) !xErrorDetected;
 }
 
 
