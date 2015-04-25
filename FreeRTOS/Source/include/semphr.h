@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -121,7 +121,7 @@ typedef xQueueHandle xSemaphoreHandle;
 		( xSemaphore ) = xQueueGenericCreate( ( unsigned portBASE_TYPE ) 1, semSEMAPHORE_QUEUE_ITEM_LENGTH, queueQUEUE_TYPE_BINARY_SEMAPHORE );	\
 		if( ( xSemaphore ) != NULL )																											\
 		{																																		\
-			xSemaphoreGive( ( xSemaphore ) );																									\
+			( void ) xSemaphoreGive( ( xSemaphore ) );																									\
 		}																																		\
 	}
 

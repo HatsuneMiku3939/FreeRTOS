@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -102,8 +102,6 @@
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE * 2 )
 
 #define configMAX_PRIORITIES			( 7 )
-#define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
-
 
 /* Run time stats gathering definitions. */
 unsigned long ulGetRunTimeCounterValue( void );

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.5.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V7.5.2 - Copyright (C) 2013 Real Time Engineers Ltd.
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
@@ -62,7 +62,7 @@
     1 tab == 4 spaces!
 */
 
-#include <p32xxxx.h>
+#include <xc.h>
 #include <sys/asm.h>
 #include "ISR_Support.h"
 
@@ -101,7 +101,7 @@ vPortTickInterruptHandler:
 
  	.set		noreorder
 	.set 		noat
- 	.ent		xPortStartScheduler
+ 	.ent		vPortStartFirstTask
 
 vPortStartFirstTask:
 
@@ -109,7 +109,7 @@ vPortStartFirstTask:
 	created so far. */
 	portRESTORE_CONTEXT
 
-	.end xPortStartScheduler
+	.end vPortStartFirstTask
 
 
 
