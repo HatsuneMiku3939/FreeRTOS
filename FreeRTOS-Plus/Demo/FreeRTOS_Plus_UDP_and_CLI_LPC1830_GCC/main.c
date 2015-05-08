@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -179,7 +179,7 @@ int main( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( xTaskHandle pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -232,24 +232,24 @@ static portBASE_TYPE xTaskAlreadyCreated = pdFALSE;
 /* Called by FreeRTOS+UDP when a reply is received to an outgoing ping request. */
 void vApplicationPingReplyHook( ePingReplyStatus_t eStatus, uint16_t usIdentifier )
 {
-static const uint8_t *pucSuccess = ( uint8_t * ) "\r\n\r\nPing reply received - ";
-static const uint8_t *pucInvalidChecksum = ( uint8_t * ) "\r\n\r\nPing reply received with invalid checksum - ";
-static const uint8_t *pucInvalidData = ( uint8_t * ) "\r\n\r\nPing reply received with invalid data - ";
-static uint8_t ucMessage[ 50 ];
-void vOutputString( const uint8_t * const pucMessage );
+static const char *pcSuccess = "\r\n\r\nPing reply received - ";
+static const char *pcInvalidChecksum = "\r\n\r\nPing reply received with invalid checksum - ";
+static const char *pcInvalidData = "\r\n\r\nPing reply received with invalid data - ";
+static char cMessage[ 50 ];
+void vOutputString( const char * const pcMessage );
 
 	switch( eStatus )
 	{
 		case eSuccess	:
-			vOutputString( pucSuccess );
+			vOutputString( pcSuccess );
 			break;
 
 		case eInvalidChecksum :
-			vOutputString( pucInvalidChecksum );
+			vOutputString( pcInvalidChecksum );
 			break;
 
 		case eInvalidData :
-			vOutputString( pucInvalidData );
+			vOutputString( pcInvalidData );
 			break;
 
 		default :
@@ -258,7 +258,7 @@ void vOutputString( const uint8_t * const pucMessage );
 			break;
 	}
 
-	sprintf( ( char * ) ucMessage, "identifier %d\r\n\r\n", ( int ) usIdentifier );
-	vOutputString( ucMessage );
+	sprintf( cMessage, "identifier %d\r\n\r\n", ( int ) usIdentifier );
+	vOutputString( cMessage );
 }
 

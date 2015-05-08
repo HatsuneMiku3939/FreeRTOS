@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -88,7 +88,7 @@
 
 /* Messages and queue used to communicate between the ISR and the USB task. */
 static xISRStatus xISRMessages[ usbQUEUE_LENGTH + 1 ];
-extern xQueueHandle xUSBInterruptQueue;
+extern QueueHandle_t xUSBInterruptQueue;
 /*-----------------------------------------------------------*/
 
 /* The ISR can cause a context switch so is declared naked. */

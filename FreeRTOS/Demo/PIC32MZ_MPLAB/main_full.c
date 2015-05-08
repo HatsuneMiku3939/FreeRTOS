@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -138,18 +138,19 @@
 #include "QueueOverwrite.h"
 #include "QueueSet.h"
 #include "recmutex.h"
+#include "EventGroupsDemo.h"
 
 /*-----------------------------------------------------------*/
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* The priorities of the various demo application tasks. */
 #define mainSEM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
@@ -180,7 +181,7 @@ occur. */
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * It is important to ensure the high frequency timer test does not start before
@@ -189,7 +190,7 @@ static void prvCheckTimerCallback( xTimerHandle xTimer );
  * executing.  A one-shot timer is used, so the callback function will only
  * execute once (unless it is manually reset/restarted).
  */
-static void prvSetupHighFrequencyTimerTest( xTimerHandle xTimer );
+static void prvSetupHighFrequencyTimerTest( TimerHandle_t xTimer );
 
 /*
  * Tasks that test the context switch mechanism by filling the processor
@@ -221,7 +222,7 @@ volatile unsigned long ulRegTest1Cycles = 0, ulRegTest2Cycles = 0;
  */
 int main_full( void )
 {
-xTimerHandle xTimer = NULL;
+TimerHandle_t xTimer = NULL;
 
 	/* Create all the other standard demo tasks. */
 	vStartLEDFlashTimers( mainNUM_FLASH_TIMER_LEDS );
@@ -236,20 +237,21 @@ xTimerHandle xTimer = NULL;
 	vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_TASK_PRIORITY );
 	vStartQueueSetTasks();
 	vStartRecursiveMutexTasks();
+	vStartEventGroupTasks();
 
 	/* Create the tasks defined within this file. */
-	xTaskCreate( prvRegTestTask1,						/* The function that implements the task. */
-				( const signed char * const ) "Reg1",	/* Text name for the task to assist debugger - not used by FreeRTOS itself. */
-				configMINIMAL_STACK_SIZE,				/* The stack size to allocate for the task - specified in words not bytes. */
-				NULL,									/* The parameter to pass into the task - not used in this case so set to NULL. */
-				tskIDLE_PRIORITY,						/* The priority to assign to the task. */
-				NULL );									/* Used to obtain a handle to the task being created - not used in this case so set to NULL. */
+	xTaskCreate( prvRegTestTask1,			/* The function that implements the task. */
+				"Reg1",						/* Text name for the task to assist debugger - not used by FreeRTOS itself. */
+				configMINIMAL_STACK_SIZE,	/* The stack size to allocate for the task - specified in words not bytes. */
+				NULL,						/* The parameter to pass into the task - not used in this case so set to NULL. */
+				tskIDLE_PRIORITY,			/* The priority to assign to the task. */
+				NULL );						/* Used to obtain a handle to the task being created - not used in this case so set to NULL. */
 
-	xTaskCreate( prvRegTestTask2, ( const signed char * const ) "Reg2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTestTask2, "Reg2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* Create the software timer that performs the 'check' functionality, as
 	described at the top of this file. */
-	xTimer = xTimerCreate( 	( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
+	xTimer = xTimerCreate( 	"CheckTimer",/* A text name, purely to help debugging. */
 							( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
 							pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
 							( void * ) 0,						/* The ID is not used, so can be set to anything. */
@@ -263,7 +265,7 @@ xTimerHandle xTimer = NULL;
 	/* A software timer is also used to start the high frequency timer test.
 	This is to ensure the test does not start before the kernel.  This time a
 	one shot software timer is used. */
-	xTimer = xTimerCreate( ( const signed char * ) "HighHzTimerSetup", 1, pdFALSE, ( void * ) 0, prvSetupHighFrequencyTimerTest );
+	xTimer = xTimerCreate( "HighHzTimerSetup", 1, pdFALSE, ( void * ) 0, prvSetupHighFrequencyTimerTest );
 	if( xTimer != NULL )
 	{
 		xTimerStart( xTimer, mainDONT_BLOCK );
@@ -313,7 +315,7 @@ extern void vRegTest2( volatile unsigned long * );
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0, ulLastHighFrequencyTimerInterrupts = 0;
@@ -383,13 +385,17 @@ extern unsigned long ulHighFrequencyTimerInterrupts;
 	{
 		ulErrorOccurred |= ( 0x01UL << 12UL );
 	}
+	else if( xAreEventGroupTasksStillRunning() != pdTRUE )
+	{
+		ulErrorOccurred |= ( 0x01UL << 13UL );
+	}
 
 	/* Ensure the expected number of high frequency interrupts have occurred. */
 	if( ulLastHighFrequencyTimerInterrupts != 0 )
 	{
 		if( ( ulHighFrequencyTimerInterrupts - ulLastHighFrequencyTimerInterrupts ) < ulExpectedHighFrequencyInterrupts )
 		{
-			ulErrorOccurred |= ( 0x01UL << 13UL );
+			ulErrorOccurred |= ( 0x01UL << 14UL );
 		}
 	}
 	ulLastHighFrequencyTimerInterrupts = ulHighFrequencyTimerInterrupts;
@@ -415,7 +421,7 @@ extern unsigned long ulHighFrequencyTimerInterrupts;
 }
 /*-----------------------------------------------------------*/
 
-static void prvSetupHighFrequencyTimerTest( xTimerHandle xTimer )
+static void prvSetupHighFrequencyTimerTest( TimerHandle_t xTimer )
 {
 void vSetupTimerTest( unsigned short usFrequencyHz );
 

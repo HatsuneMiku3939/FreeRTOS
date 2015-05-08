@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -253,7 +253,7 @@ void _general_exception_handler( unsigned long ulCause, unsigned long ulStatus )
 
 static void prvCheckTask( void *pvParameters )
 {
-portTickType xLastExecutionTime, ulTicksToWait = mainNO_ERROR_PERIOD;
+TickType_t xLastExecutionTime, ulTicksToWait = mainNO_ERROR_PERIOD;
 unsigned long ulLastRegTest1 = 0UL, ulLastRegTest2 = 0UL;
 const char * pcMessage;
 

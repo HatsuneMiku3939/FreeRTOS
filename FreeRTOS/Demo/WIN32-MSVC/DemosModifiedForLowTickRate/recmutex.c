@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -120,8 +120,8 @@ a chance of executing - this is basically achieved by reducing the number
 of times the loop that takes/gives the recursive mutex executes. */
 #define recmuMAX_COUNT					( 2 )
 #define recmuSHORT_DELAY				( 20 )
-#define recmuNO_DELAY					( ( portTickType ) 0 )
-#define recmuFIVE_TICK_DELAY			( ( portTickType ) 5 )
+#define recmuNO_DELAY					( ( TickType_t ) 0 )
+#define recmuFIVE_TICK_DELAY			( ( TickType_t ) 5 )
 
 /* The three tasks as described at the top of this file. */
 static void prvRecursiveMutexControllingTask( void *pvParameters );
@@ -129,7 +129,7 @@ static void prvRecursiveMutexBlockingTask( void *pvParameters );
 static void prvRecursiveMutexPollingTask( void *pvParameters );
 
 /* The mutex used by the demo. */
-static xSemaphoreHandle xMutex;
+static SemaphoreHandle_t xMutex;
 
 /* Variables used to detect and latch errors. */
 static volatile portBASE_TYPE xErrorOccurred = pdFALSE, xControllingIsSuspended = pdFALSE, xBlockingIsSuspended = pdFALSE;
@@ -137,7 +137,7 @@ static volatile unsigned portBASE_TYPE uxControllingCycles = 0, uxBlockingCycles
 
 /* Handles of the two higher priority tasks, required so they can be resumed 
 (unsuspended). */
-static xTaskHandle xControllingTaskHandle, xBlockingTaskHandle, xPollingTaskHandle;
+static TaskHandle_t xControllingTaskHandle, xBlockingTaskHandle, xPollingTaskHandle;
 
 /*-----------------------------------------------------------*/
 
@@ -153,14 +153,14 @@ void vStartRecursiveMutexTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( ( xQueueHandle ) xMutex, ( signed portCHAR * ) "Recursive_Mutex" );
+	vQueueAddToRegistry( ( QueueHandle_t ) xMutex, "Recursive_Mutex" );
 
 
 	if( xMutex != NULL )
 	{
-		xTaskCreate( prvRecursiveMutexControllingTask, ( signed portCHAR * ) "Rec1Ctrl", configMINIMAL_STACK_SIZE, NULL, recmuCONTROLLING_TASK_PRIORITY, &xControllingTaskHandle );
-        xTaskCreate( prvRecursiveMutexBlockingTask, ( signed portCHAR * ) "Rec2Blck", configMINIMAL_STACK_SIZE, NULL, recmuBLOCKING_TASK_PRIORITY, &xBlockingTaskHandle );
-        xTaskCreate( prvRecursiveMutexPollingTask, ( signed portCHAR * ) "Rec3Poll", configMINIMAL_STACK_SIZE, NULL, recmuPOLLING_TASK_PRIORITY, &xPollingTaskHandle );
+		xTaskCreate( prvRecursiveMutexControllingTask, "Rec1Ctrl", configMINIMAL_STACK_SIZE, NULL, recmuCONTROLLING_TASK_PRIORITY, &xControllingTaskHandle );
+        xTaskCreate( prvRecursiveMutexBlockingTask, "Rec2Blck", configMINIMAL_STACK_SIZE, NULL, recmuBLOCKING_TASK_PRIORITY, &xBlockingTaskHandle );
+        xTaskCreate( prvRecursiveMutexPollingTask, "Rec3Poll", configMINIMAL_STACK_SIZE, NULL, recmuPOLLING_TASK_PRIORITY, &xPollingTaskHandle );
 	}
 }
 /*-----------------------------------------------------------*/

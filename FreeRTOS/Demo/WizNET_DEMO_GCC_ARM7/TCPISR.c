@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,7 +91,7 @@ static long lDummyVariable;
  */
 void vEINT0_ISR_Handler( void )
 {
-extern xQueueHandle xTCPISRQueue;
+extern QueueHandle_t xTCPISRQueue;
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 	/* Just wake the TCP task so it knows an ISR has occurred. */

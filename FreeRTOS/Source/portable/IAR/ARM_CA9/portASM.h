@@ -1,5 +1,5 @@
 ;/*
-;    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+;    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
 ;    All rights reserved
 ;
 ;
@@ -113,7 +113,7 @@ portRESTORE_CONTEXT macro
 	CMP		R1, #0
 
 	; Restore the floating point context, if any
-	LDMFDNE SP!, {R0}
+	POPNE 	{R0}
 	VPOPNE	{D16-D31}
 	VPOPNE	{D0-D15}
 	VMSRNE  FPSCR, R0

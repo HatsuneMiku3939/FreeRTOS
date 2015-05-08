@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,19 +85,19 @@
 #include "serial.h"
 
 /* Misc. constants. */
-#define serNO_BLOCK				( ( portTickType ) 0 )
+#define serNO_BLOCK				( ( TickType_t ) 0 )
 
 /* The queue used to hold received characters. */
-static xQueueHandle xRxedChars;
+static QueueHandle_t xRxedChars;
 
 /* The queue used to hold characters waiting transmission. */
-static xQueueHandle xCharsForTx;
+static QueueHandle_t xCharsForTx;
 
 /*-----------------------------------------------------------*/
 
-xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
+xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
 {
-unsigned portLONG ulBaudRateCount;
+unsigned long ulBaudRateCount;
 
 	/* Initialise the hardware. */
 
@@ -117,11 +117,11 @@ unsigned portLONG ulBaudRateCount;
 		UCA1CTL1 = UCSSEL0 | UCSSEL1;
 		
 		/* Setup baud rate low byte. */
-		UCA1BR0 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned long ) 0xff );
+		UCA1BR0 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
 		/* Setup baud rate high byte. */
 		ulBaudRateCount >>= 8UL;
-		UCA1BR1 = ( unsigned portCHAR ) ( ulBaudRateCount & ( unsigned long ) 0xff );
+		UCA1BR1 = ( unsigned char ) ( ulBaudRateCount & ( unsigned long ) 0xff );
 
 		/* UCLISTEN sets loopback mode! */
 		UCA1STAT = UCLISTEN;
@@ -140,7 +140,7 @@ unsigned portLONG ulBaudRateCount;
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcRxedChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed char *pcRxedChar, TickType_t xBlockTime )
 {
 	/* Get the next character from the buffer.  Return false if no characters
 	are available, or arrive before xBlockTime expires. */
@@ -155,7 +155,7 @@ signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcR
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed portCHAR cOutChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed char cOutChar, TickType_t xBlockTime )
 {
 signed portBASE_TYPE xReturn;
 

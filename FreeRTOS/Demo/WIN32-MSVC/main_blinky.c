@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -69,21 +69,21 @@
  * application.  It is provided as a convenient development and demonstration
  * test bed only.  This was tested using Windows XP on a dual core laptop.
  *
- * Windows will not be running the FreeRTOS simulator threads continuously, so 
- * the timing information in the FreeRTOS+Trace logs have no meaningful units.  
- * See the documentation page for the Windows simulator for an explanation of 
+ * Windows will not be running the FreeRTOS simulator threads continuously, so
+ * the timing information in the FreeRTOS+Trace logs have no meaningful units.
+ * See the documentation page for the Windows simulator for an explanation of
  * the slow timing:
  * http://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
  * - READ THE WEB DOCUMENTATION FOR THIS PORT FOR MORE INFORMATION ON USING IT -
  *
  * NOTE 2:  This project provides two demo applications.  A simple blinky style
  * project, and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting in main.c is used to select 
- * between the two.  See the notes on using mainCREATE_SIMPLE_BLINKY_DEMO_ONLY 
+ * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting in main.c is used to select
+ * between the two.  See the notes on using mainCREATE_SIMPLE_BLINKY_DEMO_ONLY
  * in main.c.  This file implements the simply blinky style version.
  *
  * NOTE 3:  This file only contains the source code that is specific to the
- * basic demo.  Generic functions, such FreeRTOS hook functions, are defined 
+ * basic demo.  Generic functions, such FreeRTOS hook functions, are defined
  * in main.c.
  ******************************************************************************
  *
@@ -94,9 +94,9 @@
  * The queue send task is implemented by the prvQueueSendTask() function in
  * this file.  prvQueueSendTask() sits in a loop that causes it to repeatedly
  * block for 200 (simulated as far as the scheduler is concerned, but in
- * reality much longer - see notes above) milliseconds, before sending the 
- * value 100 to the queue that was created within main_blinky().  Once the 
- * value is sent, the task loops back around to block for another 200 
+ * reality much longer - see notes above) milliseconds, before sending the
+ * value 100 to the queue that was created within main_blinky().  Once the
+ * value is sent, the task loops back around to block for another 200
  * (simulated) milliseconds.
  *
  * The Queue Receive Task:
@@ -104,13 +104,13 @@
  * in this file.  prvQueueReceiveTask() sits in a loop where it repeatedly
  * blocks on attempts to read data from the queue that was created within
  * main_blinky().  When data is received, the task checks the value of the
- * data, and if the value equals the expected 100, outputs a message.  The 
- * 'block time' parameter passed to the queue receive function specifies that 
- * the task should be held in the Blocked state indefinitely to wait for data 
+ * data, and if the value equals the expected 100, outputs a message.  The
+ * 'block time' parameter passed to the queue receive function specifies that
+ * the task should be held in the Blocked state indefinitely to wait for data
  * to be available on the queue.  The queue receive task will only leave the
  * Blocked state when the queue send task writes to the queue.  As the queue
- * send task writes to the queue every 200 (simulated - see notes above) 
- * milliseconds, the queue receive task leaves the Blocked state every 200 
+ * send task writes to the queue every 200 (simulated - see notes above)
+ * milliseconds, the queue receive task leaves the Blocked state every 200
  * milliseconds, and therefore outputs a message every 200 milliseconds.
  */
 
@@ -127,8 +127,8 @@
 #define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 /* The rate at which data is sent to the queue.  The 200ms value is converted
-to ticks using the portTICK_RATE_MS constant. */
-#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_RATE_MS )
+to ticks using the portTICK_PERIOD_MS constant. */
+#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_PERIOD_MS )
 
 /* The number of items the queue can hold.  This is 1 as the receive task
 will remove items as they are added, meaning the send task should always find
@@ -151,7 +151,7 @@ static void prvQueueSendTask( void *pvParameters );
 /*-----------------------------------------------------------*/
 
 /* The queue used by both tasks. */
-static xQueueHandle xQueue = NULL;
+static QueueHandle_t xQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -165,13 +165,13 @@ void main_blinky( void )
 		/* Start the two tasks as described in the comments at the top of this
 		file. */
 		xTaskCreate( prvQueueReceiveTask,					/* The function that implements the task. */
-					( signed char * ) "Rx", 				/* The text name assigned to the task - for debug only as it is not used by the kernel. */
+					"Rx", 									/* The text name assigned to the task - for debug only as it is not used by the kernel. */
 					configMINIMAL_STACK_SIZE, 				/* The size of the stack to allocate to the task. */
 					( void * ) mainQUEUE_RECEIVE_PARAMETER, /* The parameter passed to the task - just to check the functionality. */
 					mainQUEUE_RECEIVE_TASK_PRIORITY, 		/* The priority assigned to the task. */
 					NULL );									/* The task handle is not required, so NULL is passed. */
 
-		xTaskCreate( prvQueueSendTask, ( signed char * ) "TX", configMINIMAL_STACK_SIZE, ( void * ) mainQUEUE_SEND_PARAMETER, mainQUEUE_SEND_TASK_PRIORITY, NULL );
+		xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE, ( void * ) mainQUEUE_SEND_PARAMETER, mainQUEUE_SEND_TASK_PRIORITY, NULL );
 
 		/* Start the tasks and timer running. */
 		vTaskStartScheduler();
@@ -188,10 +188,10 @@ void main_blinky( void )
 
 static void prvQueueSendTask( void *pvParameters )
 {
-portTickType xNextWakeTime;
+TickType_t xNextWakeTime;
 const unsigned long ulValueToSend = 100UL;
 
-	/* Remove compiler warning in the case that configASSERT() is not 
+	/* Remove compiler warning in the case that configASSERT() is not
 	defined. */
 	( void ) pvParameters;
 
@@ -222,7 +222,7 @@ static void prvQueueReceiveTask( void *pvParameters )
 {
 unsigned long ulReceivedValue;
 
-	/* Remove compiler warning in the case that configASSERT() is not 
+	/* Remove compiler warning in the case that configASSERT() is not
 	defined. */
 	( void ) pvParameters;
 

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,7 +85,7 @@
 
 /* Demo application definitions. */
 #define mainQUEUE_SIZE						( 3 )
-#define mainCHECK_DELAY						( ( portTickType ) 5000 / portTICK_RATE_MS )
+#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 #define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 2 )
 
 /* Task priorities. */
@@ -109,22 +109,22 @@
  */
 static void vCheckTask( void *pvParameters );
 
-/* 
+/*
  * The task that handles the uIP stack.  All TCP/IP processing is performed in
  * this task.
  */
 extern void vuIP_Task( void *pvParameters );
 
 /*
- * The LCD is written two by more than one task so is controlled by a 
- * 'gatekeeper' task.  This is the only task that is actually permitted to 
+ * The LCD is written two by more than one task so is controlled by a
+ * 'gatekeeper' task.  This is the only task that is actually permitted to
  * access the LCD directly.  Other tasks wanting to display a message send
  * the message to the gatekeeper.
  */
 static void vLCDTask( void *pvParameters );
 
 /* The queue used to send messages to the LCD task. */
-xQueueHandle xLCDQueue;
+QueueHandle_t xLCDQueue;
 
 /*-----------------------------------------------------------*/
 
@@ -138,7 +138,7 @@ int main (void)
 	xLCDQueue = xQueueCreate( mainQUEUE_SIZE, sizeof( xLCDMessage ) );
 
 	/* Create the lwIP task.  This uses the lwIP RTOS abstraction layer.*/
-    xTaskCreate( vuIP_Task, ( signed char * ) "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
+    xTaskCreate( vuIP_Task, "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
 
 	/* Start the standard demo tasks - these serve no useful purpose other than
 	to demonstrate the FreeRTOS API being used and to test the port. */
@@ -150,8 +150,8 @@ int main (void)
     vStartIntegerMathTasks( mainINTEGER_TASK_PRIORITY );
 
 	/* Start the tasks defined within this file/specific to this demo. */
-    xTaskCreate( vCheckTask, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
-	xTaskCreate( vLCDTask, ( signed char * ) "LCD", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
+    xTaskCreate( vCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
@@ -163,14 +163,14 @@ int main (void)
 
     /* Will only get here if there was insufficient memory to create the idle
     task. */
-	return 0; 
+	return 0;
 }
 /*-----------------------------------------------------------*/
 
 static void vCheckTask( void *pvParameters )
 {
 portBASE_TYPE xErrorOccurred = pdFALSE;
-portTickType xLastExecutionTime;
+TickType_t xLastExecutionTime;
 unsigned portBASE_TYPE uxColumn = 0;
 xLCDMessage xMessage;
 
@@ -238,7 +238,7 @@ xLCDMessage xMessage;
 	/* Initialise the LCD and display a startup message. */
 	LCD_init();
 	LCD_cur_off();
-    LCD_cls();    
+    LCD_cls();
     LCD_gotoxy( 1, 1 );
     LCD_puts( ( signed char * ) "www.FreeRTOS.org" );
 
@@ -246,7 +246,7 @@ xLCDMessage xMessage;
 	{
 		/* Wait for a message to arrive that requires displaying. */
 		while( xQueueReceive( xLCDQueue, &xMessage, portMAX_DELAY ) != pdPASS );
-		
+
 		/* Display the message.  Print each message to a different position. */
 		LCD_cls();
 		LCD_gotoxy( ( xMessage.xColumn & 0x07 ) + 1, ( xMessage.xColumn & 0x01 ) + 1 );

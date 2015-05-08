@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -68,13 +68,13 @@
 
 /* Create the task that will control the LCD.  Returned is a handle to the queue
 on which messages to get written to the LCD should be written. */
-xQueueHandle xStartLCDTask( void );
+QueueHandle_t xStartLCDTask( void );
 
 typedef struct
 {
 	/* The minimum amount of time the message should remain on the LCD without
 	being overwritten. */
-	portTickType xMinDisplayTime;
+	TickType_t xMinDisplayTime;
 
 	/* A pointer to the string to be displayed. */
 	char *pcMessage;

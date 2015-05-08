@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -88,17 +88,17 @@ or 0 to run the more comprehensive test and demo application. */
 	#define configCPU_CLOCK_HZ				16384
 	#define configSYSTICK_CLOCK_HZ			16384
 	#define configUSE_TICKLESS_IDLE			1
-	#define configTICK_RATE_HZ				( ( portTickType ) 128 )
+	#define configTICK_RATE_HZ				( ( TickType_t ) 128 )
 #else
 	#define configCPU_CLOCK_HZ				sysclk_get_cpu_hz()
 	#define configUSE_TICKLESS_IDLE			0
-	#define configTICK_RATE_HZ				( ( portTickType ) 1000 )
+	#define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #endif /* configCREATE_LOW_POWER_DEMO */
 
 #define configUSE_PREEMPTION			1
 #define configUSE_IDLE_HOOK				0
 #define configUSE_TICK_HOOK				0
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 5 )
+#define configMAX_PRIORITIES			( 5 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 130 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 26000 ) )
 #define configMAX_TASK_NAME_LEN			( 10 )

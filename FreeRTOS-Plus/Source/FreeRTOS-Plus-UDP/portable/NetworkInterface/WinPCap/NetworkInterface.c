@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.3 (C) 2014 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -382,7 +382,7 @@ unsigned long ulNetMask;
 	/* Create a task that simulates an interrupt in a real system.  This will
 	block waiting for packets, then send a message to the uIP task when data
 	is available. */
-	xTaskCreate( prvInterruptSimulatorTask, ( signed char * ) "MAC_ISR", configMINIMAL_STACK_SIZE, NULL, configMAC_ISR_SIMULATOR_PRIORITY, NULL );
+	xTaskCreate( prvInterruptSimulatorTask, "MAC_ISR", configMINIMAL_STACK_SIZE, NULL, configMAC_ISR_SIMULATOR_PRIORITY, NULL );
 }
 /*-----------------------------------------------------------*/
 

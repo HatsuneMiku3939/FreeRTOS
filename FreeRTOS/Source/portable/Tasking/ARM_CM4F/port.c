@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -72,17 +72,17 @@
 #include "task.h"
 
 /* Constants required to manipulate the NVIC. */
-#define portNVIC_SYSTICK_CTRL		( ( volatile unsigned long * ) 0xe000e010 )
-#define portNVIC_SYSTICK_LOAD		( ( volatile unsigned long * ) 0xe000e014 )
-#define portNVIC_SYSPRI2			( ( volatile unsigned long * ) 0xe000ed20 )
+#define portNVIC_SYSTICK_CTRL		( ( volatile uint32_t * ) 0xe000e010 )
+#define portNVIC_SYSTICK_LOAD		( ( volatile uint32_t * ) 0xe000e014 )
+#define portNVIC_SYSPRI2			( ( volatile uint32_t * ) 0xe000ed20 )
 #define portNVIC_SYSTICK_CLK		0x00000004
 #define portNVIC_SYSTICK_INT		0x00000002
 #define portNVIC_SYSTICK_ENABLE		0x00000001
-#define portNVIC_PENDSV_PRI			( ( ( unsigned long ) configKERNEL_INTERRUPT_PRIORITY ) << 16 )
-#define portNVIC_SYSTICK_PRI		( ( ( unsigned long ) configKERNEL_INTERRUPT_PRIORITY ) << 24 )
+#define portNVIC_PENDSV_PRI			( ( ( uint32_t ) configKERNEL_INTERRUPT_PRIORITY ) << 16 )
+#define portNVIC_SYSTICK_PRI		( ( ( uint32_t ) configKERNEL_INTERRUPT_PRIORITY ) << 24 )
 
 /* Constants required to manipulate the VFP. */
-#define portFPCCR					( ( volatile unsigned long * ) 0xe000ef34 ) /* Floating point context control register. */
+#define portFPCCR					( ( volatile uint32_t * ) 0xe000ef34 ) /* Floating point context control register. */
 #define portASPEN_AND_LSPEN_BITS	( 0x3UL << 30UL )
 
 /* Constants required to set up the initial stack. */
@@ -100,11 +100,11 @@ debugger. */
 
 /* The priority used by the kernel is assigned to a variable to make access
 from inline assembler easier. */
-const unsigned long ulKernelPriority = configKERNEL_INTERRUPT_PRIORITY;
+const uint32_t ulKernelPriority = configKERNEL_INTERRUPT_PRIORITY;
 
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
-static unsigned long ulCriticalNesting = 0xaaaaaaaaUL;
+static uint32_t ulCriticalNesting = 0xaaaaaaaaUL;
 
 /*
  * Setup the timer to generate the tick interrupts.
@@ -129,14 +129,14 @@ static void prvTaskExitError( void );
 
 /* This exists purely to allow the const to be used from within the
 port_asm.asm assembly file. */
-const unsigned long ulMaxSyscallInterruptPriorityConst = configMAX_SYSCALL_INTERRUPT_PRIORITY;
+const uint32_t ulMaxSyscallInterruptPriorityConst = configMAX_SYSCALL_INTERRUPT_PRIORITY;
 
 /*-----------------------------------------------------------*/
 
 /*
  * See header file for description.
  */
-portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
 	/* Simulate the stack frame as it would be created by a context switch
 	interrupt. */
@@ -147,13 +147,13 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 
 	*pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
+	*pxTopOfStack = ( StackType_t ) pxCode;	/* PC */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) portTASK_RETURN_ADDRESS;	/* LR */
+	*pxTopOfStack = ( StackType_t ) portTASK_RETURN_ADDRESS;	/* LR */
 
 	/* Save code space by skipping register initialisation. */
 	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
+	*pxTopOfStack = ( StackType_t ) pvParameters;	/* R0 */
 
 	/* A save method is being used that requires each task to maintain its
 	own exec return value. */
@@ -169,13 +169,13 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 static void prvTaskExitError( void )
 {
 	/* A function that implements a task must not exit or attempt to return to
-	its caller as there is nothing to return to.  If a task wants to exit it 
+	its caller as there is nothing to return to.  If a task wants to exit it
 	should instead call vTaskDelete( NULL ).
-	
-	Artificially force an assert() to be triggered if configASSERT() is 
+
+	Artificially force an assert() to be triggered if configASSERT() is
 	defined, then stop here so application writers can catch the error. */
 	configASSERT( ulCriticalNesting == ~0UL );
-	portDISABLE_INTERRUPTS();	
+	portDISABLE_INTERRUPTS();
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
@@ -183,7 +183,7 @@ static void prvTaskExitError( void )
 /*
  * See header file for description.
  */
-portBASE_TYPE xPortStartScheduler( void )
+BaseType_t xPortStartScheduler( void )
 {
 	/* configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to 0.
 	See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html */
@@ -216,8 +216,9 @@ portBASE_TYPE xPortStartScheduler( void )
 
 void vPortEndScheduler( void )
 {
-	/* It is unlikely that the CM4F port will require this function as there
-	is nothing to return to.  */
+	/* Not implemented in ports where there is nothing to return to.
+	Artificially force an assert. */
+	configASSERT( ulCriticalNesting == 1000UL );
 }
 /*-----------------------------------------------------------*/
 
@@ -244,6 +245,7 @@ void vPortEnterCritical( void )
 
 void vPortExitCritical( void )
 {
+	configASSERT( ulCriticalNesting );
 	ulCriticalNesting--;
 	if( ulCriticalNesting == 0 )
 	{
@@ -254,7 +256,7 @@ void vPortExitCritical( void )
 
 void SysTick_Handler( void )
 {
-unsigned long ulDummy;
+uint32_t ulDummy;
 
 	ulDummy = portSET_INTERRUPT_MASK_FROM_ISR();
 	{

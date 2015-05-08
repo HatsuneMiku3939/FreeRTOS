@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -111,7 +111,7 @@ __declspec(interrupt:0) void vPIT0InterruptHandler( void );
  */
 void vApplicationSetupInterrupts( void )
 {
-const unsigned portSHORT usCompareMatchValue = ( ( configCPU_CLOCK_HZ / portPRESCALE_VALUE ) / configTICK_RATE_HZ );
+const unsigned short usCompareMatchValue = ( ( configCPU_CLOCK_HZ / portPRESCALE_VALUE ) / configTICK_RATE_HZ );
 
     /* Configure interrupt priority and level and unmask interrupt for PIT0. */
     MCF_INTC0_ICR55 = ( 1 | ( configKERNEL_INTERRUPT_PRIORITY << 3 ) );
@@ -132,7 +132,7 @@ const unsigned portSHORT usCompareMatchValue = ( ( configCPU_CLOCK_HZ / portPRES
 
 __declspec(interrupt:0) void vPIT0InterruptHandler( void )
 {
-unsigned portLONG ulSavedInterruptMask;
+unsigned long ulSavedInterruptMask;
 
 	/* Clear the PIT0 interrupt. */
 	MCF_PIT0_PCSR |= MCF_PIT_PCSR_PIF;

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -83,6 +83,7 @@
 #include "partest.h"
 #include "QueueOverwrite.h"
 #include "QueueSet.h"
+#include "EventGroupsDemo.h"
 
 /* Hardware specific includes. */
 #include "ConfigPerformance.h"
@@ -193,7 +194,7 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -222,6 +223,9 @@ void vApplicationTickHook( void )
 
 		/* Call the queue set ISR test function. */
 		vQueueSetAccessQueueSetFromISR();
+
+		/* Exercise event groups from interrupts. */
+		vPeriodicEventGroupsProcessing();
 	}
 	#endif
 }

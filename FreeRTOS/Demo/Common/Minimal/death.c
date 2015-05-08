@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -130,7 +130,7 @@ static const unsigned portBASE_TYPE uxMaxNumberOfExtraTasksRunning = 3;
 
 /* Used to store a handle to the task that should be killed by a suicidal task,
 before it kills itself. */
-xTaskHandle xCreatedTask;
+TaskHandle_t xCreatedTask;
 
 /*-----------------------------------------------------------*/
 
@@ -143,7 +143,7 @@ unsigned portBASE_TYPE *puxPriority;
 	puxPriority = ( unsigned portBASE_TYPE * ) pvPortMalloc( sizeof( unsigned portBASE_TYPE ) );
 	*puxPriority = uxPriority;
 
-	xTaskCreate( vCreateTasks, ( signed char * ) "CREATOR", deathSTACK_SIZE, ( void * ) puxPriority, uxPriority, NULL );
+	xTaskCreate( vCreateTasks, "CREATOR", deathSTACK_SIZE, ( void * ) puxPriority, uxPriority, NULL );
 
 	/* Record the number of tasks that are running now so we know if any of the
 	suicidal tasks have failed to be killed. */
@@ -168,15 +168,15 @@ unsigned portBASE_TYPE *puxPriority;
 static portTASK_FUNCTION( vSuicidalTask, pvParameters )
 {
 volatile long l1, l2;
-xTaskHandle xTaskToKill;
-const portTickType xDelay = ( portTickType ) 200 / portTICK_RATE_MS;
+TaskHandle_t xTaskToKill;
+const TickType_t xDelay = ( TickType_t ) 200 / portTICK_PERIOD_MS;
 
 	if( pvParameters != NULL )
 	{
 		/* This task is periodically created four times.  Two created tasks are
 		passed a handle to the other task so it can kill it before killing itself.
 		The other task is passed in null. */
-		xTaskToKill = *( xTaskHandle* )pvParameters;
+		xTaskToKill = *( TaskHandle_t* )pvParameters;
 	}
 	else
 	{
@@ -194,7 +194,7 @@ const portTickType xDelay = ( portTickType ) 200 / portTICK_RATE_MS;
 		if( xTaskToKill != NULL )
 		{
 			/* Make sure the other task has a go before we delete it. */
-			vTaskDelay( ( portTickType ) 0 );
+			vTaskDelay( ( TickType_t ) 0 );
 
 			/* Kill the other task that was created by vCreateTasks(). */
 			vTaskDelete( xTaskToKill );
@@ -208,7 +208,7 @@ const portTickType xDelay = ( portTickType ) 200 / portTICK_RATE_MS;
 
 static portTASK_FUNCTION( vCreateTasks, pvParameters )
 {
-const portTickType xDelay = ( portTickType ) 1000 / portTICK_RATE_MS;
+const TickType_t xDelay = ( TickType_t ) 1000 / portTICK_PERIOD_MS;
 unsigned portBASE_TYPE uxPriority;
 
 	uxPriority = *( unsigned portBASE_TYPE * ) pvParameters;
@@ -221,8 +221,8 @@ unsigned portBASE_TYPE uxPriority;
 
 		xCreatedTask = NULL;
 
-		xTaskCreate( vSuicidalTask, ( signed char * ) "SUICID1", configMINIMAL_STACK_SIZE, NULL, uxPriority, &xCreatedTask );
-		xTaskCreate( vSuicidalTask, ( signed char * ) "SUICID2", configMINIMAL_STACK_SIZE, &xCreatedTask, uxPriority, NULL );
+		xTaskCreate( vSuicidalTask, "SUICID1", configMINIMAL_STACK_SIZE, NULL, uxPriority, &xCreatedTask );
+		xTaskCreate( vSuicidalTask, "SUICID2", configMINIMAL_STACK_SIZE, &xCreatedTask, uxPriority, NULL );
 
 		++usCreationCount;
 	}

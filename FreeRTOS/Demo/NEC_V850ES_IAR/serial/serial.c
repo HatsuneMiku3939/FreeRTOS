@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -92,16 +92,16 @@
 #define serLSB		( 0x10 )
 
 /* Misc. */
-#define serINVALID_QUEUE				( ( xQueueHandle ) 0 )
+#define serINVALID_QUEUE				( ( QueueHandle_t ) 0 )
 #define serHANDLE						( ( xComPortHandle ) 1 )
-#define serNO_BLOCK						( ( portTickType ) 0 )
+#define serNO_BLOCK						( ( TickType_t ) 0 )
 
 /*-----------------------------------------------------------*/
 
 /* Queues used to hold received characters, and characters waiting to be
 transmitted. */
-static xQueueHandle xRxedChars;
-static xQueueHandle xCharsForTx;
+static QueueHandle_t xRxedChars;
+static QueueHandle_t xCharsForTx;
 
 /*-----------------------------------------------------------*/
 
@@ -116,14 +116,14 @@ static volatile unsigned long ulTxInProgress = pdFALSE;
 /*
  * See the serial2.h header file.
  */
-xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
+xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
 {
 xComPortHandle xReturn = serHANDLE;
-const unsigned portLONG ulFuclk = ( configCPU_CLOCK_HZ / 2 ) / 8UL;
+const unsigned long ulFuclk = ( configCPU_CLOCK_HZ / 2 ) / 8UL;
 
 	/* Create the queues used to hold Rx and Tx characters. */
-	xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xCharsForTx = xQueueCreate( uxQueueLength + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
+	xCharsForTx = xQueueCreate( uxQueueLength + 1, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
 
 	/* If the queues were created correctly then setup the serial port
 	hardware. */
@@ -161,7 +161,7 @@ const unsigned portLONG ulFuclk = ( configCPU_CLOCK_HZ / 2 ) / 8UL;
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcRxedChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed char *pcRxedChar, TickType_t xBlockTime )
 {
 	/* The port handle is not required as this driver only supports one port. */
 	( void ) pxPort;
@@ -179,9 +179,9 @@ signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcR
 }
 /*-----------------------------------------------------------*/
 
-void vSerialPutString( xComPortHandle pxPort, const signed portCHAR * const pcString, unsigned portSHORT usStringLength )
+void vSerialPutString( xComPortHandle pxPort, const signed char * const pcString, unsigned short usStringLength )
 {
-signed portCHAR *pxNext;
+signed char *pxNext;
 
 	/* A couple of parameters that this port does not use. */
 	( void ) usStringLength;
@@ -194,7 +194,7 @@ signed portCHAR *pxNext;
 	( void ) pxPort;
 
 	/* Send each character in the string, one at a time. */
-	pxNext = ( signed portCHAR * ) pcString;
+	pxNext = ( signed char * ) pcString;
 	while( *pxNext )
 	{
 		xSerialPutChar( pxPort, *pxNext, serNO_BLOCK );
@@ -203,7 +203,7 @@ signed portCHAR *pxNext;
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed portCHAR cOutChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed char cOutChar, TickType_t xBlockTime )
 {
 portBASE_TYPE xReturn = pdPASS;
 
@@ -267,7 +267,7 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 /* Rx interrupt handler.  This is called from the asm file wrapper. */
 void vUARTRxISRHandler( void )
 {
-portCHAR cChar;
+char cChar;
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 	/* Send the received character to the Rx queue. */

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -93,7 +93,7 @@ multiple evaluation boards. */
 
 #define configUSE_PREEMPTION			1
 #define configTICK_RATE_HZ				( ( unsigned short ) 1000 )
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 4 )
+#define configMAX_PRIORITIES			( 4 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 80 )
 #define configMAX_TASK_NAME_LEN			( 10 )
 #define configUSE_TRACE_FACILITY		0

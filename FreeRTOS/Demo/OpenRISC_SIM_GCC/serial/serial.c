@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,7 +85,7 @@
 
 /* Constants to setup and access the USART. */
 #define serINVALID_COMPORT_HANDLER        ( ( xComPortHandle ) 0 )
-#define serINVALID_QUEUE                  ( ( xQueueHandle ) 0 )
+#define serINVALID_QUEUE                  ( ( QueueHandle_t ) 0 )
 #define serHANDLE                         ( ( xComPortHandle ) 1 )
 #define serNO_BLOCK                       ( ( portTickType ) 0 )
 
@@ -93,15 +93,15 @@
 
 /* Queues used to hold received characters, and characters waiting to be
 transmitted. */
-static xQueueHandle xRxedChars;
-static xQueueHandle xCharsForTx;
+static QueueHandle_t xRxedChars;
+static QueueHandle_t xCharsForTx;
 
 /*-----------------------------------------------------------*/
 
 /* Forward declaration. */
 static void vprvSerialCreateQueues( unsigned portBASE_TYPE uxQueueLength,
-                                    xQueueHandle *pxRxedChars,
-                                    xQueueHandle *pxCharsForTx );
+                                    QueueHandle_t *pxRxedChars,
+                                    QueueHandle_t *pxCharsForTx );
 
 /*-----------------------------------------------------------*/
 static void vUSART_ISR( void *arg )
@@ -263,7 +263,7 @@ void vSerialClose( xComPortHandle xPort )
 /*
  * Create the rx and tx queues.
  */
-static void vprvSerialCreateQueues(  unsigned portBASE_TYPE uxQueueLength, xQueueHandle *pxRxedChars, xQueueHandle *pxCharsForTx )
+static void vprvSerialCreateQueues(  unsigned portBASE_TYPE uxQueueLength, QueueHandle_t *pxRxedChars, QueueHandle_t *pxCharsForTx )
 {
     /* Create the queues used to hold Rx and Tx characters. */
     xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );

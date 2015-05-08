@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -76,8 +76,8 @@
  ******************************************************************************
  *
  * main_full() creates all the demo application tasks and a software timer, then
- * starts the scheduler.  The web documentation provides more details of the 
- * standard demo application tasks, which provide no particular functionality, 
+ * starts the scheduler.  The web documentation provides more details of the
+ * standard demo application tasks, which provide no particular functionality,
  * but do provide a good example of how to use the FreeRTOS API.
  *
  * In addition to the standard demo tasks, the following tasks and tests are
@@ -133,20 +133,20 @@
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /*-----------------------------------------------------------*/
 
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * Register check tasks, and the tasks used to write over and check the contents
@@ -168,7 +168,7 @@ volatile unsigned long ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 
 void main_full( void )
 {
-xTimerHandle xCheckTimer = NULL;
+TimerHandle_t xCheckTimer = NULL;
 
 	/* Start all the other standard demo/test tasks.  The have not particular
 	functionality, but do demonstrate how to use the FreeRTOS API and test the
@@ -180,21 +180,21 @@ xTimerHandle xCheckTimer = NULL;
 	vStartRecursiveMutexTasks();
 	vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
 	vStartMathTasks( mainFLOP_TASK_PRIORITY );
-	
+
 	/* Create the register check tasks, as described at the top of this
 	file */
-	xTaskCreate( prvRegTest1Task, ( signed char * ) "Reg1", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( prvRegTest2Task, ( signed char * ) "Reg2", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTest1Task, "Reg1", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTest2Task, "Reg2", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
 
 	/* Create the software timer that performs the 'check' functionality,
 	as described at the top of this file. */
-	xCheckTimer = xTimerCreate( ( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-								( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-								( void * ) 0,						/* The ID is not used, so can be set to anything. */
-								prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
-							  );	
-	
+	xCheckTimer = xTimerCreate( "CheckTimer",					/* A text name, purely to help debugging. */
+								( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+								pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+								( void * ) 0,					/* The ID is not used, so can be set to anything. */
+								prvCheckTimerCallback			/* The callback function that inspects the status of all the other tasks. */
+							  );
+
 	if( xCheckTimer != NULL )
 	{
 		xTimerStart( xCheckTimer, mainDONT_BLOCK );
@@ -202,17 +202,17 @@ xTimerHandle xCheckTimer = NULL;
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
-	
+
 	/* If all is well, the scheduler will now be running, and the following line
 	will never be reached.  If the following line does execute, then there was
 	insufficient FreeRTOS heap memory available for the idle and/or timer tasks
 	to be created.  See the memory management section on the FreeRTOS web site
 	for more details. */
-	for( ;; );	
+	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
@@ -250,7 +250,7 @@ unsigned long ulErrorFound = pdFALSE;
 	{
 		ulErrorFound = pdTRUE;
 	}
-	
+
 	/* Check that the register test 1 task is still running. */
 	if( ulLastRegTest1Value == ulRegTest1LoopCounter )
 	{
@@ -268,8 +268,8 @@ unsigned long ulErrorFound = pdFALSE;
 	/* Toggle the check LED to give an indication of the system status.  If
 	the LED toggles every mainCHECK_TIMER_PERIOD_MS milliseconds then
 	everything is ok.  A faster toggle indicates an error. */
-	configTOGGLE_LED();	
-	
+	configTOGGLE_LED();
+
 	/* Have any errors been latch in ulErrorFound?  If so, shorten the
 	period of the check timer to mainERROR_CHECK_TIMER_PERIOD_MS milliseconds.
 	This will result in an increase in the rate at which mainCHECK_LED
@@ -279,7 +279,7 @@ unsigned long ulErrorFound = pdFALSE;
 		if( lChangedTimerPeriodAlready == pdFALSE )
 		{
 			lChangedTimerPeriodAlready = pdTRUE;
-			
+
 			/* This call to xTimerChangePeriod() uses a zero block time.
 			Functions called from inside of a timer callback function must
 			*never* attempt	to block. */

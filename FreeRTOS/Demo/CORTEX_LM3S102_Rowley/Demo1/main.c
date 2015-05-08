@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -119,10 +119,10 @@
 #include "DriverLib.h"
 
 /* The time to delay between writing each character to the LCD. */
-#define mainCHAR_WRITE_DELAY		( 2 / portTICK_RATE_MS )
+#define mainCHAR_WRITE_DELAY		( 2 / portTICK_PERIOD_MS )
 
 /* The time to delay between writing each string to the LCD. */
-#define mainSTRING_WRITE_DELAY		( 400 / portTICK_RATE_MS )
+#define mainSTRING_WRITE_DELAY		( 400 / portTICK_PERIOD_MS )
 
 /* The number of flash co-routines to create. */
 #define mainNUM_FLASH_CO_ROUTINES	( 5 )
@@ -140,9 +140,9 @@ string on UART 0. */
 
 /* The time between transmissions of the string on UART 0.   This is pseudo
 random in order to generate a bit or randomness to when the interrupts occur.*/
-#define mainMIN_TX_DELAY			( 40 / portTICK_RATE_MS )
-#define mainMAX_TX_DELAY			( ( portTickType ) 0x7f )
-#define mainOFFSET_TIME				( ( portTickType ) 3 )
+#define mainMIN_TX_DELAY			( 40 / portTICK_PERIOD_MS )
+#define mainMAX_TX_DELAY			( ( TickType_t ) 0x7f )
+#define mainOFFSET_TIME				( ( TickType_t ) 3 )
 
 /* The time the Comms Rx task should wait to receive a character.  This should
 be slightly longer than the time between transmissions.  If we do not receive
@@ -199,7 +199,7 @@ static void vCommsRxTask( void * pvParameters );
  * The co-routine that periodically initiates the transmission of the string on
  * the UART.
  */
-static void vSerialTxCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex );
+static void vSerialTxCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex );
 
 /* 
  * Writes a string the the LCD.
@@ -244,7 +244,7 @@ static char cNextChar;
 
 /* The queue used to transmit characters from the interrupt to the Comms Rx
 task. */
-static xQueueHandle xCommsQueue;
+static QueueHandle_t xCommsQueue;
 
 /*-----------------------------------------------------------*/
 
@@ -429,9 +429,9 @@ static char cRxedChar, cExpectedChar;
 }
 /*-----------------------------------------------------------*/
 
-static void vSerialTxCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex )
+static void vSerialTxCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex )
 {
-portTickType xDelayPeriod;
+TickType_t xDelayPeriod;
 static unsigned long *pulRandomBytes = mainFIRST_PROGRAM_BYTES;
 
 	/* Co-routine MUST start with a call to crSTART. */

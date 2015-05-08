@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,9 +91,9 @@
  * containing an unexpected value is indicative of an error in the context
  * switching mechanism.
  *
- * "Interrupt semaphore take" task - This task does nothing but block on a 
- * semaphore that is 'given' from the tick hook function (which is defined in 
- * main.c).  It toggles the fourth LED each time it receives the semaphore.  The 
+ * "Interrupt semaphore take" task - This task does nothing but block on a
+ * semaphore that is 'given' from the tick hook function (which is defined in
+ * main.c).  It toggles the fourth LED each time it receives the semaphore.  The
  * Semahore is given every 50ms, so LED 4 toggles every 50ms.
  *
  * "Flash timers" - A software timer callback function is defined that does
@@ -131,20 +131,20 @@
 
 /* The period after which the check timer will expire provided no errors have
 been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* A block time of zero simply means "don't block". */
 #define mainDONT_BLOCK						( 0UL )
 
 /* The base toggle rate used by the flash timers.  Each toggle rate is a
 multiple of this. */
-#define mainFLASH_TIMER_BASE_RATE			( 200UL / portTICK_RATE_MS )
+#define mainFLASH_TIMER_BASE_RATE			( 200UL / portTICK_PERIOD_MS )
 
 /* The LED toggle by the check timer. */
 #define mainCHECK_LED						( 4 )
@@ -170,13 +170,13 @@ extern void vMainToggleLED( void );
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * The flash timer callback function, as described at the top of this file.
  * This callback function is assigned to three separate software timers.
  */
-static void prvFlashTimerCallback( xTimerHandle xTimer );
+static void prvFlashTimerCallback( TimerHandle_t xTimer );
 
 /*
  * The task that toggles an LED each time the semaphore 'given' by the tick
@@ -201,12 +201,12 @@ volatile unsigned long ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 /* The semaphore that is given by the tick hook function (defined in main.c)
 and taken by the task implemented by the prvSemaphoreTakeTask() function.  The
 task toggles LED mainSEMAPHORE_LED each time the semaphore is taken. */
-xSemaphoreHandle xLEDSemaphore = NULL;
+SemaphoreHandle_t xLEDSemaphore = NULL;
 /*-----------------------------------------------------------*/
 
 void main_full( void )
 {
-xTimerHandle xTimer = NULL;
+TimerHandle_t xTimer = NULL;
 unsigned long ulTimer;
 const unsigned long ulTimersToCreate = 3L;
 /* The register test tasks are asm functions that don't use a stack.  The
@@ -227,7 +227,7 @@ const size_t xRegTestStackSize = 25U;
 	toggles an LED each time the semaphore is given. */
 	vSemaphoreCreateBinary( xLEDSemaphore );
 	xTaskCreate( 	prvSemaphoreTakeTask, 		/* Function that implements the task. */
-					( signed char * ) "Sem", 	/* Text name of the task. */
+					"Sem", 						/* Text name of the task. */
 					configMINIMAL_STACK_SIZE, 	/* Stack allocated to the task (in words). */
 					NULL, 						/* The task parameter is not used. */
 					configMAX_PRIORITIES - 2, 	/* The priority of the task. */
@@ -237,14 +237,14 @@ const size_t xRegTestStackSize = 25U;
 	These are naked functions that don't use any stack.  A stack still has
 	to be allocated to hold the task context. */
 	xTaskCreate( 	vRegTest1Task,			/* Function that implements the task. */
-					( signed char * ) "Reg1", /* Text name of the task. */
+					"Reg1", 				/* Text name of the task. */
 					xRegTestStackSize,		/* Stack allocated to the task. */
 					NULL, 					/* The task parameter is not used. */
 					tskIDLE_PRIORITY, 		/* The priority to assign to the task. */
 					NULL );					/* Don't receive a handle back, it is not needed. */
 
 	xTaskCreate( 	vRegTest2Task,			/* Function that implements the task. */
-					( signed char * ) "Reg2", /* Text name of the task. */
+					"Reg2", 				/* Text name of the task. */
 					xRegTestStackSize,		/* Stack allocated to the task. */
 					NULL, 					/* The task parameter is not used. */
 					tskIDLE_PRIORITY, 		/* The priority to assign to the task. */
@@ -253,7 +253,7 @@ const size_t xRegTestStackSize = 25U;
 	/* Create the three flash timers. */
 	for( ulTimer = 0UL; ulTimer < ulTimersToCreate; ulTimer++ )
 	{
-		xTimer = xTimerCreate( 	( const signed char * ) "FlashTimer",	/* A text name, purely to help debugging. */
+		xTimer = xTimerCreate( 	"FlashTimer",							/* A text name, purely to help debugging. */
 								( mainFLASH_TIMER_BASE_RATE * ( ulTimer + 1UL ) ),	/* The timer period, in this case 3000ms (3s). */
 								pdTRUE,									/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
 								( void * ) ulTimer,						/* The ID is used to hold the number of the LED that will be flashed. */
@@ -268,11 +268,11 @@ const size_t xRegTestStackSize = 25U;
 
 	/* Create the software timer that performs the 'check' functionality,
 	as described at the top of this file. */
-	xTimer = xTimerCreate( 	( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-							( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-							pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-							( void * ) 0,						/* The ID is not used, so can be set to anything. */
-							prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
+	xTimer = xTimerCreate( 	"CheckTimer",					/* A text name, purely to help debugging. */
+							( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+							pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+							( void * ) 0,					/* The ID is not used, so can be set to anything. */
+							prvCheckTimerCallback			/* The callback function that inspects the status of all the other tasks. */
 					  	);
 
 	/* If the software timer was created successfully, start it.  It won't
@@ -297,7 +297,7 @@ const size_t xRegTestStackSize = 25U;
 /*-----------------------------------------------------------*/
 
 /* See the description at the top of this file. */
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
@@ -387,7 +387,7 @@ static void prvSemaphoreTakeTask( void *pvParameters )
 }
 /*-----------------------------------------------------------*/
 
-static void prvFlashTimerCallback( xTimerHandle xTimer )
+static void prvFlashTimerCallback( TimerHandle_t xTimer )
 {
 unsigned long ulLED;
 

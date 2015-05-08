@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -72,7 +72,7 @@
  * is used by the EMAC ISR to indicate that Rx packets have been received.
  * If the initialisation fails then NULL is returned.
  */
-xSemaphoreHandle xEMACInit( void );
+SemaphoreHandle_t xEMACInit( void );
 
 /*
  * Send the current uIP buffer.  This copies the uIP buffer to one of the

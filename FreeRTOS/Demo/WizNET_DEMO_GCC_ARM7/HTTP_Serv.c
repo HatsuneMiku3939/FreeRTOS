@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -75,8 +75,8 @@
 #include "tcp.h"
 
 /* Misc constants. */
-#define tcpPOLL_DELAY					( ( portTickType ) 12 / portTICK_RATE_MS )
-#define tcpCONNECTION_DELAY				( ( portTickType ) 8 / portTICK_RATE_MS )
+#define tcpPOLL_DELAY					( ( TickType_t ) 12 / portTICK_PERIOD_MS )
+#define tcpCONNECTION_DELAY				( ( TickType_t ) 8 / portTICK_PERIOD_MS )
 /*-----------------------------------------------------------*/
 
 /*

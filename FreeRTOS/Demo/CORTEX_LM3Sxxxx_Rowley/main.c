@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -149,7 +149,7 @@
 
 /* The time between cycles of the 'check' functionality (defined within the
 tick hook. */
-#define mainCHECK_DELAY						( ( portTickType ) 5000 / portTICK_RATE_MS )
+#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 
 /* Size of the stack allocated to the uIP task. */
 #define mainBASIC_WEB_STACK_SIZE            ( configMINIMAL_STACK_SIZE * 3 )
@@ -220,7 +220,7 @@ void vApplicationIdleHook( void ) __attribute__((naked));
 /*-----------------------------------------------------------*/
 
 /* The queue used to send messages to the OLED task. */
-xQueueHandle xOLEDQueue;
+QueueHandle_t xOLEDQueue;
 
 /* The welcome text. */
 const char * const pcWelcomeMessage = "   www.FreeRTOS.org";
@@ -247,7 +247,7 @@ int main( void )
 	PHY. */
 	if( SysCtlPeripheralPresent( SYSCTL_PERIPH_ETH ) )
 	{
-		xTaskCreate( vuIP_Task, ( signed char * ) "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
+		xTaskCreate( vuIP_Task, "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
 	}
 
 	/* Start the standard demo tasks. */
@@ -263,7 +263,7 @@ int main( void )
     vStartQueueSetTasks();
 
 	/* Start the tasks defined within this file/specific to this demo. */
-	xTaskCreate( vOLEDTask, ( signed char * ) "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vOLEDTask, "OLED", mainOLED_TASK_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
@@ -459,7 +459,7 @@ void ( *vOLEDClear )( void ) = NULL;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	for( ;; );
 }

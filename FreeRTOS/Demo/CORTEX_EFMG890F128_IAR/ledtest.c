@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -70,7 +70,7 @@
 /* Demo app includes. */
 #include "ledtest.h"
 
-#define lLEDOnE_SECOND		( 1000UL / portTICK_RATE_MS )
+#define lLEDOnE_SECOND		( 1000UL / portTICK_PERIOD_MS )
 
 void vLEDTask( void *pvParameters )
 {

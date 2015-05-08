@@ -98,7 +98,7 @@ void vStartDmaDemoTasks( unsigned portBASE_TYPE uxPriority )
                  dmaSTACK_SIZE,
                  ( void * ) pxDmaDemoParamter,
                  uxPriority,
-                 ( xTaskHandle * ) NULL );
+                 ( TaskHandle_t * ) NULL );
 }
 /*-----------------------------------------------------------*/
 

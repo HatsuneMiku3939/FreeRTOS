@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -103,8 +103,8 @@
 /* Structure used to pass parameters to the blocking queue tasks. */
 typedef struct BLOCKING_QUEUE_PARAMETERS
 {
-	xQueueHandle xQueue;					/*< The queue to be used by the task. */
-	portTickType xBlockTime;				/*< The block time to use on queue reads/writes. */
+	QueueHandle_t xQueue;					/*< The queue to be used by the task. */
+	TickType_t xBlockTime;				/*< The block time to use on queue reads/writes. */
 	volatile short *psCheckVariable;	/*< Incremented on each successful cycle to check the task is still running. */
 } xBlockingQueueParameters;
 
@@ -132,8 +132,8 @@ xBlockingQueueParameters *pxQueueParameters1, *pxQueueParameters2;
 xBlockingQueueParameters *pxQueueParameters3, *pxQueueParameters4;
 xBlockingQueueParameters *pxQueueParameters5, *pxQueueParameters6;
 const unsigned portBASE_TYPE uxQueueSize1 = 1, uxQueueSize5 = 5;
-const portTickType xBlockTime = ( portTickType ) 1000 / portTICK_RATE_MS;
-const portTickType xDontBlock = ( portTickType ) 0;
+const TickType_t xBlockTime = ( TickType_t ) 1000 / portTICK_PERIOD_MS;
+const TickType_t xDontBlock = ( TickType_t ) 0;
 
 	/* Create the first two tasks as described at the top of the file. */
 
@@ -168,8 +168,8 @@ const portTickType xDontBlock = ( portTickType ) 0;
 
 	/* Note the producer has a lower priority than the consumer when the tasks are
 	spawned. */
-	xTaskCreate( vBlockingQueueConsumer, ( signed char * ) "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, NULL );
-	xTaskCreate( vBlockingQueueProducer, ( signed char * ) "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, NULL );
 
 
 
@@ -186,8 +186,8 @@ const portTickType xDontBlock = ( portTickType ) 0;
 	pxQueueParameters4->xBlockTime = xBlockTime;
 	pxQueueParameters4->psCheckVariable = &( sBlockingConsumerCount[ 1 ] );
 
-	xTaskCreate( vBlockingQueueConsumer, ( signed char * ) "QConsB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vBlockingQueueProducer, ( signed char * ) "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QConsB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QProdB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, NULL );
 
 
 
@@ -203,8 +203,8 @@ const portTickType xDontBlock = ( portTickType ) 0;
 	pxQueueParameters6->xBlockTime = xBlockTime;
 	pxQueueParameters6->psCheckVariable = &( sBlockingConsumerCount[ 2 ] );
 
-	xTaskCreate( vBlockingQueueProducer, ( signed char * ) "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vBlockingQueueConsumer, ( signed char * ) "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, NULL );
 }
 /*-----------------------------------------------------------*/
 

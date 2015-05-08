@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -87,7 +87,7 @@
 /*-----------------------------------------------------------*/
 
 /* How long to wait before attempting to connect the MAC again. */
-#define uipINIT_WAIT    ( 100 / portTICK_RATE_MS )
+#define uipINIT_WAIT    ( 100 / portTICK_PERIOD_MS )
 
 /* Shortcut to the header within the Rx buffer. */
 #define xHeader ((struct uip_eth_hdr *) &uip_buf[ 0 ])
@@ -111,7 +111,7 @@ clock_time_t clock_time( void );
 /*-----------------------------------------------------------*/
 
 /* The semaphore used by the ISR to wake the uIP task. */
-xSemaphoreHandle xEMACSemaphore = NULL;
+SemaphoreHandle_t xEMACSemaphore = NULL;
 
 /*-----------------------------------------------------------*/
 

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -127,8 +127,8 @@
 
 /* The rate at which the on board LED will toggle when there is/is not an
 error. */
-#define mainNO_ERROR_FLASH_PERIOD	( ( portTickType ) 3000 / portTICK_RATE_MS	)
-#define mainERROR_FLASH_PERIOD		( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_FLASH_PERIOD	( ( TickType_t ) 3000 / portTICK_PERIOD_MS	)
+#define mainERROR_FLASH_PERIOD		( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 #define mainON_BOARD_LED_BIT		( ( unsigned long ) 7 )
 
 /* The size of the memory blocks allocated by the vMemCheckTask() task. */
@@ -180,7 +180,7 @@ int main( void )
 	vStartRegTestTasks();
 
 	/* Start the check task - which is defined in this file. */
-	xTaskCreate( vErrorChecks, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Now all the tasks have been started - start the scheduler. */
 	vTaskStartScheduler();
@@ -192,7 +192,7 @@ int main( void )
 
 static void vErrorChecks( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
+TickType_t xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
 
 	/* Just to stop compiler warnings. */
 	( void ) pvParameters;
@@ -276,7 +276,7 @@ long lReturn = pdPASS;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	/* This function will be called if a task overflows its stack.  Inspect
 	pxCurrentTCB to find the offending task if the overflow was sever enough

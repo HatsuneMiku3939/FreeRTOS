@@ -1,6 +1,9 @@
 #include "port_spr_defs.h"
 #include "FreeRTOSConfig.h"
-#include "portmacro.h"
+
+#define REDZONE_SIZE        (128)
+#define CONTEXT_SIZE        (128)
+#define STACKFRAME_SIZE     (CONTEXT_SIZE + REDZONE_SIZE)
 
 
     .file       "portasm.S"

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -147,10 +147,10 @@ time. */
 #define mainMAX_MSG_LEN						25
 
 /* The time between cycles of the 'check' task. */
-#define mainCHECK_DELAY						( ( portTickType ) 5000 / portTICK_RATE_MS )
+#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 
 /* The number of nano seconds between each processor clock. */
-#define mainNS_PER_CLOCK ( ( unsigned portLONG ) ( ( 1.0 / ( double ) configCPU_CLOCK_HZ ) * 1000000000.0 ) )
+#define mainNS_PER_CLOCK ( ( unsigned long ) ( ( 1.0 / ( double ) configCPU_CLOCK_HZ ) * 1000000000.0 ) )
 
 /* Baud rate used by the comtest tasks. */
 #define mainCOM_TEST_BAUD_RATE		( 115200 )
@@ -205,7 +205,7 @@ extern void vSetupTimerTest( void );
 /*-----------------------------------------------------------*/
 
 /* The queue used to send messages to the LCD task. */
-xQueueHandle xLCDQueue;
+QueueHandle_t xLCDQueue;
 
 /*-----------------------------------------------------------*/
 
@@ -220,7 +220,7 @@ int main( void )
 	/* Create the queue used by the LCD task.  Messages for display on the LCD
 	are received via this queue. */
 	xLCDQueue = xQueueCreate( mainLCD_QUEUE_SIZE, sizeof( xLCDMessage ) );
-	
+
 	/* Start the standard demo tasks. */
 	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
     vCreateBlockTimeTasks();
@@ -231,20 +231,20 @@ int main( void )
 	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
 
 	/* Start the tasks defined within this file/specific to this demo. */
-    xTaskCreate( vCheckTask, ( signed portCHAR * ) "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );	
-	xTaskCreate( vLCDTask, ( signed portCHAR * ) "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+    xTaskCreate( vCheckTask, "Check", mainCHECK_TASK_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
 	or not the correct/expected number of tasks are running at any given time. */
     vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
-	
+
 	/* Configure the timers used by the fast interrupt timer test. */
 	vSetupTimerTest();
-	
+
 	/* Start the scheduler. */
 	vTaskStartScheduler();
-	
+
 	/* Will only get here if there was not enough heap space to create the
 	idle task. */
 	return 0;
@@ -257,7 +257,7 @@ xLCDMessage xMessage;
 
 	/* Initialise the LCD and display a startup message. */
 	prvConfigureLCD();
-	LCD_DrawMonoPict( ( unsigned portLONG * ) pcBitmap );
+	LCD_DrawMonoPict( ( unsigned long * ) pcBitmap );
 
 	for( ;; )
 	{
@@ -265,21 +265,21 @@ xLCDMessage xMessage;
 		while( xQueueReceive( xLCDQueue, &xMessage, portMAX_DELAY ) != pdPASS );
 
 		/* Display the message.  Print each message to a different position. */
-		printf( ( portCHAR const * ) xMessage.pcMessage );
+		printf( ( char const * ) xMessage.pcMessage );
 	}
 }
 /*-----------------------------------------------------------*/
 
 static void vCheckTask( void *pvParameters )
 {
-portTickType xLastExecutionTime;
+TickType_t xLastExecutionTime;
 xLCDMessage xMessage;
-static signed portCHAR cPassMessage[ mainMAX_MSG_LEN ];
-extern unsigned portSHORT usMaxJitter;
+static signed char cPassMessage[ mainMAX_MSG_LEN ];
+extern unsigned short usMaxJitter;
 
 	xLastExecutionTime = xTaskGetTickCount();
 	xMessage.pcMessage = cPassMessage;
-	
+
     for( ;; )
 	{
 		/* Perform this check every mainCHECK_DELAY milliseconds. */
@@ -314,10 +314,10 @@ extern unsigned portSHORT usMaxJitter;
 		else if( xAreComTestTasksStillRunning() != pdTRUE )
 		{
 			xMessage.pcMessage = "ERROR IN COM TEST\n";
-		}				
+		}
 		else
 		{
-			sprintf( ( portCHAR * ) cPassMessage, "PASS [%uns]\n", ( ( unsigned portLONG ) usMaxJitter ) * mainNS_PER_CLOCK );
+			sprintf( ( char * ) cPassMessage, "PASS [%uns]\n", ( ( unsigned long ) usMaxJitter ) * mainNS_PER_CLOCK );
 		}
 
 		/* Send the message to the LCD gatekeeper for display. */
@@ -340,7 +340,7 @@ static void prvSetupHardware( void )
 	}
 
 	/* 2 wait states required on the flash. */
-	*( ( unsigned portLONG * ) 0x40022000 ) = 0x02;
+	*( ( unsigned long * ) 0x40022000 ) = 0x02;
 
 	/* HCLK = SYSCLK */
 	RCC_HCLKConfig( RCC_SYSCLK_Div1 );
@@ -382,10 +382,10 @@ static void prvSetupHardware( void )
 	NVIC_SetVectorTable( NVIC_VectTab_FLASH, 0x0 );
 
 	NVIC_PriorityGroupConfig( NVIC_PriorityGroup_4 );
-	
+
 	/* Configure HCLK clock as SysTick clock source. */
 	SysTick_CLKSourceConfig( SysTick_CLKSource_HCLK );
-	
+
 	vParTestInitialise();
 }
 /*-----------------------------------------------------------*/
@@ -418,8 +418,8 @@ GPIO_InitTypeDef GPIO_InitStructure;
 
 int fputc( int ch, FILE *f )
 {
-static unsigned portSHORT usColumn = 0, usRefColumn = mainCOLUMN_START;
-static unsigned portCHAR ucLine = 0;
+static unsigned short usColumn = 0, usRefColumn = mainCOLUMN_START;
+static unsigned char ucLine = 0;
 
 	if( ( usColumn == 0 ) && ( ucLine == 0 ) )
 	{
@@ -430,10 +430,10 @@ static unsigned portCHAR ucLine = 0;
 	{
 		/* Display one character on LCD */
 		LCD_DisplayChar( ucLine, usRefColumn, (u8) ch );
-		
+
 		/* Decrement the column position by 16 */
 		usRefColumn -= mainCOLUMN_INCREMENT;
-		
+
 		/* Increment the character counter */
 		usColumn++;
 		if( usColumn == mainMAX_COLUMN )
@@ -448,7 +448,7 @@ static unsigned portCHAR ucLine = 0;
 		/* Move back to the first column of the next line. */
 		ucLine += mainROW_INCREMENT;
 		usRefColumn = mainCOLUMN_START;
-		usColumn = 0;	
+		usColumn = 0;
 	}
 
 	/* Wrap back to the top of the display. */
@@ -456,14 +456,14 @@ static unsigned portCHAR ucLine = 0;
 	{
 		ucLine = 0;
 	}
-	
+
 	return ch;
 }
 /*-----------------------------------------------------------*/
 
 #ifdef  DEBUG
 /* Keep the linker happy. */
-void assert_failed( unsigned portCHAR* pcFile, unsigned portLONG ulLine )
+void assert_failed( unsigned char* pcFile, unsigned long ulLine )
 {
 	for( ;; )
 	{

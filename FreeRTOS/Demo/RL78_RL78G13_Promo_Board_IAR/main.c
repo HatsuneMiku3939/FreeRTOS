@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT
@@ -57,19 +57,19 @@
     ***************************************************************************
 
 
-    http://www.FreeRTOS.org - Documentation, books, training, latest versions, 
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
     license and Real Time Engineers Ltd. contact details.
 
     http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
     including FreeRTOS+Trace - an indispensable productivity tool, and our new
     fully thread aware and reentrant UDP/IP stack.
 
-    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High 
-    Integrity Systems, who sell the code with commercial support, 
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems, who sell the code with commercial support,
     indemnification and middleware, under the OpenRTOS brand.
-    
-    http://www.SafeRTOS.com - High Integrity Systems also provide a safety 
-    engineered and independently SIL3 certified version for use in safety and 
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
     mission critical applications that require provable dependability.
 */
 
@@ -136,14 +136,14 @@
 
 /* The period at which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks, the check tasks, or the demo timer.
-ms are converted to the equivalent in ticks using the portTICK_RATE_MS
+ms are converted to the equivalent in ticks using the portTICK_PERIOD_MS
 constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* These two definitions are used to set the period of the demo timer.  The demo
 timer period is always relative to the check timer period, so the check timer
@@ -163,12 +163,12 @@ its own executions. */
 /*
  * The 'check' timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * The 'demo' timer callback function, as described at the top of this file.
  */
-static void prvDemoTimerCallback( xTimerHandle xTimer );
+static void prvDemoTimerCallback( TimerHandle_t xTimer );
 
 /*
  * This function is called from the C startup routine to setup the processor -
@@ -192,19 +192,19 @@ static short sRegTestStatus = pdPASS;
 
 /* The check timer.  This uses prvCheckTimerCallback() as its callback
 function. */
-static xTimerHandle xCheckTimer = NULL;
+static TimerHandle_t xCheckTimer = NULL;
 
 /* The demo timer.  This uses prvDemoTimerCallback() as its callback function. */
-static xTimerHandle xDemoTimer = NULL;
+static TimerHandle_t xDemoTimer = NULL;
 
 /* This variable is incremented each time the demo timer expires. */
 static volatile unsigned long ulDemoSoftwareTimerCounter = 0UL;
 
-/* RL78/G13 Option Byte Definition. Watchdog disabled, LVI enabled, OCD interface
+/* RL78 Option Byte Definition. Watchdog disabled, LVI enabled, OCD interface
 enabled. */
 __root __far const unsigned char OptionByte[] @ 0x00C0 =
 {
-	WATCHDOG_DISABLED, LVI_ENABLED, RESERVED_FF, OCD_ENABLED
+	0x6eU, 0xffU, 0xe8U, 0x85U
 };
 
 /* Security byte definition */
@@ -228,31 +228,31 @@ short main( void )
 
 	/* Create the RegTest tasks as described at the top of this file. */
 	xTaskCreate( vRegTest1, "Reg1", configMINIMAL_STACK_SIZE, NULL, 0, NULL );
-	xTaskCreate( vRegTest2, "Reg2", configMINIMAL_STACK_SIZE, NULL, 0, NULL );	
+	xTaskCreate( vRegTest2, "Reg2", configMINIMAL_STACK_SIZE, NULL, 0, NULL );
 
 	/* Create the software timer that performs the 'check' functionality,
 	as described at the top of this file. */
-	xCheckTimer = xTimerCreate( ( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
+	xCheckTimer = xTimerCreate( "CheckTimer",/* A text name, purely to help debugging. */
 								( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
 								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
 								( void * ) 0,						/* The ID is not used, so can be set to anything. */
 								prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
 							  );
-							
+
 	/* Create the software timer that just increments a variable for demo
 	purposes. */
-	xDemoTimer = xTimerCreate( ( const signed char * ) "DemoTimer",/* A text name, purely to help debugging. */
+	xDemoTimer = xTimerCreate( "DemoTimer",/* A text name, purely to help debugging. */
 								( mainDEMO_TIMER_PERIOD_MS ),		/* The timer period, in this case it is always calculated relative to the check timer period (see the definition of mainDEMO_TIMER_PERIOD_MS). */
 								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
 								( void * ) 0,						/* The ID is not used, so can be set to anything. */
 								prvDemoTimerCallback				/* The callback function that inspects the status of all the other tasks. */
 							  );
-	
+
 	/* Start both the check timer and the demo timer.  The timers won't actually
 	start until the scheduler is started. */
 	xTimerStart( xCheckTimer, mainDONT_BLOCK );
 	xTimerStart( xDemoTimer, mainDONT_BLOCK );
-	
+
 	/* Finally start the scheduler running. */
 	vTaskStartScheduler();
 
@@ -262,7 +262,7 @@ short main( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvDemoTimerCallback( xTimerHandle xTimer )
+static void prvDemoTimerCallback( TimerHandle_t xTimer )
 {
 	/* The demo timer has expired.  All it does is increment a variable.  The
 	period of the demo timer is relative to that of the check timer, so the
@@ -272,7 +272,7 @@ static void prvDemoTimerCallback( xTimerHandle xTimer )
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS;
 
@@ -281,12 +281,12 @@ static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS
 	{
 		xErrorStatus = pdFAIL;
 	}
-	
+
 	if( xArePollingQueuesStillRunning() != pdTRUE )
 	{
 		xErrorStatus = pdFAIL;
 	}
-	
+
 	if( xAreBlockTimeTestTasksStillRunning() != pdTRUE )
 	{
 		xErrorStatus = pdFAIL;
@@ -297,7 +297,7 @@ static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS
 	{
 		xErrorStatus = pdFAIL;
 	}
-	
+
 	/* Ensure that the demo software timer has expired
 	mainDEMO_TIMER_INCREMENTS_PER_CHECK_TIMER_TIMEOUT times in between
 	each call of this function.  A critical section is not required to access
@@ -314,7 +314,7 @@ static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS
 	{
 		ulDemoSoftwareTimerCounter = 0UL;
 	}
-	
+
 	if( ( xErrorStatus == pdFAIL ) && ( xChangedTimerPeriodAlready == pdFALSE ) )
 	{
 		/* An error has occurred, but the timer's period has not yet been changed,
@@ -322,13 +322,13 @@ static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS
 		timer's period means the LED will toggle at a faster rate, giving a
 		visible indication that something has gone wrong. */
 		xChangedTimerPeriodAlready = pdTRUE;
-			
+
 		/* This call to xTimerChangePeriod() uses a zero block time.  Functions
 		called from inside of a timer callback function must *never* attempt to
 		block. */
 		xTimerChangePeriod( xCheckTimer, ( mainERROR_CHECK_TIMER_PERIOD_MS ), mainDONT_BLOCK );
 	}
-	
+
 	/* Toggle the LED.  The toggle rate will depend on whether or not an error
 	has been found in any tasks. */
 	mainLED_0 = !mainLED_0;
@@ -337,7 +337,7 @@ static portBASE_TYPE xChangedTimerPeriodAlready = pdFALSE, xErrorStatus = pdPASS
 
 int __low_level_init(void)
 {
-unsigned portCHAR ucResetFlag = RESF;
+unsigned char ucResetFlag = RESF;
 
 	portDISABLE_INTERRUPTS();
 
@@ -350,58 +350,58 @@ unsigned portCHAR ucResetFlag = RESF;
 		/* Set fMX */
 		CMC = 0x00;
 		MSTOP = 1U;
-		
+
 		/* Set fMAIN */
 		MCM0 = 0U;
-		
+
 		/* Set fSUB */
 		XTSTOP = 1U;
 		OSMC = 0x10;
-		
+
 		/* Set fCLK */
 		CSS = 0U;
-		
+
 		/* Set fIH */
 		HIOSTOP = 0U;
 	}
 	#else
 	{
-		unsigned char ucTempStabset, ucTempStabWait;	
+		unsigned char ucTempStabset, ucTempStabWait;
 
 		/* Set fMX */
 		CMC = 0x41;
 		OSTS = 0x07;
 		MSTOP = 0U;
 		ucTempStabset = 0xFF;
-		
+
 		do
 		{
 			ucTempStabWait = OSTC;
 			ucTempStabWait &= ucTempStabset;
 		}
 		while( ucTempStabWait != ucTempStabset );
-		
+
 		/* Set fMAIN */
 		MCM0 = 1U;
-		
+
 		/* Set fSUB */
 		XTSTOP = 1U;
 		OSMC = 0x10;
-		
+
 		/* Set fCLK */
 		CSS = 0U;
-		
+
 		/* Set fIH */
 		HIOSTOP = 0U;
 	}
 	#endif /* configCLOCK_SOURCE == 1 */
-	
+
 	/* LED port initialization - set port register. */
 	P7 &= 0x7F;
-	
+
 	/* Set port mode register. */
 	PM7 &= 0x7F;
-	
+
 	/* Switch pin initialization - enable pull-up resistor. */
 	PU12_bit.no0  = 1;
 
@@ -433,7 +433,7 @@ void vApplicationMallocFailedHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -457,6 +457,6 @@ volatile size_t xFreeHeapSpace;
 	management options.  If there is a lot of heap memory free then the
 	configTOTAL_HEAP_SIZE value in FreeRTOSConfig.h can be reduced to free up
 	RAM. */
-	xFreeHeapSpace = xPortGetFreeHeapSize();	
+	xFreeHeapSpace = xPortGetFreeHeapSize();
 }
 

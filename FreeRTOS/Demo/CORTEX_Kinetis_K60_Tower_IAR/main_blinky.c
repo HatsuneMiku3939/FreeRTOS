@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -95,22 +95,22 @@
  * in this file.  prvQueueReceiveTask() sits in a loop that causes it to
  * repeatedly attempt to read data from the queue that was created within
  * main().  When data is received, the task checks the value of the data, and
- * if the value equals the expected 100, toggles the blue LED.  The 'block 
- * time' parameter passed to the queue receive function specifies that the task 
- * should be held in the Blocked state indefinitely to wait for data to be 
- * available on the queue.  The queue receive task will only leave the Blocked 
- * state when the queue send task writes to the queue.  As the queue send task 
- * writes to the queue every 200 milliseconds, the queue receive task leaves the 
- * Blocked state every 200 milliseconds, and therefore toggles the blue LED 
+ * if the value equals the expected 100, toggles the blue LED.  The 'block
+ * time' parameter passed to the queue receive function specifies that the task
+ * should be held in the Blocked state indefinitely to wait for data to be
+ * available on the queue.  The queue receive task will only leave the Blocked
+ * state when the queue send task writes to the queue.  As the queue send task
+ * writes to the queue every 200 milliseconds, the queue receive task leaves the
+ * Blocked state every 200 milliseconds, and therefore toggles the blue LED
  * every 200 milliseconds.
  *
  * The LED Software Timer and the Button Interrupt:
  * The user button SW2 is configured to generate an interrupt each time it is
- * pressed.  The interrupt service routine switches the green LED on, and 
- * resets the LED software timer.  The LED timer has a 5000 millisecond (5 
- * second) period, and uses a callback function that is defined to just turn the 
- * LED off again.  Therefore, pressing the user button will turn the LED on, and 
- * the LED will remain on until a full five seconds pass without the button 
+ * pressed.  The interrupt service routine switches the green LED on, and
+ * resets the LED software timer.  The LED timer has a 5000 millisecond (5
+ * second) period, and uses a callback function that is defined to just turn the
+ * LED off again.  Therefore, pressing the user button will turn the LED on, and
+ * the LED will remain on until a full five seconds pass without the button
  * being pressed.
  */
 
@@ -128,12 +128,12 @@
 #define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 /* The rate at which data is sent to the queue, specified in milliseconds, and
-converted to ticks using the portTICK_RATE_MS constant. */
-#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_RATE_MS )
+converted to ticks using the portTICK_PERIOD_MS constant. */
+#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_PERIOD_MS )
 
 /* The LED will remain on until the button has not been pushed for a full
 5000ms. */
-#define mainBUTTON_LED_TIMER_PERIOD_MS		( 5000UL / portTICK_RATE_MS )
+#define mainBUTTON_LED_TIMER_PERIOD_MS		( 5000UL / portTICK_PERIOD_MS )
 
 /* The number of items the queue can hold.  This is 1 as the receive task
 will remove items as they are added, meaning the send task should always find
@@ -171,16 +171,16 @@ static void prvQueueSendTask( void *pvParameters );
  * The LED timer callback function.  This does nothing but switch off the
  * LED defined by the mainTIMER_CONTROLLED_LED constant.
  */
-static void prvButtonLEDTimerCallback( xTimerHandle xTimer );
+static void prvButtonLEDTimerCallback( TimerHandle_t xTimer );
 
 /*-----------------------------------------------------------*/
 
 /* The queue used by both tasks. */
-static xQueueHandle xQueue = NULL;
+static QueueHandle_t xQueue = NULL;
 
 /* The LED software timer.  This uses prvButtonLEDTimerCallback() as its callback
 function. */
-static xTimerHandle xButtonLEDTimer = NULL;
+static TimerHandle_t xButtonLEDTimer = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -196,17 +196,17 @@ void main( void )
 	{
 		/* Start the two tasks as described in the comments at the top of this
 		file. */
-		xTaskCreate( prvQueueReceiveTask, ( signed char * ) "Rx", configMINIMAL_STACK_SIZE, NULL, mainQUEUE_RECEIVE_TASK_PRIORITY, NULL );
-		xTaskCreate( prvQueueSendTask, ( signed char * ) "TX", configMINIMAL_STACK_SIZE, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL );
+		xTaskCreate( prvQueueReceiveTask, "Rx", configMINIMAL_STACK_SIZE, NULL, mainQUEUE_RECEIVE_TASK_PRIORITY, NULL );
+		xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE, NULL, mainQUEUE_SEND_TASK_PRIORITY, NULL );
 
 		/* Create the software timer that is responsible for turning off the LED
 		if the button is not pushed within 5000ms, as described at the top of
 		this file. */
-		xButtonLEDTimer = xTimerCreate( ( const signed char * ) "ButtonLEDTimer", /* A text name, purely to help debugging. */
-									mainBUTTON_LED_TIMER_PERIOD_MS,			/* The timer period, in this case 5000ms (5s). */
-									pdFALSE,								/* This is a one shot timer, so xAutoReload is set to pdFALSE. */
-									( void * ) 0,							/* The ID is not used, so can be set to anything. */
-									prvButtonLEDTimerCallback				/* The callback function that switches the LED off. */
+		xButtonLEDTimer = xTimerCreate( "ButtonLEDTimer", 			/* A text name, purely to help debugging. */
+									mainBUTTON_LED_TIMER_PERIOD_MS,	/* The timer period, in this case 5000ms (5s). */
+									pdFALSE,						/* This is a one shot timer, so xAutoReload is set to pdFALSE. */
+									( void * ) 0,					/* The ID is not used, so can be set to anything. */
+									prvButtonLEDTimerCallback		/* The callback function that switches the LED off. */
 								);
 
 		/* Start the tasks and timer running. */
@@ -222,7 +222,7 @@ void main( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvButtonLEDTimerCallback( xTimerHandle xTimer )
+static void prvButtonLEDTimerCallback( TimerHandle_t xTimer )
 {
 	/* The timer has expired - so no button pushes have occurred in the last
 	five seconds - turn the LED off. */
@@ -259,7 +259,7 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 static void prvQueueSendTask( void *pvParameters )
 {
-portTickType xNextWakeTime;
+TickType_t xNextWakeTime;
 const unsigned long ulValueToSend = 100UL;
 
 	/* Initialise xNextWakeTime - this only needs to be done once. */
@@ -308,20 +308,20 @@ static void prvSetupHardware( void )
 	/* Enable the interrupt on SW1. */
 	PORTE_PCR26 = PORT_PCR_MUX( 1 ) | PORT_PCR_IRQC( 0xA ) | PORT_PCR_PE_MASK | PORT_PCR_PS_MASK;
 	enable_irq( mainGPIO_E_VECTOR );
-	
+
 	/* The interrupt calls an interrupt safe API function - so its priority must
 	be equal to or lower than configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY. */
 	set_irq_priority( mainGPIO_E_VECTOR, configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY );
-	
+
 	/* Set PTA10, PTA11, PTA28, and PTA29 (connected to LED's) for GPIO
 	functionality. */
 	PORTA_PCR10 = ( 0 | PORT_PCR_MUX( 1 ) );
 	PORTA_PCR11 = ( 0 | PORT_PCR_MUX( 1 ) );
 	PORTA_PCR28 = ( 0 | PORT_PCR_MUX( 1 ) );
 	PORTA_PCR29 = ( 0 | PORT_PCR_MUX( 1 ) );
-	
+
 	/* Change PTA10, PTA29 to outputs. */
-	GPIOA_PDDR=GPIO_PDDR_PDD( mainTASK_CONTROLLED_LED | mainTIMER_CONTROLLED_LED );	
+	GPIOA_PDDR=GPIO_PDDR_PDD( mainTASK_CONTROLLED_LED | mainTIMER_CONTROLLED_LED );
 
 	/* Start with LEDs off. */
 	GPIOA_PTOR = ~0U;
@@ -340,7 +340,7 @@ void vApplicationMallocFailedHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -387,9 +387,9 @@ linker happy. */
 void vMainConfigureTimerForRunTimeStats( void ) {}
 unsigned long ulMainGetRunTimeCounterValue( void ) { return 0UL; }
 
-/* A tick hook is used by the "Full" build configuration.  The Full and blinky 
-build configurations share a FreeRTOSConfig.h header file, so this simple build 
-configuration also has to define a tick hook - even though it does not actually 
+/* A tick hook is used by the "Full" build configuration.  The Full and blinky
+build configurations share a FreeRTOSConfig.h header file, so this simple build
+configuration also has to define a tick hook - even though it does not actually
 use it for anything. */
 void vApplicationTickHook( void ) {}
 

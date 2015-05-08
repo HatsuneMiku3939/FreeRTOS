@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,7 +85,7 @@
 #define configUSE_QUEUE_SETS					1
 #define configUSE_IDLE_HOOK						0
 #define configUSE_TICK_HOOK						1
-#define configTICK_RATE_HZ						( ( portTickType ) 1000 )
+#define configTICK_RATE_HZ						( ( TickType_t ) 1000 )
 #define configCPU_CLOCK_HZ						( 200000000UL )
 #define configPERIPHERAL_CLOCK_HZ				( 40000000UL )
 #define configMAX_PRIORITIES					( 5UL )
@@ -126,6 +126,8 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelayUntil					1
 #define INCLUDE_vTaskDelay						1
 #define INCLUDE_uxTaskGetStackHighWaterMark		1
+#define INCLUDE_eTaskGetState					1
+#define INCLUDE_xTimerPendFunctionCall			1
 
 /* The priority at which the tick interrupt runs.  This should probably be
 kept at 1. */

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -144,7 +144,7 @@ task stack, not the ISR stack). */
 	the ISR stack. */
 	#define portISR_STACK_FILL_BYTE	0xee
 
-	static const unsigned char ucExpectedStackBytes[] = {
+	static const uint8_t ucExpectedStackBytes[] = {
 									portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE,		\
 									portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE,		\
 									portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE, portISR_STACK_FILL_BYTE,		\
@@ -160,22 +160,6 @@ task stack, not the ISR stack). */
 /*-----------------------------------------------------------*/
 
 /*
- * Place the prototype here to ensure the interrupt vector is correctly installed.
- * Note that because the interrupt is written in assembly, the IPL setting in the
- * following line of code has no effect.  The interrupt priority is set by the
- * call to ConfigIntTimer1() in vApplicationSetupTickTimerInterrupt().
- */
-extern void __attribute__( (interrupt(ipl1), vector( configTICK_INTERRUPT_VECTOR ))) vPortTickInterruptHandler( void );
-
-/*
- * The software interrupt handler that performs the yield.  Note that, because
- * the interrupt is written in assembly, the IPL setting in the following line of
- * code has no effect.  The interrupt priority is set by the call to
- * mConfigIntCoreSW0() in xPortStartScheduler().
- */
-void __attribute__( (interrupt(ipl1), vector(_CORE_SOFTWARE_0_VECTOR))) vPortYieldISR( void );
-
-/*
  * Used to catch tasks that attempt to return from their implementing function.
  */
 static void prvTaskExitError( void );
@@ -184,50 +168,50 @@ static void prvTaskExitError( void );
 
 /* Records the interrupt nesting depth.  This is initialised to one as it is
 decremented to 0 when the first task starts. */
-volatile unsigned portBASE_TYPE uxInterruptNesting = 0x01;
+volatile UBaseType_t uxInterruptNesting = 0x01;
 
 /* Stores the task stack pointer when a switch is made to use the system stack. */
-unsigned portBASE_TYPE uxSavedTaskStackPointer = 0;
+UBaseType_t uxSavedTaskStackPointer = 0;
 
 /* The stack used by interrupt service routines that cause a context switch. */
-portSTACK_TYPE xISRStack[ configISR_STACK_SIZE ] = { 0 };
+StackType_t xISRStack[ configISR_STACK_SIZE ] = { 0 };
 
 /* The top of stack value ensures there is enough space to store 6 registers on
 the callers stack, as some functions seem to want to do this. */
-const portSTACK_TYPE * const xISRStackTop = &( xISRStack[ configISR_STACK_SIZE - 7 ] );
+const StackType_t * const xISRStackTop = &( xISRStack[ configISR_STACK_SIZE - 7 ] );
 
 /*-----------------------------------------------------------*/
 
 /*
  * See header file for description.
  */
-portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
 	/* Ensure byte alignment is maintained when leaving this function. */
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) 0xDEADBEEF;
+	*pxTopOfStack = (StackType_t) 0xDEADBEEF;
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) 0x12345678;	/* Word to which the stack pointer will be left pointing after context restore. */
+	*pxTopOfStack = (StackType_t) 0x12345678;	/* Word to which the stack pointer will be left pointing after context restore. */
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) _CP0_GET_CAUSE();
+	*pxTopOfStack = (StackType_t) _CP0_GET_CAUSE();
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) portINITIAL_SR;/* CP0_STATUS */
+	*pxTopOfStack = (StackType_t) portINITIAL_SR;/* CP0_STATUS */
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) pxCode; 		/* CP0_EPC */
+	*pxTopOfStack = (StackType_t) pxCode; 		/* CP0_EPC */
 	pxTopOfStack -= 7;  							/* Includes space for AC1 - AC3. */
 
-	*pxTopOfStack = (portSTACK_TYPE) 0x00000000;	/* DSPControl */
+	*pxTopOfStack = (StackType_t) 0x00000000;	/* DSPControl */
 	pxTopOfStack--;
 
-	*pxTopOfStack = (portSTACK_TYPE) portTASK_RETURN_ADDRESS;	/* ra */
+	*pxTopOfStack = (StackType_t) portTASK_RETURN_ADDRESS;	/* ra */
 	pxTopOfStack -= 15;
 
-	*pxTopOfStack = (portSTACK_TYPE) pvParameters; /* Parameters to pass in. */
+	*pxTopOfStack = (StackType_t) pvParameters; /* Parameters to pass in. */
 	pxTopOfStack -= 15;
 
 	return pxTopOfStack;
@@ -259,7 +243,7 @@ static void prvTaskExitError( void )
  */
 __attribute__(( weak )) void vApplicationSetupTickTimerInterrupt( void )
 {
-const unsigned long ulCompareMatch = ( (configPERIPHERAL_CLOCK_HZ / portTIMER_PRESCALE) / configTICK_RATE_HZ ) - 1;
+const uint32_t ulCompareMatch = ( (configPERIPHERAL_CLOCK_HZ / portTIMER_PRESCALE) / configTICK_RATE_HZ ) - 1;
 
 	T1CON = 0x0000;
 	T1CONbits.TCKPS = portPRESCALE_BITS;
@@ -279,14 +263,13 @@ const unsigned long ulCompareMatch = ( (configPERIPHERAL_CLOCK_HZ / portTIMER_PR
 
 void vPortEndScheduler(void)
 {
-	/* It is unlikely that the scheduler for the PIC port will get stopped
-	once running.  If required disable the tick interrupt here, then return
-	to xPortStartScheduler(). */
-	for( ;; );
+	/* Not implemented in ports where there is nothing to return to.
+	Artificially force an assert. */
+	configASSERT( uxInterruptNesting == 1000UL );
 }
 /*-----------------------------------------------------------*/
 
-portBASE_TYPE xPortStartScheduler( void )
+BaseType_t xPortStartScheduler( void )
 {
 extern void vPortStartFirstTask( void );
 extern void *pxCurrentTCB;
@@ -315,7 +298,7 @@ extern void *pxCurrentTCB;
 
 	/* Kick off the highest priority task that has been created so far.
 	Its stack location is loaded into uxSavedTaskStackPointer. */
-	uxSavedTaskStackPointer = *( unsigned portBASE_TYPE * ) pxCurrentTCB;
+	uxSavedTaskStackPointer = *( UBaseType_t * ) pxCurrentTCB;
 	vPortStartFirstTask();
 
 	/* Should never get here as the tasks will now be executing!  Call the task
@@ -330,7 +313,7 @@ extern void *pxCurrentTCB;
 
 void vPortIncrementTick( void )
 {
-unsigned portBASE_TYPE uxSavedStatus;
+UBaseType_t uxSavedStatus;
 
 	uxSavedStatus = uxPortSetInterruptMaskFromISR();
 	{
@@ -350,9 +333,9 @@ unsigned portBASE_TYPE uxSavedStatus;
 }
 /*-----------------------------------------------------------*/
 
-unsigned portBASE_TYPE uxPortSetInterruptMaskFromISR( void )
+UBaseType_t uxPortSetInterruptMaskFromISR( void )
 {
-unsigned portBASE_TYPE uxSavedStatusRegister;
+UBaseType_t uxSavedStatusRegister;
 
 	__builtin_disable_interrupts();
 	uxSavedStatusRegister = _CP0_GET_STATUS() | 0x01;
@@ -368,7 +351,7 @@ unsigned portBASE_TYPE uxSavedStatusRegister;
 }
 /*-----------------------------------------------------------*/
 
-void vPortClearInterruptMaskFromISR( unsigned portBASE_TYPE uxSavedStatusRegister )
+void vPortClearInterruptMaskFromISR( UBaseType_t uxSavedStatusRegister )
 {
 	_CP0_SET_STATUS( uxSavedStatusRegister );
 }

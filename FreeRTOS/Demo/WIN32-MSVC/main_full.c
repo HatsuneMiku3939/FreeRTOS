@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -70,27 +70,27 @@
  * application.  It is provided as a convenient development and demonstration
  * test bed only.  This was tested using Windows XP on a dual core laptop.
  *
- * Windows will not be running the FreeRTOS simulator threads continuously, so 
- * the timing information in the FreeRTOS+Trace logs have no meaningful units.  
- * See the documentation page for the Windows simulator for an explanation of 
+ * Windows will not be running the FreeRTOS simulator threads continuously, so
+ * the timing information in the FreeRTOS+Trace logs have no meaningful units.
+ * See the documentation page for the Windows simulator for an explanation of
  * the slow timing:
  * http://www.freertos.org/FreeRTOS-Windows-Simulator-Emulator-for-Visual-Studio-and-Eclipse-MingW.html
  * - READ THE WEB DOCUMENTATION FOR THIS PORT FOR MORE INFORMATION ON USING IT -
  *
  * NOTE 2:  This project provides two demo applications.  A simple blinky style
  * project, and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting in main.c is used to select 
- * between the two.  See the notes on using mainCREATE_SIMPLE_BLINKY_DEMO_ONLY 
+ * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting in main.c is used to select
+ * between the two.  See the notes on using mainCREATE_SIMPLE_BLINKY_DEMO_ONLY
  * in main.c.  This file implements the comprehensive test and demo version.
  *
  * NOTE 3:  This file only contains the source code that is specific to the
- * basic demo.  Generic functions, such FreeRTOS hook functions, are defined in 
+ * basic demo.  Generic functions, such FreeRTOS hook functions, are defined in
  * main.c.
  *******************************************************************************
  *
- * main() creates all the demo application tasks, then starts the scheduler.  
- * The web documentation provides more details of the standard demo application 
- * tasks, which provide no particular functionality but do provide a good 
+ * main() creates all the demo application tasks, then starts the scheduler.
+ * The web documentation provides more details of the standard demo application
+ * tasks, which provide no particular functionality but do provide a good
  * example of how to use the FreeRTOS API.
  *
  * In addition to the standard demo tasks, the following tasks and tests are
@@ -132,15 +132,15 @@
 #include "dynamic.h"
 #include "QueueSet.h"
 #include "QueueOverwrite.h"
+#include "EventGroupsDemo.h"
 
 /* Priorities at which the tasks are created. */
-#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 1 )
+#define mainCHECK_TASK_PRIORITY			( configMAX_PRIORITIES - 2 )
 #define mainQUEUE_POLL_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainSEM_TEST_PRIORITY			( tskIDLE_PRIORITY + 1 )
 #define mainBLOCK_Q_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainCREATOR_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
 #define mainFLASH_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
-#define mainuIP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 #define mainINTEGER_TASK_PRIORITY		( tskIDLE_PRIORITY )
 #define mainGEN_QUEUE_TASK_PRIORITY		( tskIDLE_PRIORITY )
 #define mainFLOP_TASK_PRIORITY			( tskIDLE_PRIORITY )
@@ -151,7 +151,7 @@
 /* Task function prototypes. */
 static void prvCheckTask( void *pvParameters );
 
-/* A task that is created from the idle task to test the functionality of 
+/* A task that is created from the idle task to test the functionality of
 eTaskStateGet(). */
 static void prvTestTask( void *pvParameters );
 
@@ -160,6 +160,18 @@ static void prvTestTask( void *pvParameters );
  * functions that are not demonstrated by any of the standard demo tasks.
  */
 static void prvDemonstrateTaskStateAndHandleGetFunctions( void );
+
+/*
+ * Called from the idle task hook function to demonstrate the use of 
+ * xTimerPendFunctionCall() as xTimerPendFunctionCall() is not demonstrated by
+ * any of the standard demo tasks.
+ */
+static void prvDemonstratePendingFunctionCall( void );
+
+/*
+ * The function that is pended by prvDemonstratePendingFunctionCall().
+ */
+static void prvPendedFunction( void *pvParameter1, uint32_t ulParameter2 );
 
 /*
  * A task to demonstrate the use of the xQueueSpacesAvailable() function.
@@ -173,14 +185,14 @@ static char *pcStatusMessage = "OK";
 
 /* This semaphore is created purely to test using the vSemaphoreDelete() and
 semaphore tracing API functions.  It has no other purpose. */
-static xSemaphoreHandle xMutexToDelete = NULL;
+static SemaphoreHandle_t xMutexToDelete = NULL;
 
 /*-----------------------------------------------------------*/
 
 int main_full( void )
 {
 	/* Start the check task as described at the top of this file. */
-	xTaskCreate( prvCheckTask, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Create the standard demo tasks. */
 	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
@@ -190,12 +202,13 @@ int main_full( void )
 	vStartGenericQueueTasks( mainGEN_QUEUE_TASK_PRIORITY );
 	vStartQueuePeekTasks();
 	vStartMathTasks( mainFLOP_TASK_PRIORITY );
-	vStartRecursiveMutexTasks();	
+	vStartRecursiveMutexTasks();
 	vStartCountingSemaphoreTasks();
 	vStartDynamicPriorityTasks();
 	vStartQueueSetTasks();
-	vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_PRIORITY );	
-	xTaskCreate( prvDemoQueueSpaceFunctions, ( signed char * ) "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_PRIORITY );
+	xTaskCreate( prvDemoQueueSpaceFunctions, "QSpace", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	vStartEventGroupTasks();
 
 	#if( configUSE_PREEMPTION != 0  )
 	{
@@ -205,8 +218,8 @@ int main_full( void )
 	#endif
 
 	/* The suicide tasks must be created last as they need to know how many
-	tasks were running prior to their creation.  This then allows them to 
-	ascertain whether or not the correct/expected number of tasks are running at 
+	tasks were running prior to their creation.  This then allows them to
+	ascertain whether or not the correct/expected number of tasks are running at
 	any given time. */
 	vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
 
@@ -217,7 +230,7 @@ int main_full( void )
 	/* Start the scheduler itself. */
 	vTaskStartScheduler();
 
-    /* Should never get here unless there was not enough heap space to create 
+    /* Should never get here unless there was not enough heap space to create
 	the idle and other system tasks. */
     return 0;
 }
@@ -225,8 +238,8 @@ int main_full( void )
 
 static void prvCheckTask( void *pvParameters )
 {
-portTickType xNextWakeTime;
-const portTickType xCycleFrequency = 2500 / portTICK_RATE_MS;
+TickType_t xNextWakeTime;
+const TickType_t xCycleFrequency = 2500 / portTICK_PERIOD_MS;
 
 	/* Just to remove compiler warning. */
 	( void ) pvParameters;
@@ -250,12 +263,16 @@ const portTickType xCycleFrequency = 2500 / portTICK_RATE_MS;
 		}
 		#endif
 
-	    if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
+		if( xAreEventGroupTasksStillRunning() != pdTRUE )
+		{
+			pcStatusMessage = "Error: EventGroup";
+		}
+	    else if( xAreIntegerMathsTaskStillRunning() != pdTRUE )
 	    {
 			pcStatusMessage = "Error: IntMath";
-	    }	
+	    }
 		else if( xAreGenericQueueTasksStillRunning() != pdTRUE )
-		{			
+		{
 			pcStatusMessage = "Error: GenQueue";
 		}
 		else if( xAreQueuePeekTasksStillRunning() != pdTRUE )
@@ -303,7 +320,7 @@ const portTickType xCycleFrequency = 2500 / portTICK_RATE_MS;
 			pcStatusMessage = "Error: Queue overwrite";
 		}
 
-		/* This is the only task that uses stdout so its ok to call printf() 
+		/* This is the only task that uses stdout so its ok to call printf()
 		directly. */
 		printf( "%s - %d\r\n", pcStatusMessage, xTaskGetTickCount() );
 	}
@@ -332,16 +349,7 @@ const unsigned long ulMSToSleep = 5;
 void vFullDemoIdleFunction( void )
 {
 const unsigned long ulMSToSleep = 15;
-const unsigned char ucConstQueueNumber = 0xaaU;
 void *pvAllocated;
-
-/* These three functions are only meant for use by trace code, and not for
-direct use from application code, hence their prototypes are not in queue.h. */
-extern void vQueueSetQueueNumber( xQueueHandle pxQueue, unsigned char ucQueueNumber );
-extern unsigned char ucQueueGetQueueNumber( xQueueHandle pxQueue );
-extern unsigned char ucQueueGetQueueType( xQueueHandle pxQueue );
-extern void vTaskSetTaskNumber( xTaskHandle xTask, unsigned portBASE_TYPE uxHandle );
-extern unsigned portBASE_TYPE uxTaskGetTaskNumber( xTaskHandle xTask );
 
 	/* Sleep to reduce CPU load, but don't sleep indefinitely in case there are
 	tasks waiting to be terminated by the idle task. */
@@ -351,27 +359,21 @@ extern unsigned portBASE_TYPE uxTaskGetTaskNumber( xTaskHandle xTask );
 	the standard demo tasks. */
 	prvDemonstrateTaskStateAndHandleGetFunctions();
 
+	/* Demonstrate the use of xTimerPendFunctionCall(), which is not
+	demonstrated by any of the standard demo tasks. */
+	prvDemonstratePendingFunctionCall();
+
 	/* If xMutexToDelete has not already been deleted, then delete it now.
-	This is done purely to demonstrate the use of, and test, the 
+	This is done purely to demonstrate the use of, and test, the
 	vSemaphoreDelete() macro.  Care must be taken not to delete a semaphore
 	that has tasks blocked on it. */
 	if( xMutexToDelete != NULL )
 	{
-		/* Before deleting the semaphore, test the function used to set its
-		number.  This would normally only be done from trace software, rather
-		than application code. */
-		vQueueSetQueueNumber( xMutexToDelete, ucConstQueueNumber );
-
-		/* Before deleting the semaphore, test the functions used to get its
-		type and number.  Again, these would normally only be done from trace
-		software, rather than application code. */
-		configASSERT( ucQueueGetQueueNumber( xMutexToDelete ) == ucConstQueueNumber );
-		configASSERT( ucQueueGetQueueType( xMutexToDelete ) == queueQUEUE_TYPE_MUTEX );
 		vSemaphoreDelete( xMutexToDelete );
 		xMutexToDelete = NULL;
 	}
 
-	/* Exercise heap_4 a bit.  The malloc failed hook will trap failed 
+	/* Exercise heap_4 a bit.  The malloc failed hook will trap failed
 	allocations so there is no need to test here. */
 	pvAllocated = pvPortMalloc( ( rand() % 100 ) + 1 );
 	vPortFree( pvAllocated );
@@ -393,29 +395,61 @@ void vFullDemoTickHookFunction( void )
 	/* Call the periodic queue overwrite from ISR demo. */
 	vQueueOverwritePeriodicISRDemo();
 
-	/* Write to a queue that is in use as part of the queue set demo to 
+	/* Write to a queue that is in use as part of the queue set demo to
 	demonstrate using queue sets from an ISR. */
 	vQueueSetAccessQueueSetFromISR();
+
+	/* Exercise event groups from interrupts. */
+	vPeriodicEventGroupsProcessing();
+}
+/*-----------------------------------------------------------*/
+
+static void prvPendedFunction( void *pvParameter1, uint32_t ulParameter2 )
+{
+static uint32_t ulLastParameter1 = 1000UL, ulLastParameter2 = 0UL;
+uint32_t ulParameter1;
+
+	ulParameter1 = ( uint32_t ) pvParameter1;
+
+	/* Ensure the parameters are as expected. */
+	configASSERT( ulParameter1 == ( ulLastParameter1 + 1 ) );
+	configASSERT( ulParameter2 == ( ulLastParameter2 + 1 ) );
+
+	/* Remember the parameters for the next time the function is called. */
+	ulLastParameter1 = ulParameter1;
+	ulLastParameter2 = ulParameter2;
+}
+/*-----------------------------------------------------------*/
+
+static void prvDemonstratePendingFunctionCall( void )
+{
+static uint32_t ulParameter1 = 1000UL, ulParameter2 = 0UL;
+const TickType_t xDontBlock = 0; /* This is called from the idle task so must *not* attempt to block. */
+
+	/* prvPendedFunction() just expects the parameters to be incremented by one
+	each time it is called. */
+	ulParameter1++;
+	ulParameter2++;
+
+	/* Pend the function call, sending the parameters. */
+	xTimerPendFunctionCall( prvPendedFunction, ( void * ) ulParameter1, ulParameter2, xDontBlock );
 }
 /*-----------------------------------------------------------*/
 
 static void prvDemonstrateTaskStateAndHandleGetFunctions( void )
 {
-xTaskHandle xIdleTaskHandle, xTimerTaskHandle;
-const unsigned char ucConstTaskNumber = 0x55U;
-signed char *pcTaskName;
+TaskHandle_t xIdleTaskHandle, xTimerTaskHandle;
+char *pcTaskName;
 static portBASE_TYPE xPerformedOneShotTests = pdFALSE;
-xTaskHandle xTestTask;
+TaskHandle_t xTestTask;
 
-	/* Demonstrate the use of the xTimerGetTimerDaemonTaskHandle() and 
+	/* Demonstrate the use of the xTimerGetTimerDaemonTaskHandle() and
 	xTaskGetIdleTaskHandle() functions.  Also try using the function that sets
 	the task number. */
 	xIdleTaskHandle = xTaskGetIdleTaskHandle();
 	xTimerTaskHandle = xTimerGetTimerDaemonTaskHandle();
-	vTaskSetTaskNumber( xIdleTaskHandle, ( unsigned long ) ucConstTaskNumber );
-	configASSERT( uxTaskGetTaskNumber( xIdleTaskHandle ) == ucConstTaskNumber );
 
-	/* This is the idle hook, so the current task handle should equal the 
+	/* This is the idle hook, so the current task handle should equal the
 	returned idle task handle. */
 	if( xTaskGetCurrentTaskHandle() != xIdleTaskHandle )
 	{
@@ -478,7 +512,7 @@ xTaskHandle xTestTask;
 
 static void prvDemoQueueSpaceFunctions( void *pvParameters )
 {
-xQueueHandle xQueue = NULL;
+QueueHandle_t xQueue = NULL;
 const unsigned portBASE_TYPE uxQueueLength = 10;
 unsigned portBASE_TYPE uxReturn, x;
 
@@ -496,7 +530,7 @@ unsigned portBASE_TYPE uxReturn, x;
 		{
 			/* Ask how many messages are available... */
 			uxReturn = uxQueueMessagesWaiting( xQueue );
-			
+
 			/* Check the number of messages being reported as being available
 			is as expected, and force an assert if not. */
 			if( uxReturn != x )
@@ -508,7 +542,7 @@ unsigned portBASE_TYPE uxReturn, x;
 
 			/* Ask how many spaces remain in the queue... */
 			uxReturn = uxQueueSpacesAvailable( xQueue );
-			
+
 			/* Check the number of spaces being reported as being available
 			is as expected, and force an assert if not. */
 			if( uxReturn != ( uxQueueLength - x ) )
@@ -530,7 +564,7 @@ unsigned portBASE_TYPE uxReturn, x;
 		}
 
 		uxReturn = uxQueueSpacesAvailable( xQueue );
-			
+
 		if( uxReturn != 0 )
 		{
 			configASSERT( xQueue == NULL );

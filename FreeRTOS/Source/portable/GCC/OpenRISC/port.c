@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -111,7 +111,7 @@ inline void vPortEnableInterrupts( void );
  * See header file for description.
  */
 portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack,
-                                       pdTASK_CODE pxCode,
+                                       TaskFunction_t pxCode,
                                        void *pvParameters )
 {
     unsigned portLONG uTaskSR = mfspr(SPR_SR);

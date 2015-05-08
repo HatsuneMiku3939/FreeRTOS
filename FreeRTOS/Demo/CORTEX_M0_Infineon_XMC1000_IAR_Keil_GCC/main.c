@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -178,7 +178,7 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -209,8 +209,8 @@ void vApplicationTickHook( void )
 	#if mainCREATE_SIMPLE_BLINKY_DEMO_ONLY == 0
 	{
 	static unsigned long ulLastGiveTime = 0UL;
-	const unsigned long ulRate = 50UL / portTICK_RATE_MS;
-	extern xSemaphoreHandle xLEDSemaphore;
+	const unsigned long ulRate = 50UL / portTICK_PERIOD_MS;
+	extern SemaphoreHandle_t xLEDSemaphore;
 
 		configASSERT( xLEDSemaphore );
 

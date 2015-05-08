@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -189,13 +189,13 @@ the COM test tasks, so just set both to invalid values. */
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainNO_ERROR_CHECK_TASK_PERIOD			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainNO_ERROR_CHECK_TASK_PERIOD			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TASK_PERIOD 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TASK_PERIOD 	( 200UL / portTICK_PERIOD_MS )
 
 /* Parameters that are passed into the register check tasks solely for the
 purpose of ensuring parameters are passed into tasks correctly. */
@@ -317,12 +317,12 @@ void main_full( void )
 
 	/* Create the register check tasks, as described at the top of this
 	file */
-	xTaskCreate( prvRegTestTaskEntry1, ( signed char * ) "Reg1", configMINIMAL_STACK_SIZE, mainREG_TEST_TASK_1_PARAMETER, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( prvRegTestTaskEntry2, ( signed char * ) "Reg2", configMINIMAL_STACK_SIZE, mainREG_TEST_TASK_2_PARAMETER, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTestTaskEntry1, "Reg1", configMINIMAL_STACK_SIZE, mainREG_TEST_TASK_1_PARAMETER, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTestTaskEntry2, "Reg2", configMINIMAL_STACK_SIZE, mainREG_TEST_TASK_2_PARAMETER, tskIDLE_PRIORITY, NULL );
 
 	/* Create the task that performs the 'check' functionality,	as described at
 	the top of this file. */
-	xTaskCreate( prvCheckTask, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* The set of tasks created by the following function call have to be
 	created last as they keep account of the number of tasks they expect to see
@@ -346,8 +346,8 @@ void main_full( void )
 
 static void prvCheckTask( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_CHECK_TASK_PERIOD;
-portTickType xLastExecutionTime;
+TickType_t xDelayPeriod = mainNO_ERROR_CHECK_TASK_PERIOD;
+TickType_t xLastExecutionTime;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
 unsigned long ulErrorFound = pdFALSE;
 
@@ -411,7 +411,7 @@ unsigned long ulErrorFound = pdFALSE;
 			ulErrorFound = pdTRUE;
 		}
 
-		if( xAreTimerDemoTasksStillRunning( ( portTickType ) mainNO_ERROR_CHECK_TASK_PERIOD ) != pdPASS )
+		if( xAreTimerDemoTasksStillRunning( ( TickType_t ) mainNO_ERROR_CHECK_TASK_PERIOD ) != pdPASS )
 		{
 			ulErrorFound = pdTRUE;
 		}

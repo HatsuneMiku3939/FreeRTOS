@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -91,7 +91,7 @@ Changes from V3.0.1
 		/*
 		 * Queue to interface between comms API and interrupt routine.
 		*/
-		extern xQueueHandle xRxedChars;
+		extern QueueHandle_t xRxedChars;
 		
 		/*
 		 * Because we are not allowed to use local variables here,

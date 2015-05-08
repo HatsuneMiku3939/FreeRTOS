@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -122,7 +122,7 @@ static void prvInitialise_uIP( void );
  * The callback function that is assigned to both the periodic timer and the
  * ARP timer.
  */
-static void prvUIPTimerCallback( xTimerHandle xTimer );
+static void prvUIPTimerCallback( TimerHandle_t xTimer );
 
 /*
  * Port functions required by the uIP stack.
@@ -132,7 +132,7 @@ clock_time_t clock_time( void );
 /*-----------------------------------------------------------*/
 
 /* The queue used to send TCP/IP events to the uIP stack. */
-xQueueHandle xEMACEventQueue = NULL;
+QueueHandle_t xEMACEventQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -166,7 +166,7 @@ unsigned short usPacketLength;
 		if( ( usPacketLength > 0U ) && ( uip_buf != NULL ) )
 		{
 			uip_len = usPacketLength;
-			
+
 			if( xHeader->type == htons( UIP_ETHTYPE_IP ) )
 			{
 				uip_arp_ipin();
@@ -210,7 +210,7 @@ unsigned short usPacketLength;
 				for( i = 0; i < UIP_CONNS; i++ )
 				{
 					uip_periodic( i );
-	
+
 					/* If the above function invocation resulted in data that
 					should be sent out on the network, the global variable
 					uip_len is set to a value > 0. */
@@ -259,7 +259,7 @@ struct uip_eth_addr xAddr;
 static void prvInitialise_uIP( void )
 {
 uip_ipaddr_t xIPAddr;
-xTimerHandle xARPTimer, xPeriodicTimer;
+TimerHandle_t xARPTimer, xPeriodicTimer;
 
 	uip_init();
 	uip_ipaddr( &xIPAddr, configIP_ADDR0, configIP_ADDR1, configIP_ADDR2, configIP_ADDR3 );
@@ -273,15 +273,15 @@ xTimerHandle xARPTimer, xPeriodicTimer;
 	xEMACEventQueue = xQueueCreate( uipEVENT_QUEUE_LENGTH, sizeof( unsigned long ) );
 
 	/* Create and start the uIP timers. */
-	xARPTimer = xTimerCreate( 	( signed char * ) "ARPTimer", /* Just a name that is helpful for debugging, not used by the kernel. */
-								( 10000UL / portTICK_RATE_MS ), /* Timer period. */
+	xARPTimer = xTimerCreate( 	"ARPTimer", /* Just a name that is helpful for debugging, not used by the kernel. */
+								( 10000UL / portTICK_PERIOD_MS ), /* Timer period. */
 								pdTRUE, /* Autor-reload. */
 								( void * ) uipARP_TIMER,
 								prvUIPTimerCallback
 							);
 
-	xPeriodicTimer = xTimerCreate( 	( signed char * ) "PeriodicTimer",
-									( 500UL / portTICK_RATE_MS ),
+	xPeriodicTimer = xTimerCreate( 	"PeriodicTimer",
+									( 500UL / portTICK_PERIOD_MS ),
 									pdTRUE, /* Autor-reload. */
 									( void * ) uipPERIODIC_TIMER,
 									prvUIPTimerCallback
@@ -299,7 +299,7 @@ xTimerHandle xARPTimer, xPeriodicTimer;
 }
 /*-----------------------------------------------------------*/
 
-static void prvUIPTimerCallback( xTimerHandle xTimer )
+static void prvUIPTimerCallback( TimerHandle_t xTimer )
 {
 static const unsigned long ulARPTimerExpired = uipARP_TIMER_EVENT;
 static const unsigned long ulPeriodicTimerExpired = uipPERIODIC_TIMER_EVENT;
@@ -328,7 +328,7 @@ const unsigned long ulYellowLED = 2UL;
 
 	/* Only interested in processing form input if this is the IO page. */
 	c = strstr( pcInputString, "io.shtml" );
-	
+
 	if( c )
 	{
 		/* Is there a command in the string? */

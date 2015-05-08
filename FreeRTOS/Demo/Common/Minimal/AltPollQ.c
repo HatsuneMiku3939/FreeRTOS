@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -88,7 +88,7 @@
 Changes from V2.0.0
 
 	+ Delay periods are now specified using variables and constants of
-	  portTickType rather than unsigned portLONG.
+	  TickType_t rather than unsigned long.
 */
 
 #include <stdlib.h>
@@ -103,9 +103,9 @@ Changes from V2.0.0
 
 #define pollqSTACK_SIZE			configMINIMAL_STACK_SIZE
 #define pollqQUEUE_SIZE			( 10 )
-#define pollqPRODUCER_DELAY		( ( portTickType ) 200 / portTICK_RATE_MS )
-#define pollqCONSUMER_DELAY		( pollqPRODUCER_DELAY - ( portTickType ) ( 20 / portTICK_RATE_MS ) )
-#define pollqNO_DELAY			( ( portTickType ) 0 )
+#define pollqPRODUCER_DELAY		( ( TickType_t ) 200 / portTICK_PERIOD_MS )
+#define pollqCONSUMER_DELAY		( pollqPRODUCER_DELAY - ( TickType_t ) ( 20 / portTICK_PERIOD_MS ) )
+#define pollqNO_DELAY			( ( TickType_t ) 0 )
 #define pollqVALUES_TO_PRODUCE	( ( signed portBASE_TYPE ) 3 )
 #define pollqINITIAL_VALUE		( ( signed portBASE_TYPE ) 0 )
 
@@ -123,10 +123,10 @@ static volatile signed portBASE_TYPE xPollingConsumerCount = pollqINITIAL_VALUE,
 
 void vStartAltPolledQueueTasks( unsigned portBASE_TYPE uxPriority )
 {
-static xQueueHandle xPolledQueue;
+static QueueHandle_t xPolledQueue;
 
 	/* Create the queue used by the producer and consumer. */
-	xPolledQueue = xQueueCreate( pollqQUEUE_SIZE, ( unsigned portBASE_TYPE ) sizeof( unsigned portSHORT ) );
+	xPolledQueue = xQueueCreate( pollqQUEUE_SIZE, ( unsigned portBASE_TYPE ) sizeof( unsigned short ) );
 
 	/* vQueueAddToRegistry() adds the queue to the queue registry, if one is
 	in use.  The queue registry is provided as a means for kernel aware 
@@ -134,24 +134,24 @@ static xQueueHandle xPolledQueue;
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( xPolledQueue, ( signed portCHAR * ) "AltPollQueue" );
+	vQueueAddToRegistry( xPolledQueue, "AltPollQueue" );
 
 
 	/* Spawn the producer and consumer. */
-	xTaskCreate( vPolledQueueConsumer, ( signed portCHAR * ) "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( xTaskHandle * ) NULL );
-	xTaskCreate( vPolledQueueProducer, ( signed portCHAR * ) "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( xTaskHandle * ) NULL );
+	xTaskCreate( vPolledQueueConsumer, "QConsNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
+	xTaskCreate( vPolledQueueProducer, "QProdNB", pollqSTACK_SIZE, ( void * ) &xPolledQueue, uxPriority, ( TaskHandle_t * ) NULL );
 }
 /*-----------------------------------------------------------*/
 
 static portTASK_FUNCTION( vPolledQueueProducer, pvParameters )
 {
-unsigned portSHORT usValue = ( unsigned portSHORT ) 0;
+unsigned short usValue = ( unsigned short ) 0;
 signed portBASE_TYPE xError = pdFALSE, xLoop;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt polling queue producer task started.\r\n";
+		const char * const pcTaskStartMsg = "Alt polling queue producer task started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -162,7 +162,7 @@ signed portBASE_TYPE xError = pdFALSE, xLoop;
 		for( xLoop = 0; xLoop < pollqVALUES_TO_PRODUCE; xLoop++ )
 		{
 			/* Send an incrementing number on the queue without blocking. */
-			if( xQueueAltSendToBack( *( ( xQueueHandle * ) pvParameters ), ( void * ) &usValue, pollqNO_DELAY ) != pdPASS )
+			if( xQueueAltSendToBack( *( ( QueueHandle_t * ) pvParameters ), ( void * ) &usValue, pollqNO_DELAY ) != pdPASS )
 			{
 				/* We should never find the queue full so if we get here there
 				has been an error. */
@@ -193,13 +193,13 @@ signed portBASE_TYPE xError = pdFALSE, xLoop;
 
 static portTASK_FUNCTION( vPolledQueueConsumer, pvParameters )
 {
-unsigned portSHORT usData, usExpectedValue = ( unsigned portSHORT ) 0;
+unsigned short usData, usExpectedValue = ( unsigned short ) 0;
 signed portBASE_TYPE xError = pdFALSE;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt blocking queue consumer task started.\r\n";
+		const char * const pcTaskStartMsg = "Alt blocking queue consumer task started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -208,9 +208,9 @@ signed portBASE_TYPE xError = pdFALSE;
 	for( ;; )
 	{		
 		/* Loop until the queue is empty. */
-		while( uxQueueMessagesWaiting( *( ( xQueueHandle * ) pvParameters ) ) )
+		while( uxQueueMessagesWaiting( *( ( QueueHandle_t * ) pvParameters ) ) )
 		{
-			if( xQueueAltReceive( *( ( xQueueHandle * ) pvParameters ), &usData, pollqNO_DELAY ) == pdPASS )
+			if( xQueueAltReceive( *( ( QueueHandle_t * ) pvParameters ), &usData, pollqNO_DELAY ) == pdPASS )
 			{
 				if( usData != usExpectedValue )
 				{

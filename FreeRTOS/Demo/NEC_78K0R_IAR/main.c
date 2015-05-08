@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -117,8 +117,8 @@
 #define mainGEN_QUEUE_PRIORITY	( tskIDLE_PRIORITY )
 
 /* The period between executions of the check task. */
-#define mainNO_ERROR_TOGGLE_PERIOD	( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_TOGGLE_PERIOD		( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_TOGGLE_PERIOD	( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_TOGGLE_PERIOD		( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 
 /* The LED toggled by the check task. */
 #define mainLED_0   P7_bit.no6
@@ -163,13 +163,13 @@ static short sRegTestStatus = pdPASS;
 
 /* 78K0R Option Byte Definition. Watchdog disabled, LVI enabled, OCD interface
 enabled. */
-__root __far const unsigned portCHAR OptionByte[] @ 0x00C0 =
+__root __far const unsigned char OptionByte[] @ 0x00C0 =
 {
 	WATCHDOG_DISABLED, LVI_ENABLED, RESERVED_FF, OCD_ENABLED
 };
 
 /* Security byte definition */
-__root __far const unsigned portCHAR SecuIDCode[]  @ 0x00C4 =
+__root __far const unsigned char SecuIDCode[]  @ 0x00C4 =
 {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
@@ -217,7 +217,7 @@ short main( void )
 
 static void vErrorChecks( void *pvParameters )
 {
-portTickType xToggleRate = mainNO_ERROR_TOGGLE_PERIOD, xLastWakeTime;
+TickType_t xToggleRate = mainNO_ERROR_TOGGLE_PERIOD, xLastWakeTime;
 
 	/* Ensure the parameter was passed in as expected.  This is just a test of
 	the kernel port, the parameter is not actually used for anything.  The
@@ -283,7 +283,7 @@ portTickType xToggleRate = mainNO_ERROR_TOGGLE_PERIOD, xLastWakeTime;
 
 int __low_level_init(void)
 {
-unsigned portCHAR ucResetFlag = RESF;
+unsigned char ucResetFlag = RESF;
 
 	portDISABLE_INTERRUPTS();
 
@@ -310,7 +310,7 @@ unsigned portCHAR ucResetFlag = RESF;
 
 		/* Set clock speed. */
 		CSS = 0;
-		CKC &= (unsigned portCHAR)~0x07;
+		CKC &= (unsigned char)~0x07;
 		CKC |= 0x00;
 	}
 	#else

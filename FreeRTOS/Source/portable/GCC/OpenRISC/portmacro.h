@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -84,26 +84,31 @@ extern "C" {
 #define portTickType    unsigned portLONG
 #define portMAX_DELAY   (portTickType)0xffffffff
 
+typedef portSTACK_TYPE          StackType_t;
+typedef portBASE_TYPE           BaseType_t;
+typedef unsigned portBASE_TYPE  UBaseType_t;
+typedef portTickType            TickType_t;
+
 #if( configUSE_16_BIT_TICKS == 1 )
     #error "configUSE_16_BIT_TICKS must be 0"
 #endif
 
 #ifndef configSYSTICK_CLOCK_HZ
-	#define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
+    #define configSYSTICK_CLOCK_HZ configCPU_CLOCK_HZ
 #endif
 
 /*-----------------------------------------------------------*/
 #define portSTACK_GROWTH                -1
-#define portTICK_RATE_MS                ( \
-	(portTickType) 1000 / configTICK_RATE_HZ \
+#define portTICK_PERIOD_MS              ( \
+    (portTickType) 1000 / configTICK_RATE_HZ \
 )
 #define portBYTE_ALIGNMENT              4
 #define portCRITICAL_NESTING_IN_TCB     1
 #define portINSTRUCTION_SIZE            ( ( portSTACK_TYPE ) 4 )
 #define portNO_CRITICAL_SECTION_NESTING ( ( portSTACK_TYPE ) 0 )
-#define portPOINTER_SIZE_TYPE						unsigned long
+#define portPOINTER_SIZE_TYPE           unsigned long
 
-#define portYIELD_FROM_ISR()            portYIELD()
+#define portYIELD_FROM_ISR(x)           { if(x) vTaskSwitchContext() }
 #define portYIELD()     \
     __asm__ __volatile__ (  "l.nop       \n\t"  \
                             "l.sys 0x0FCC\n\t"  \
@@ -123,8 +128,8 @@ extern "C" {
 }
 
 #define portENTER_CRITICAL() { \
-	extern void vTaskEnterCritical( void ); \
-	vTaskEnterCritical(); \
+    extern void vTaskEnterCritical( void ); \
+    vTaskEnterCritical(); \
 }
 #define portEXIT_CRITICAL() { \
     extern void vTaskExitCritical( void ); \
@@ -134,9 +139,9 @@ extern "C" {
 
 /* Task function macros as described on the FreeRTOS.org WEB site. */
 #define portTASK_FUNCTION_PROTO( vFunction, pvParameters ) \
-	void vFunction( void *pvParameters )
+    void vFunction( void *pvParameters )
 #define portTASK_FUNCTION( vFunction, pvParameters ) \
-	void vFunction( void *pvParameters )
+    void vFunction( void *pvParameters )
 
 /*
     Context layout

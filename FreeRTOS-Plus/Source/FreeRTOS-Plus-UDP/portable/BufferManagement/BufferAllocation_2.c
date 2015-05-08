@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.3 (C) 2014 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -95,7 +95,7 @@ portBASE_TYPE xReturn, x;
 	{
 		xNetworkBufferSemaphore = xSemaphoreCreateCounting( ipconfigNUM_NETWORK_BUFFERS, ipconfigNUM_NETWORK_BUFFERS );
 		configASSERT( xNetworkBufferSemaphore );
-		vQueueAddToRegistry( xNetworkBufferSemaphore, ( signed char * ) "NetBufSem" );
+		vQueueAddToRegistry( xNetworkBufferSemaphore, "NetBufSem" );
 
 		/* If the trace recorder code is included name the semaphore for viewing
 		in FreeRTOS+Trace.  */

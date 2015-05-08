@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -83,7 +83,7 @@
 #define cmdMAX_INPUT_SIZE		50
 
 /* The maximum time in ticks to wait for the UART access mutex. */
-#define cmdMAX_MUTEX_WAIT		( 200 / portTICK_RATE_MS )
+#define cmdMAX_MUTEX_WAIT		( 200 / portTICK_PERIOD_MS )
 
 /* Characters are only ever received slowly on the CLI so it is ok to pass
 received characters from the UART interrupt to the task on a queue.  This sets
@@ -101,7 +101,7 @@ static void prvUARTCommandConsoleTask( void *pvParameters );
  * Ensure a previous interrupt driven Tx has completed before sending the next
  * data block to the UART.
  */
-static void prvSendBuffer( const uint8_t * pcBuffer, size_t xBufferLength );
+static void prvSendBuffer( const char * pcBuffer, size_t xBufferLength );
 
 /*
  * A UART is used for printf() output and CLI input and output.  Configure the
@@ -113,9 +113,9 @@ static void prvUARTRxNotificationHandler( mss_uart_instance_t * this_uart );
 /*-----------------------------------------------------------*/
 
 /* Const messages output by the command console. */
-static const uint8_t * const pcWelcomeMessage = ( uint8_t * ) "\r\n\r\nFreeRTOS command server.\r\nType Help to view a list of registered commands.\r\n\r\n>";
-static const uint8_t * const pcEndOfOutputMessage = ( uint8_t * ) "\r\n[Press ENTER to execute the previous command again]\r\n>";
-static const uint8_t * const pcNewLine = ( uint8_t * ) "\r\n";
+static const char * const pcWelcomeMessage = "\r\n\r\nFreeRTOS command server.\r\nType Help to view a list of registered commands.\r\n\r\n>";
+static const char * const pcEndOfOutputMessage = "\r\n[Press ENTER to execute the previous command again]\r\n>";
+static const char * const pcNewLine = "\r\n";
 
 /* The UART used by the CLI. */
 #if configBUILD_FOR_DEVELOPMENT_KIT == 1
@@ -129,7 +129,7 @@ static const uint8_t * const pcNewLine = ( uint8_t * ) "\r\n";
 /* Because characters are received slowly (at the speed somebody can type) then
 it is ok to pass received characters from the Rx interrupt to the task on a
 queue.  This is the queue used for that purpose. */
-static xQueueHandle xRxedChars = NULL;
+static QueueHandle_t xRxedChars = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -141,19 +141,20 @@ void vUARTCommandConsoleStart( uint16_t usStackSize, unsigned portBASE_TYPE uxPr
 	prvConfigureUART();
 
 	/* Create that task that handles the console itself. */
-	xTaskCreate( 	prvUARTCommandConsoleTask,			/* The task that implements the command console. */
-					( const int8_t * const ) "CLI",		/* Text name assigned to the task.  This is just to assist debugging.  The kernel does not use this name itself. */
-					usStackSize,						/* The size of the stack allocated to the task. */
-					NULL,								/* The parameter is not used, so NULL is passed. */
-					uxPriority,							/* The priority allocated to the task. */
-					NULL );								/* A handle is not required, so just pass NULL. */
+	xTaskCreate( 	prvUARTCommandConsoleTask,	/* The task that implements the command console. */
+					"CLI",						/* Text name assigned to the task.  This is just to assist debugging.  The kernel does not use this name itself. */
+					usStackSize,				/* The size of the stack allocated to the task. */
+					NULL,						/* The parameter is not used, so NULL is passed. */
+					uxPriority,					/* The priority allocated to the task. */
+					NULL );						/* A handle is not required, so just pass NULL. */
 }
 /*-----------------------------------------------------------*/
 
 static void prvUARTCommandConsoleTask( void *pvParameters )
 {
-int8_t cRxedChar, cInputIndex = 0, *pcOutputString;
-static int8_t cInputString[ cmdMAX_INPUT_SIZE ], cLastInputString[ cmdMAX_INPUT_SIZE ];
+char cRxedChar, *pcOutputString;
+unsigned char cInputIndex = 0;
+static char cInputString[ cmdMAX_INPUT_SIZE ], cLastInputString[ cmdMAX_INPUT_SIZE ];
 portBASE_TYPE xReturned;
 
 	( void ) pvParameters;
@@ -164,7 +165,7 @@ portBASE_TYPE xReturned;
 	pcOutputString = FreeRTOS_CLIGetOutputBuffer();
 
 	/* Send the welcome message. */
-	prvSendBuffer( pcWelcomeMessage, strlen( ( char * ) pcWelcomeMessage ) );
+	prvSendBuffer( pcWelcomeMessage, strlen( pcWelcomeMessage ) );
 
 	for( ;; )
 	{
@@ -172,20 +173,20 @@ portBASE_TYPE xReturned;
 		if( xQueueReceive( xRxedChars, &cRxedChar, portMAX_DELAY ) == pdPASS )
 		{
 			/* Echo the character back. */
-			prvSendBuffer( ( uint8_t * ) &cRxedChar, sizeof( cRxedChar ) );
+			prvSendBuffer( &cRxedChar, sizeof( cRxedChar ) );
 
 			/* Was it the end of the line? */
 			if( cRxedChar == '\n' || cRxedChar == '\r' )
 			{
 				/* Just to space the output from the input. */
-				prvSendBuffer( ( uint8_t * ) pcNewLine, strlen( ( char * ) pcNewLine ) );
+				prvSendBuffer( pcNewLine, strlen( pcNewLine ) );
 
 				/* See if the command is empty, indicating that the last command is
 				to be executed again. */
 				if( cInputIndex == 0 )
 				{
 					/* Copy the last command back into the input string. */
-					strcpy( ( char * ) cInputString, ( char * ) cLastInputString );
+					strcpy( cInputString, cLastInputString );
 				}
 
 				/* Pass the received command to the command interpreter.  The
@@ -198,7 +199,7 @@ portBASE_TYPE xReturned;
 					xReturned = FreeRTOS_CLIProcessCommand( cInputString, pcOutputString, configCOMMAND_INT_MAX_OUTPUT_SIZE );
 
 					/* Write the generated string to the UART. */
-					prvSendBuffer( ( uint8_t * ) pcOutputString, strlen( ( char * ) pcOutputString ) );
+					prvSendBuffer( pcOutputString, strlen( pcOutputString ) );
 
 				} while( xReturned != pdFALSE );
 
@@ -206,11 +207,11 @@ portBASE_TYPE xReturned;
 				Clear the input	string ready to receive the next command.  Remember
 				the command that was just processed first in case it is to be
 				processed again. */
-				strcpy( ( char * ) cLastInputString, ( char * ) cInputString );
+				strcpy( cLastInputString, cInputString );
 				cInputIndex = 0;
 				memset( cInputString, 0x00, cmdMAX_INPUT_SIZE );
 
-				prvSendBuffer( ( uint8_t * ) pcEndOfOutputMessage, strlen( ( char * ) pcEndOfOutputMessage ) );
+				prvSendBuffer( pcEndOfOutputMessage, strlen( pcEndOfOutputMessage ) );
 			}
 			else
 			{
@@ -248,13 +249,13 @@ portBASE_TYPE xReturned;
 }
 /*-----------------------------------------------------------*/
 
-static void prvSendBuffer( const uint8_t * pcBuffer, size_t xBufferLength )
+static void prvSendBuffer( const char * pcBuffer, size_t xBufferLength )
 {
-const portTickType xVeryShortDelay = 2UL;
+const TickType_t xVeryShortDelay = 2UL;
 
 	if( xBufferLength > 0 )
 	{
-		MSS_UART_irq_tx( ( mss_uart_instance_t * ) pxUART, pcBuffer, xBufferLength );
+		MSS_UART_irq_tx( ( mss_uart_instance_t * ) pxUART, ( uint8_t * ) pcBuffer, xBufferLength );
 
 		/* Ensure any previous transmissions have completed.  The default UART
 		interrupt does not provide an event based method of	signally the end of a Tx
@@ -292,13 +293,13 @@ static void prvConfigureUART( void )
 
 static void prvUARTRxNotificationHandler( mss_uart_instance_t * pxUART )
 {
-uint8_t cRxed;
+char cRxed;
 portBASE_TYPE xHigherPriorityTaskWoken;
 
 	/* The command console receives data very slowly (at the speed of somebody
 	typing), therefore it is ok to just handle one character at a time and use
 	a queue to send the characters to the task. */
-	if( MSS_UART_get_rx( pxUART, &cRxed, sizeof( cRxed ) ) == sizeof( cRxed ) )
+	if( MSS_UART_get_rx( pxUART, ( uint8_t * ) &cRxed, sizeof( cRxed ) ) == sizeof( cRxed ) )
 	{
 		xHigherPriorityTaskWoken = pdFALSE;
 		xQueueSendFromISR( xRxedChars, &cRxed, &xHigherPriorityTaskWoken );

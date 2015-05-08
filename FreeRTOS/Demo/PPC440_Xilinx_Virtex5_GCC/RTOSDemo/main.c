@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -137,8 +137,8 @@ baud rate parameters passed into the comtest initialisation has no effect. */
 the check LED will toggle every mainNO_ERROR_CHECK_DELAY milliseconds.  If an
 error has been found at any time then the toggle rate will increase to 
 mainERROR_CHECK_DELAY milliseconds. */
-#define mainNO_ERROR_CHECK_DELAY		( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_CHECK_DELAY			( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_CHECK_DELAY		( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_CHECK_DELAY			( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 
 
 /* 
@@ -208,9 +208,9 @@ int main( void )
 	#endif
 
 	/* Create the tasks defined within this file. */
-	xTaskCreate( prvRegTestTask1, ( signed char * ) "Regtest1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( prvRegTestTask2, ( signed char * ) "Regtest2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( prvErrorChecks, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( prvRegTestTask1, "Regtest1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvRegTestTask2, "Regtest2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( prvErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* The suicide tasks must be started last as they record the number of other
 	tasks that exist within the system.  The value is then used to ensure at run
@@ -338,7 +338,7 @@ static unsigned long ulLastRegTest1Counter= 0UL, ulLastRegTest2Counter = 0UL;
 
 static void prvErrorChecks( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
+TickType_t xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
 volatile unsigned portBASE_TYPE uxFreeStack;
 
 	/* Just to remove compiler warning. */
@@ -697,11 +697,11 @@ static void prvRegTestTask2( void *pvParameters )
 /* This hook function will get called if there is a suspected stack overflow.
 An overflow can cause the task name to be corrupted, in which case the task
 handle needs to be used to determine the offending task. */
-void vApplicationStackOverflowHook( xTaskHandle xTask, signed char *pcTaskName );
-void vApplicationStackOverflowHook( xTaskHandle xTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName );
+void vApplicationStackOverflowHook( TaskHandle_t xTask, signed char *pcTaskName )
 {
 /* To prevent the optimiser removing the variables. */
-volatile xTaskHandle xTaskIn = xTask;
+volatile TaskHandle_t xTaskIn = xTask;
 volatile signed char *pcTaskNameIn = pcTaskName;
 
 	/* Remove compiler warnings. */

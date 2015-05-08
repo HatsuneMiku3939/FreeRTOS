@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -110,18 +110,18 @@ static volatile portBASE_TYPE xErrorDetected = pdFALSE;
 
 /* Counter that is incremented on each cycle of a test.  This is used to
 detect a stalled task - a test that is no longer running. */
-static volatile unsigned portLONG ulLoopCounter = 0;
+static volatile unsigned long ulLoopCounter = 0;
 
 /* Handles to the test tasks. */
-xTaskHandle xMediumPriorityTask, xHighPriorityTask, xHighestPriorityTask;
+TaskHandle_t xMediumPriorityTask, xHighPriorityTask, xHighestPriorityTask;
 /*-----------------------------------------------------------*/
 
 void vStartQueuePeekTasks( void )
 {
-xQueueHandle xQueue;
+QueueHandle_t xQueue;
 
 	/* Create the queue that we are going to use for the test/demo. */
-	xQueue = xQueueCreate( qpeekQUEUE_LENGTH, sizeof( unsigned portLONG ) );
+	xQueue = xQueueCreate( qpeekQUEUE_LENGTH, sizeof( unsigned long ) );
 
 	/* vQueueAddToRegistry() adds the queue to the queue registry, if one is
 	in use.  The queue registry is provided as a means for kernel aware
@@ -129,28 +129,28 @@ xQueueHandle xQueue;
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( xQueue, ( signed portCHAR * ) "QPeek_Test_Queue" );
+	vQueueAddToRegistry( xQueue, "QPeek_Test_Queue" );
 
 	/* Create the demo tasks and pass it the queue just created.  We are
 	passing the queue handle by value so it does not matter that it is declared
 	on the stack here. */
-	xTaskCreate( prvLowPriorityPeekTask, ( signed portCHAR * )"PeekL", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekLOW_PRIORITY, NULL );
-	xTaskCreate( prvMediumPriorityPeekTask, ( signed portCHAR * )"PeekM", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekMEDIUM_PRIORITY, &xMediumPriorityTask );
-	xTaskCreate( prvHighPriorityPeekTask, ( signed portCHAR * )"PeekH1", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGH_PRIORITY, &xHighPriorityTask );
-	xTaskCreate( prvHighestPriorityPeekTask, ( signed portCHAR * )"PeekH2", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGHEST_PRIORITY, &xHighestPriorityTask );
+	xTaskCreate( prvLowPriorityPeekTask, "PeekL", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekLOW_PRIORITY, NULL );
+	xTaskCreate( prvMediumPriorityPeekTask, "PeekM", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekMEDIUM_PRIORITY, &xMediumPriorityTask );
+	xTaskCreate( prvHighPriorityPeekTask, "PeekH1", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGH_PRIORITY, &xHighPriorityTask );
+	xTaskCreate( prvHighestPriorityPeekTask, "PeekH2", configMINIMAL_STACK_SIZE, ( void * ) xQueue, qpeekHIGHEST_PRIORITY, &xHighestPriorityTask );
 }
 /*-----------------------------------------------------------*/
 
 static void prvHighestPriorityPeekTask( void *pvParameters )
 {
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
-unsigned portLONG ulValue;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
+unsigned long ulValue;
 
 	#ifdef USE_STDIO
 	{
-		void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+		void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 
-		const portCHAR * const pcTaskStartMsg = "Queue peek test started.\r\n";
+		const char * const pcTaskStartMsg = "Queue peek test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -252,8 +252,8 @@ unsigned portLONG ulValue;
 
 static void prvHighPriorityPeekTask( void *pvParameters )
 {
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
-unsigned portLONG ulValue;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
+unsigned long ulValue;
 
 	for( ;; )
 	{
@@ -307,8 +307,8 @@ unsigned portLONG ulValue;
 
 static void prvMediumPriorityPeekTask( void *pvParameters )
 {
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
-unsigned portLONG ulValue;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
+unsigned long ulValue;
 
 	for( ;; )
 	{
@@ -348,8 +348,8 @@ unsigned portLONG ulValue;
 
 static void prvLowPriorityPeekTask( void *pvParameters )
 {
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
-unsigned portLONG ulValue;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
+unsigned long ulValue;
 
 	for( ;; )
 	{
@@ -455,7 +455,7 @@ unsigned portLONG ulValue;
 /* This is called to check that all the created tasks are still running. */
 portBASE_TYPE xAreQueuePeekTasksStillRunning( void )
 {
-static unsigned portLONG ulLastLoopCounter = 0;
+static unsigned long ulLastLoopCounter = 0;
 
 	/* If the demo task is still running then we expect the loopcounter to
 	have incremented since this function was last called. */

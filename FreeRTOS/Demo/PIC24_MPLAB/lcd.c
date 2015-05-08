@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -87,12 +87,12 @@ static void prvSetupLCD( void );
 /* 
  * Move to the first (0) or second (1) row of the LCD. 
  */
-static void prvLCDGotoRow( unsigned portSHORT usRow );
+static void prvLCDGotoRow( unsigned short usRow );
 
 /* 
  * Write a string of text to the LCD. 
  */
-static void prvLCDPutString( portCHAR *pcString );
+static void prvLCDPutString( char *pcString );
 
 /* 
  * Clear the LCD. 
@@ -118,12 +118,12 @@ static void prvLCDClear( void );
 /*-----------------------------------------------------------*/
 
 /* The queue used to send messages to the LCD task. */
-xQueueHandle xLCDQueue;
+QueueHandle_t xLCDQueue;
 
 
 /*-----------------------------------------------------------*/
 
-xQueueHandle xStartLCDTask( void )
+QueueHandle_t xStartLCDTask( void )
 {
 	/* Create the queue used by the LCD task.  Messages for display on the LCD
 	are received via this queue. */
@@ -131,13 +131,13 @@ xQueueHandle xStartLCDTask( void )
 
 	/* Start the task that will write to the LCD.  The LCD hardware is
 	initialised from within the task itself so delays can be used. */
-	xTaskCreate( vLCDTask, ( signed portCHAR * ) "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL );
+	xTaskCreate( vLCDTask, "LCD", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY + 1, NULL );
 
 	return xLCDQueue;
 }
 /*-----------------------------------------------------------*/
 
-static void prvLCDGotoRow( unsigned portSHORT usRow )
+static void prvLCDGotoRow( unsigned short usRow )
 {
 	if( usRow == 0 )
 	{
@@ -154,7 +154,7 @@ static void prvLCDGotoRow( unsigned portSHORT usRow )
 }
 /*-----------------------------------------------------------*/
 
-static void prvLCDPutString( portCHAR *pcString )
+static void prvLCDPutString( char *pcString )
 {
 	/* Write out each character with appropriate delay between each. */
 	while( *pcString )
@@ -206,7 +206,7 @@ static void prvSetupLCD( void )
 static void vLCDTask( void *pvParameters )
 {
 xLCDMessage xMessage;
-unsigned portSHORT usRow = 0;
+unsigned short usRow = 0;
 
 	/* Remove compiler warnigns. */
 	( void ) pvParameters;

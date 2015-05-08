@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -70,8 +70,8 @@
 
 #define partstNUM_LEDs	8
 
-static unsigned portCHAR sState[ partstNUM_LEDs ] = { pdFALSE };
-static unsigned portCHAR sState1[ partstNUM_LEDs ] = { pdFALSE };
+static unsigned char sState[ partstNUM_LEDs ] = { pdFALSE };
+static unsigned char sState1[ partstNUM_LEDs ] = { pdFALSE };
 
 
 /*-----------------------------------------------------------*/

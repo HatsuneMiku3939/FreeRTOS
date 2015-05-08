@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -82,22 +82,22 @@
 #include "serial.h"
 
 /* The queue used to hold received characters. */
-static xQueueHandle xRxedChars; 
+static QueueHandle_t xRxedChars; 
 
 /* The queue used to hold characters waiting transmission. */
-static xQueueHandle xCharsForTx; 
+static QueueHandle_t xCharsForTx; 
 
-static volatile portSHORT sTHREEmpty;
+static volatile short sTHREEmpty;
 
 /*-----------------------------------------------------------*/
 
-xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
+xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
 {
 	portENTER_CRITICAL();
 	{
 		/* Create the queues used by the com test task. */
-		xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-		xCharsForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+		xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
+		xCharsForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
 
 		 /* Initialize UART asynchronous mode */
 		BGR02 = configPER_CLOCK_HZ / ulWantedBaud;
@@ -120,7 +120,7 @@ xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned 
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcRxedChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed char *pcRxedChar, TickType_t xBlockTime )
 {
 	/* Get the next character from the buffer.  Return false if no characters
 	are available, or arrive before xBlockTime expires. */
@@ -135,7 +135,7 @@ signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcR
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed portCHAR cOutChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed char cOutChar, TickType_t xBlockTime )
 {
 signed portBASE_TYPE xReturn;
 
@@ -191,7 +191,7 @@ signed portBASE_TYPE xReturn;
  */
  __interrupt void UART2_RxISR (void)
 {
-	signed portCHAR cChar;
+	signed char cChar;
 	portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 	/* Get the character from the UART and post it on the queue of Rxed 
@@ -216,7 +216,7 @@ signed portBASE_TYPE xReturn;
  */
 __interrupt void UART2_TxISR (void)
 {
-	signed portCHAR cChar;
+	signed char cChar;
 	signed portBASE_TYPE xTaskWoken = pdFALSE;
 
 	/* The previous character has been transmitted.  See if there are any

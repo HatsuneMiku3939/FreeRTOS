@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -86,7 +86,7 @@
 #define configUSE_TICK_HOOK				0
 #define configCPU_CLOCK_HZ				( ICLK_FREQUENCY ) /* Set in rskrx630def.h. */
 #define configPERIPHERAL_CLOCK_HZ		( PCLKB_FREQUENCY ) /* Set in rskrx630def.h. */
-#define configTICK_RATE_HZ				( ( portTickType ) 1000 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 140 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 45 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 12 )
@@ -102,7 +102,7 @@
 #define configUSE_MALLOC_FAILED_HOOK	1
 #define configUSE_APPLICATION_TASK_TAG	0
 
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 7 )
+#define configMAX_PRIORITIES			( 7 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 /* Software timer definitions. */
@@ -137,8 +137,9 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelay					1
 #define INCLUDE_uxTaskGetStackHighWaterMark	1
 #define INCLUDE_xTaskGetSchedulerState		1
+#define INCLUDE_eTaskGetState				1
 
-#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }	
+#define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
 
 extern volatile unsigned long ulHighFrequencyTickCount;
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() nop() /* Run time stats use the same timer as the high frequency timer test. */

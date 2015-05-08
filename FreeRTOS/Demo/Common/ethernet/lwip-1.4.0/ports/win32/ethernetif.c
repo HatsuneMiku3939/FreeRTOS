@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -587,7 +587,7 @@ static void prvInterruptSimulator( void *pvParameters )
 {
 static struct pcap_pkthdr *pxHeader;
 const unsigned char *pucPacketData;
-extern xQueueHandle xEMACEventQueue;
+extern QueueHandle_t xEMACEventQueue;
 long lResult;
 
 	/* Just to kill the compiler warning. */
@@ -648,6 +648,6 @@ unsigned long ulNetMask;
 	/* Create a task that simulates an interrupt in a real system.  This will
 	block waiting for packets, then send a message to the uIP task when data
 	is available. */
-	xTaskCreate( prvInterruptSimulator, ( signed char * ) "MAC_ISR", configMINIMAL_STACK_SIZE, NULL, configMAC_ISR_SIMULATOR_PRIORITY, NULL );
+	xTaskCreate( prvInterruptSimulator, "MAC_ISR", configMINIMAL_STACK_SIZE, NULL, configMAC_ISR_SIMULATOR_PRIORITY, NULL );
 }
 

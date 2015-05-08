@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -110,13 +110,13 @@
 /*-----------------------------------------------------------*/
 
 /* Constants to setup I/O and processor. */
-#define mainTX_ENABLE		( ( unsigned portLONG ) 0x00010000 )	/* UART1. */
-#define mainRX_ENABLE		( ( unsigned portLONG ) 0x00040000 ) 	/* UART1. */
-#define mainBUS_CLK_FULL	( ( unsigned portCHAR ) 0x01 )
-#define mainLED_TO_OUTPUT	( ( unsigned portLONG ) 0xff0000 )
+#define mainTX_ENABLE		( ( unsigned long ) 0x00010000 )	/* UART1. */
+#define mainRX_ENABLE		( ( unsigned long ) 0x00040000 ) 	/* UART1. */
+#define mainBUS_CLK_FULL	( ( unsigned char ) 0x01 )
+#define mainLED_TO_OUTPUT	( ( unsigned long ) 0xff0000 )
 
 /* Constants for the ComTest demo application tasks. */
-#define mainCOM_TEST_BAUD_RATE	( ( unsigned portLONG ) 115200 )
+#define mainCOM_TEST_BAUD_RATE	( ( unsigned long ) 115200 )
 #define mainCOM_TEST_LED		( 3 )
 
 /* Priorities for the demo application tasks. */
@@ -133,8 +133,8 @@ indicate whether an error has been detected or not.  If the LED toggles every
 3 seconds then no errors have been detected.  If the rate increases to 500ms
 then an error has been detected in at least one of the demo application tasks. */
 #define mainCHECK_LED				( 7 )
-#define mainNO_ERROR_FLASH_PERIOD	( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_FLASH_PERIOD		( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_FLASH_PERIOD	( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_FLASH_PERIOD		( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 
 /*-----------------------------------------------------------*/
 
@@ -142,7 +142,7 @@ then an error has been detected in at least one of the demo application tasks. *
  * Checks that all the demo application tasks are still executing without error
  * - as described at the top of the file.
  */
-static portLONG prvCheckOtherTasksAreStillRunning( void );
+static long prvCheckOtherTasksAreStillRunning( void );
 
 /*
  * The task that executes at the highest priority and calls 
@@ -201,7 +201,7 @@ int main( void )
 
 static void vErrorChecks( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
+TickType_t xDelayPeriod = mainNO_ERROR_FLASH_PERIOD;
 
 	/* Parameters are not used. */
 	( void ) pvParameters;
@@ -249,9 +249,9 @@ static void prvSetupHardware( void )
 }
 /*-----------------------------------------------------------*/
 
-static portLONG prvCheckOtherTasksAreStillRunning( void )
+static long prvCheckOtherTasksAreStillRunning( void )
 {
-portLONG lReturn = pdPASS;
+long lReturn = pdPASS;
 
 	/* Check all the demo tasks (other than the flash tasks) to ensure
 	that they are all still running, and that none of them have detected

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,8 +85,8 @@
 
 /* Queues used to hold received characters, and characters waiting to be
 transmitted. */
-static xQueueHandle xRxedChars; 
-static xQueueHandle xCharsForTx; 
+static QueueHandle_t xRxedChars; 
+static QueueHandle_t xCharsForTx; 
 
 /* Structure that maintains information on the UART being used. */
 static XUartLite xUART;
@@ -100,7 +100,7 @@ static void vSerialISR( XUartLite *pxUART );
 
 /*-----------------------------------------------------------*/
 
-xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
+xComPortHandle xSerialPortInitMinimal( unsigned long ulWantedBaud, unsigned portBASE_TYPE uxQueueLength )
 {
 	/* NOTE: The baud rate used by this driver is determined by the hardware
 	parameterization of the UART Lite peripheral, and the baud value passed to
@@ -108,8 +108,8 @@ xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned 
 	( void ) ulWantedBaud;
 
 	/* Create the queues used to hold Rx and Tx characters. */
-	xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
-	xCharsForTx = xQueueCreate( uxQueueLength + 1, ( unsigned portBASE_TYPE ) sizeof( signed portCHAR ) );
+	xRxedChars = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
+	xCharsForTx = xQueueCreate( uxQueueLength + 1, ( unsigned portBASE_TYPE ) sizeof( signed char ) );
 
 	/* Only initialise the UART if the queues were created correctly. */
 	if( ( xRxedChars != NULL ) && ( xCharsForTx != NULL ) )
@@ -133,7 +133,7 @@ xComPortHandle xSerialPortInitMinimal( unsigned portLONG ulWantedBaud, unsigned 
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcRxedChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed char *pcRxedChar, TickType_t xBlockTime )
 {
 	/* The port handle is not required as this driver only supports one UART. */
 	( void ) pxPort;
@@ -151,7 +151,7 @@ signed portBASE_TYPE xSerialGetChar( xComPortHandle pxPort, signed portCHAR *pcR
 }
 /*-----------------------------------------------------------*/
 
-signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed portCHAR cOutChar, portTickType xBlockTime )
+signed portBASE_TYPE xSerialPutChar( xComPortHandle pxPort, signed char cOutChar, TickType_t xBlockTime )
 {
 portBASE_TYPE xReturn = pdTRUE;
 
@@ -202,9 +202,9 @@ void vSerialClose( xComPortHandle xPort )
 
 static void vSerialISR( XUartLite *pxUART )
 {
-unsigned portLONG ulISRStatus;
+unsigned long ulISRStatus;
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE, lDidSomething;
-portCHAR cChar;
+char cChar;
 
 	/* Just to remove compiler warning. */
 	( void ) pxUART;
@@ -220,7 +220,7 @@ portCHAR cChar;
 			/* A character is available - place it in the queue of received
 			characters.  This might wake a task that was blocked waiting for 
 			data. */
-			cChar = ( portCHAR ) XIo_In32( XPAR_RS232_UART_BASEADDR + XUL_RX_FIFO_OFFSET );
+			cChar = ( char ) XIo_In32( XPAR_RS232_UART_BASEADDR + XUL_RX_FIFO_OFFSET );
 			xQueueSendFromISR( xRxedChars, &cChar, &xHigherPriorityTaskWoken );
 			lDidSomething = pdTRUE;
 		}

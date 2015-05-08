@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -77,10 +77,10 @@
 #define butLED1   P7_bit.no7
 
 /* A short delay used for button debouncing. */
-#define butDEBOUNCE_DELAY	( 200 / portTICK_RATE_MS )
+#define butDEBOUNCE_DELAY	( 200 / portTICK_PERIOD_MS )
 
 /* The semaphore used to synchronise the button push task with the interrupt. */
-static xSemaphoreHandle xButtonSemaphore;
+static SemaphoreHandle_t xButtonSemaphore;
 
 /*
  * The definition of the button task itself.  See the comments at the top of

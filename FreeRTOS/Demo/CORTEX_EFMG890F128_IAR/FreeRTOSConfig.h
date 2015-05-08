@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -82,7 +82,7 @@
 #define configUSE_IDLE_HOOK				1
 #define configUSE_TICK_HOOK				0
 #define configCPU_CLOCK_HZ				( 14000000UL )
-#define configTICK_RATE_HZ				( ( portTickType ) 100 )
+#define configTICK_RATE_HZ				( ( TickType_t ) 100 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 70 )
 #define configTOTAL_HEAP_SIZE			( ( size_t ) ( 10 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 10 )
@@ -92,7 +92,7 @@
 #define configUSE_CO_ROUTINES 			1
 #define configUSE_MUTEXES				1
 
-#define configMAX_PRIORITIES			( ( unsigned portBASE_TYPE ) 4 )
+#define configMAX_PRIORITIES			( 4 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 #define configUSE_COUNTING_SEMAPHORES 	0

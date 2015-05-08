@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -74,7 +74,7 @@
 
 /* The semaphore used to signal the arrival of new data to the interface
 task. */
-static xSemaphoreHandle xSemaphore = NULL;
+static SemaphoreHandle_t xSemaphore = NULL;
 
 /* The interrupt entry point is naked so we can control the context saving. */
 void vEMACISR_Wrapper( void ) __attribute__((naked));
@@ -141,7 +141,7 @@ void  vEMACISR_Wrapper( void )
 }
 /*-----------------------------------------------------------*/
 
-void vPassEMACSemaphore( xSemaphoreHandle xCreatedSemaphore )
+void vPassEMACSemaphore( SemaphoreHandle_t xCreatedSemaphore )
 {
 	/* Simply store the semaphore that should be used by the ISR. */
 	xSemaphore = xCreatedSemaphore;

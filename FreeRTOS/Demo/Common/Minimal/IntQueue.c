@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -90,6 +90,10 @@
 #include "IntQueue.h"
 #include "IntQueueTimer.h"
 
+#if( INCLUDE_eTaskGetState != 1 )
+	#error INCLUDE_eTaskGetState must be set to 1 in FreeRTOSConfig.h to use this demo file.
+#endif
+
 /* Priorities used by test tasks. */
 #ifndef intqHIGHER_PRIORITY
 	#define intqHIGHER_PRIORITY		( configMAX_PRIORITIES - 2 )
@@ -178,7 +182,7 @@ an interrupt. */
 /*-----------------------------------------------------------*/
 
 /* The two queues used by the test. */
-static xQueueHandle xNormallyEmptyQueue, xNormallyFullQueue;
+static QueueHandle_t xNormallyEmptyQueue, xNormallyFullQueue;
 
 /* Variables used to detect a stall in one of the tasks. */
 static unsigned portBASE_TYPE uxHighPriorityLoops1 = 0, uxHighPriorityLoops2 = 0, uxLowPriorityLoops1 = 0, uxLowPriorityLoops2 = 0;
@@ -196,14 +200,14 @@ time to each queue. */
 volatile unsigned portBASE_TYPE uxValueForNormallyEmptyQueue = 0, uxValueForNormallyFullQueue = 0;
 
 /* A handle to some of the tasks is required so they can be suspended/resumed. */
-xTaskHandle xHighPriorityNormallyEmptyTask1, xHighPriorityNormallyEmptyTask2, xHighPriorityNormallyFullTask1, xHighPriorityNormallyFullTask2;
+TaskHandle_t xHighPriorityNormallyEmptyTask1, xHighPriorityNormallyEmptyTask2, xHighPriorityNormallyFullTask1, xHighPriorityNormallyFullTask2;
 
 /* When a value is received in a queue the value is ticked off in the array
 the array position of the value is set to a the identifier of the task or
 interrupt that accessed the queue.  This way missing or duplicate values can be
 detected. */
-static unsigned portCHAR ucNormallyEmptyReceivedValues[ intqNUM_VALUES_TO_LOG ] = { 0 };
-static unsigned portCHAR ucNormallyFullReceivedValues[ intqNUM_VALUES_TO_LOG ] = { 0 };
+static unsigned char ucNormallyEmptyReceivedValues[ intqNUM_VALUES_TO_LOG ] = { 0 };
+static unsigned char ucNormallyFullReceivedValues[ intqNUM_VALUES_TO_LOG ] = { 0 };
 
 /* The test tasks themselves. */
 static void prvLowerPriorityNormallyEmptyTask( void *pvParameters );
@@ -225,12 +229,12 @@ static void prvQueueAccessLogError( unsigned portBASE_TYPE uxLine );
 void vStartInterruptQueueTasks( void )
 {
 	/* Start the test tasks. */
-	xTaskCreate( prvHigherPriorityNormallyEmptyTask, ( signed portCHAR * ) "H1QRx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK1, intqHIGHER_PRIORITY, &xHighPriorityNormallyEmptyTask1 );
-	xTaskCreate( prvHigherPriorityNormallyEmptyTask, ( signed portCHAR * ) "H2QRx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyEmptyTask2 );
-	xTaskCreate( prvLowerPriorityNormallyEmptyTask, ( signed portCHAR * ) "L1QRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
-	xTaskCreate( prv1stHigherPriorityNormallyFullTask, ( signed portCHAR * ) "H1QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK1, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask1 );
-	xTaskCreate( prv2ndHigherPriorityNormallyFullTask, ( signed portCHAR * ) "H2QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask2 );
-	xTaskCreate( prvLowerPriorityNormallyFullTask, ( signed portCHAR * ) "L2QRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
+	xTaskCreate( prvHigherPriorityNormallyEmptyTask, "H1QRx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK1, intqHIGHER_PRIORITY, &xHighPriorityNormallyEmptyTask1 );
+	xTaskCreate( prvHigherPriorityNormallyEmptyTask, "H2QRx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyEmptyTask2 );
+	xTaskCreate( prvLowerPriorityNormallyEmptyTask, "L1QRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
+	xTaskCreate( prv1stHigherPriorityNormallyFullTask, "H1QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK1, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask1 );
+	xTaskCreate( prv2ndHigherPriorityNormallyFullTask, "H2QTx", configMINIMAL_STACK_SIZE, ( void * ) intqHIGH_PRIORITY_TASK2, intqHIGHER_PRIORITY, &xHighPriorityNormallyFullTask2 );
+	xTaskCreate( prvLowerPriorityNormallyFullTask, "L2QRx", configMINIMAL_STACK_SIZE, NULL, intqLOWER_PRIORITY, NULL );
 
 	/* Create the queues that are accessed by multiple tasks and multiple
 	interrupts. */
@@ -243,8 +247,8 @@ void vStartInterruptQueueTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( xNormallyFullQueue, ( signed portCHAR * ) "NormallyFull" );
-	vQueueAddToRegistry( xNormallyEmptyQueue, ( signed portCHAR * ) "NormallyEmpty" );
+	vQueueAddToRegistry( xNormallyFullQueue, "NormallyFull" );
+	vQueueAddToRegistry( xNormallyEmptyQueue, "NormallyEmpty" );
 }
 /*-----------------------------------------------------------*/
 
@@ -424,9 +428,9 @@ unsigned portBASE_TYPE uxValue, uxRxed;
 	{
 		if( xQueueReceive( xNormallyEmptyQueue, &uxRxed, intqONE_TICK_DELAY ) != errQUEUE_EMPTY )
 		{
-			/* We should only obtain a value when the high priority task is
+			/* A value should only be obtained when the high priority task is
 			suspended. */
-			if( xTaskIsTaskSuspended( xHighPriorityNormallyEmptyTask1 ) == pdFALSE )
+			if( eTaskGetState( xHighPriorityNormallyEmptyTask1 ) != eSuspended )
 			{
 				prvQueueAccessLogError( __LINE__ );
 			}
@@ -621,9 +625,8 @@ unsigned portBASE_TYPE uxValue, uxTxed = 9999;
 	{
 		if( xQueueSend( xNormallyFullQueue, &uxTxed, intqONE_TICK_DELAY ) != errQUEUE_FULL )
 		{
-			/* We would only expect to succeed when the higher priority task
-			is suspended. */
-			if( xTaskIsTaskSuspended( xHighPriorityNormallyFullTask1 ) == pdFALSE )
+			/* Should only succeed when the higher priority task is suspended */
+			if( eTaskGetState( xHighPriorityNormallyFullTask1 ) != eSuspended )
 			{
 				prvQueueAccessLogError( __LINE__ );
 			}

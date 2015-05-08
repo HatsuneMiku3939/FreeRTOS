@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -251,10 +251,10 @@ void vMainQueueSendPassed( void )
 
 static void vErrorChecks( void *pvParameters )
 {
-portTickType xExpectedWakeTime;
-const portTickType xPrintRate = ( portTickType ) 5000 / portTICK_RATE_MS;
+TickType_t xExpectedWakeTime;
+const TickType_t xPrintRate = ( TickType_t ) 5000 / portTICK_PERIOD_MS;
 const long lMaxAllowableTimeDifference = ( long ) 0;
-portTickType xWakeTime;
+TickType_t xWakeTime;
 long lTimeDifference;
 const char *pcReceivedMessage;
 const char * const pcTaskBlockedTooLongMsg = "Print task blocked too long!\r\n";

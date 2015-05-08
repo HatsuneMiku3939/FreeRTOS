@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -135,16 +135,17 @@
 #include "QueueOverwrite.h"
 #include "QueueSet.h"
 #include "recmutex.h"
+#include "EventGroupsDemo.h"
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* The priorities of the various demo application tasks. */
 #define mainSEM_TEST_PRIORITY				( tskIDLE_PRIORITY + 1 )
@@ -178,10 +179,11 @@ http://www.FreeRTOS.org/udp */
 #define mainCONNECTED_IP_TASK_PRIORITY		( configMAX_PRIORITIES - 1 )
 #define mainDISCONNECTED_IP_TASK_PRIORITY	( tskIDLE_PRIORITY )
 
-/* UDP command server task parameters. */
+/* UDP command server and echo task parameters. */
 #define mainUDP_CLI_TASK_PRIORITY			( tskIDLE_PRIORITY )
 #define mainUDP_CLI_PORT_NUMBER				( 5001UL )
 #define mainUDP_CLI_TASK_STACK_SIZE			( configMINIMAL_STACK_SIZE * 2U )
+#define mainECHO_CLIENT_STACK_SIZE			( configMINIMAL_STACK_SIZE + 30 )
 
 /* Set to 1 to include the UDP echo client tasks in the build.  The echo clients
 require the IP address of the echo server to be defined using the
@@ -194,7 +196,7 @@ FreeRTOSConfig.h. */
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * Creates a set of sample files on a RAM disk.  http://www.FreeRTOS.org/fat_sl
@@ -243,7 +245,7 @@ const uint8_t ucMACAddress[ 6 ] = { configMAC_ADDR0, configMAC_ADDR1, configMAC_
 
 int main_full( void )
 {
-xTimerHandle xTimer = NULL;
+TimerHandle_t xTimer = NULL;
 
 	/* Usage instructions on http://www.FreeRTOS.org/Atmel_SAM4E_RTOS_Demo.html */
 
@@ -293,14 +295,15 @@ xTimerHandle xTimer = NULL;
 	vStartQueueOverwriteTask( mainQUEUE_OVERWRITE_TASK_PRIORITY );
 	vStartQueueSetTasks();
 	vStartRecursiveMutexTasks();
+	vStartEventGroupTasks();
 
 	/* Create the software timer that performs the 'check' functionality, as
 	described at the top of this file. */
-	xTimer = xTimerCreate( 	( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-							( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-							pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-							( void * ) 0,						/* The ID is not used, so can be set to anything. */
-							prvCheckTimerCallback );			/* The callback function that inspects the status of all the other tasks. */
+	xTimer = xTimerCreate( 	"CheckTimer",					/* A text name, purely to help debugging. */
+							( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+							pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+							( void * ) 0,					/* The ID is not used, so can be set to anything. */
+							prvCheckTimerCallback );		/* The callback function that inspects the status of all the other tasks. */
 
 	if( xTimer != NULL )
 	{
@@ -319,7 +322,7 @@ xTimerHandle xTimer = NULL;
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 unsigned long ulErrorOccurred = pdFALSE;
@@ -364,6 +367,10 @@ unsigned long ulErrorOccurred = pdFALSE;
 	else if( xAreRecursiveMutexTasksStillRunning() != pdTRUE )
 	{
 		ulErrorOccurred |= ( 0x01UL << 12UL );
+	}
+	else if( xAreEventGroupTasksStillRunning() != pdTRUE )
+	{
+		ulErrorOccurred |= ( 0x01UL << 13UL );
 	}
 
 	if( ulErrorOccurred != pdFALSE )
@@ -422,7 +429,7 @@ char cIPAddress[ 20 ];
 				address of the echo server to be defined using the
 				configECHO_SERVER_ADDR0 to configECHO_SERVER_ADDR3 constants in
 				FreeRTOSConfig.h. */
-				vStartEchoClientTasks( configMINIMAL_STACK_SIZE, tskIDLE_PRIORITY );
+				vStartEchoClientTasks( mainECHO_CLIENT_STACK_SIZE, tskIDLE_PRIORITY );
 			}
 			#endif
 		}
@@ -448,7 +455,7 @@ char cIPAddress[ 20 ];
 		for a new connection by lowering the priority of the IP task to that of
 		the Idle task. */
 		vTaskPrioritySet( NULL, tskIDLE_PRIORITY );
-		
+
 		/* Disconnected - so no IP address. */
 		ili93xx_draw_string( ulXCoord, ulYCoord, ( uint8_t * ) "IP:                  " );
 	}
@@ -487,6 +494,9 @@ void vFullDemoTickHook( void )
 
 	/* Call the periodic queue set ISR test function. */
 	vQueueSetAccessQueueSetFromISR();
+	
+	/* Call the event group ISR tests. */
+	vPeriodicEventGroupsProcessing();
 }
 /*-----------------------------------------------------------*/
 

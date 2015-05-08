@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -144,17 +144,17 @@ static portTASK_FUNCTION_PROTO( vQueueSendWhenSuspendedTask, pvParameters );
 
 /* Demo task specific constants. */
 #define priSTACK_SIZE				( configMINIMAL_STACK_SIZE )
-#define priSLEEP_TIME				( ( portTickType ) 128 / portTICK_RATE_MS )
+#define priSLEEP_TIME				( ( TickType_t ) 128 / portTICK_PERIOD_MS )
 #define priLOOPS					( 5 )
 #define priMAX_COUNT				( ( unsigned long ) 0xff )
-#define priNO_BLOCK					( ( portTickType ) 0 )
+#define priNO_BLOCK					( ( TickType_t ) 0 )
 #define priSUSPENDED_QUEUE_LENGTH	( 1 )
 
 /*-----------------------------------------------------------*/
 
 /* Handles to the two counter tasks.  These could be passed in as parameters
 to the controller task to prevent them having to be file scope. */
-static xTaskHandle xContinuousIncrementHandle, xLimitedIncrementHandle;
+static TaskHandle_t xContinuousIncrementHandle, xLimitedIncrementHandle;
 
 /* The shared counter variable.  This is passed in as a parameter to the two
 counter variables for demonstration purposes. */
@@ -169,7 +169,7 @@ static volatile portBASE_TYPE xSuspendedQueueSendError = pdFALSE;
 static volatile portBASE_TYPE xSuspendedQueueReceiveError = pdFALSE;
 
 /* Queue used by the second test. */
-xQueueHandle xSuspendedTestQueue;
+QueueHandle_t xSuspendedTestQueue;
 
 /* The value the queue receive task expects to receive next.  This is file
 scope so xAreDynamicPriorityTasksStillRunning() can ensure it is still
@@ -191,13 +191,13 @@ void vStartDynamicPriorityTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( xSuspendedTestQueue, ( signed char * ) "Suspended_Test_Queue" );
+	vQueueAddToRegistry( xSuspendedTestQueue, "Suspended_Test_Queue" );
 
-	xTaskCreate( vContinuousIncrementTask, ( signed char * ) "CNT_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY, &xContinuousIncrementHandle );
-	xTaskCreate( vLimitedIncrementTask, ( signed char * ) "LIM_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY + 1, &xLimitedIncrementHandle );
-	xTaskCreate( vCounterControlTask, ( signed char * ) "C_CTRL", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vQueueSendWhenSuspendedTask, ( signed char * ) "SUSP_TX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vQueueReceiveWhenSuspendedTask, ( signed char * ) "SUSP_RX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vContinuousIncrementTask, "CNT_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY, &xContinuousIncrementHandle );
+	xTaskCreate( vLimitedIncrementTask, "LIM_INC", priSTACK_SIZE, ( void * ) &ulCounter, tskIDLE_PRIORITY + 1, &xLimitedIncrementHandle );
+	xTaskCreate( vCounterControlTask, "C_CTRL", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vQueueSendWhenSuspendedTask, "SUSP_TX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vQueueReceiveWhenSuspendedTask, "SUSP_RX", priSTACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 }
 /*-----------------------------------------------------------*/
 

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -125,17 +125,17 @@ static void vFlopTest2( void *pvParameters );
 
 /* Buffers into which the flop registers will be saved.  There is a buffer for 
 both tasks. */
-static volatile unsigned portLONG ulFlopRegisters[ flopNUMBER_OF_TASKS ][ portNO_FLOP_REGISTERS_TO_SAVE ];
+static volatile unsigned long ulFlopRegisters[ flopNUMBER_OF_TASKS ][ portNO_FLOP_REGISTERS_TO_SAVE ];
 
 /* Variables that are incremented by the tasks to indicate that they are still
 running. */
-static volatile unsigned portLONG ulFlop1CycleCount = 0, ulFlop2CycleCount = 0;
+static volatile unsigned long ulFlop1CycleCount = 0, ulFlop2CycleCount = 0;
 
 /*-----------------------------------------------------------*/
 
 void vStartFlopRegTests( void )
 {
-xTaskHandle xTaskJustCreated;
+TaskHandle_t xTaskJustCreated;
 unsigned portBASE_TYPE x, y, z = flopSTART_VALUE;
 
 	/* Fill the arrays into which the flop registers are to be saved with 
@@ -155,7 +155,7 @@ unsigned portBASE_TYPE x, y, z = flopSTART_VALUE;
 
 
 	/* Create the first task. */
-	xTaskCreate( vFlopTest1, ( signed portCHAR * ) "flop1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskJustCreated );
+	xTaskCreate( vFlopTest1, "flop1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskJustCreated );
 
 	/* The task	tag value is a value that can be associated with a task, but 
 	is not used by the scheduler itself.  Its use is down to the application so
@@ -165,7 +165,7 @@ unsigned portBASE_TYPE x, y, z = flopSTART_VALUE;
 	vTaskSetApplicationTaskTag( xTaskJustCreated, ( void * ) &( ulFlopRegisters[ 0 ][ 0 ] ) );
 
 	/* Do the same for the second task. */
-	xTaskCreate( vFlopTest2, ( signed portCHAR * ) "flop2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskJustCreated );
+	xTaskCreate( vFlopTest2, "flop2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &xTaskJustCreated );
 	vTaskSetApplicationTaskTag( xTaskJustCreated, ( void * ) &( ulFlopRegisters[ 1 ][ 0 ] ) );
 }
 /*-----------------------------------------------------------*/
@@ -219,7 +219,7 @@ portBASE_TYPE xAreFlopRegisterTestsStillRunning( void )
 {
 portBASE_TYPE xReturn = pdPASS;
 unsigned portBASE_TYPE x, y, z = flopSTART_VALUE;
-static unsigned portLONG ulLastFlop1CycleCount = 0, ulLastFlop2CycleCount = 0;
+static unsigned long ulLastFlop1CycleCount = 0, ulLastFlop2CycleCount = 0;
 
 	/* Called from the 'check' task.
 	

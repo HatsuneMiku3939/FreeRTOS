@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -119,7 +119,7 @@
 #define uipDMI_RX_CURRENT_DONE 0x8000
 
 /* If no buffers are available, then wait this long before looking again. */
-#define uipBUFFER_WAIT_DELAY	( 10 / portTICK_RATE_MS )
+#define uipBUFFER_WAIT_DELAY	( 10 / portTICK_PERIOD_MS )
 #define uipBUFFER_WAIT_ATTEMPTS	( 10 )
 
 /* Standard constant. */
@@ -151,7 +151,7 @@ clock_time_t clock_time( void );
 /*-----------------------------------------------------------*/
 
 /* The semaphore used by the ISR to wake the uIP task. */
-xSemaphoreHandle xSemaphore = NULL;
+SemaphoreHandle_t xSemaphore = NULL;
 
 /*-----------------------------------------------------------*/
 

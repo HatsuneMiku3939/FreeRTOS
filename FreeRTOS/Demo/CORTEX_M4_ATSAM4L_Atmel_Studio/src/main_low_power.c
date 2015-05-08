@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -136,7 +136,7 @@ empty. */
 #define mainQUEUE_LED						( 0 )
 
 /* The rate at which the Tx task sends to the queue. */
-#define mainTX_DELAY						( 500UL / portTICK_RATE_MS )
+#define mainTX_DELAY						( 500UL / portTICK_PERIOD_MS )
 
 /* A block time of zero simply means "don't block". */
 #define mainDONT_BLOCK						( 0 )
@@ -147,7 +147,7 @@ empty. */
 /* The length of time the LED will remain on for.  It is on just long enough
 to be able to see with the human eye so as not to distort the power readings too
 much. */
-#define mainLED_TOGGLE_DELAY				( 20 / portTICK_RATE_MS )
+#define mainLED_TOGGLE_DELAY				( 20 / portTICK_PERIOD_MS )
 
 /*-----------------------------------------------------------*/
 
@@ -160,7 +160,7 @@ static void prvQueueSendTask( void *pvParameters );
 /*-----------------------------------------------------------*/
 
 /* The queue to pass data from the Tx task to the Rx task. */
-static xQueueHandle xQueue = NULL;
+static QueueHandle_t xQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
@@ -171,8 +171,8 @@ void main_low_power( void )
 	configASSERT( xQueue );
 
 	/* Start the two tasks as described at the top of this file. */
-	xTaskCreate( prvQueueReceiveTask, ( const signed char * const ) "Rx", configMINIMAL_STACK_SIZE, NULL, configQUEUE_RECEIVE_TASK_PRIORITY, NULL );
-	xTaskCreate( prvQueueSendTask, ( const signed char * const ) "TX", configMINIMAL_STACK_SIZE, NULL, configQUEUE_SEND_TASK_PRIORITY, NULL );
+	xTaskCreate( prvQueueReceiveTask, "Rx", configMINIMAL_STACK_SIZE, NULL, configQUEUE_RECEIVE_TASK_PRIORITY, NULL );
+	xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE, NULL, configQUEUE_SEND_TASK_PRIORITY, NULL );
 
 	/* Start the scheduler running running. */
 	vTaskStartScheduler();

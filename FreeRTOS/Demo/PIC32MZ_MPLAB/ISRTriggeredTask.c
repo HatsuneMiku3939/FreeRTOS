@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -126,19 +126,19 @@ void __attribute__( (interrupt(ipl3), vector(_TIMER_5_VECTOR))) vT5InterruptWrap
 
 /* The semaphore given by the T5 interrupt to unblock the task implemented by
  the prvISRTriggeredTask() function. */
-static xSemaphoreHandle xBlockSemaphore = NULL;
+static SemaphoreHandle_t xBlockSemaphore = NULL;
 /*-----------------------------------------------------------*/
 
 void vStartISRTriggeredTask( void )
 {
 	/* Create the task described at the top of this file.  The timer is
 	configured by the task itself. */
-	xTaskCreate( prvISRTriggeredTask, 					/* The function that implements the task. */
-				( const signed char * const ) "ISRt", 	/* Text name to help debugging - not used by the kernel. */
-				configMINIMAL_STACK_SIZE, 				/* The size of the stack to allocate to the task - defined in words, not bytes. */
-				NULL, 									/* The parameter to pass into the task.  Not used in this case. */
-				configMAX_PRIORITIES - 1, 				/* The priority at which the task is created. */
-				NULL );									/* Used to pass a handle to the created task out of the function.  Not used in this case. */
+	xTaskCreate( prvISRTriggeredTask, 		/* The function that implements the task. */
+				"ISRt", 					/* Text name to help debugging - not used by the kernel. */
+				configMINIMAL_STACK_SIZE, 	/* The size of the stack to allocate to the task - defined in words, not bytes. */
+				NULL, 						/* The parameter to pass into the task.  Not used in this case. */
+				configMAX_PRIORITIES - 1, 	/* The priority at which the task is created. */
+				NULL );						/* Used to pass a handle to the created task out of the function.  Not used in this case. */
 }
 /*-----------------------------------------------------------*/
 

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -285,7 +285,7 @@ char cFileName[ fsMAX_FILE_NAME_LEN ];
 
 	/* Obtain and print out the working directory. */
 	f_getcwd( cRAMBuffer, fsRAM_BUFFER_SIZE );
-	configASSERT( strcmp( ( const char * ) cRAMBuffer, pcFullPath ) == 0 );
+	configASSERT( strcmp( cRAMBuffer, pcFullPath ) == 0 );
 
 	/* Generate the file name. */
 	sprintf( cFileName, "%s.txt", pcDirectory2 );
@@ -311,7 +311,7 @@ char cFileName[ fsMAX_FILE_NAME_LEN ];
 
 	/* Obtain and print out the working directory. */
 	f_getcwd( cRAMBuffer, fsRAM_BUFFER_SIZE );
-	configASSERT( strcmp( ( const char * ) cRAMBuffer, pcRoot ) == 0 );
+	configASSERT( strcmp( cRAMBuffer, pcRoot ) == 0 );
 }
 /*-----------------------------------------------------------*/
 
@@ -328,7 +328,7 @@ char cFileName[ fsMAX_FILE_NAME_LEN ];
 
 	/* Obtain and print out the working directory. */
 	f_getcwd( cRAMBuffer, fsRAM_BUFFER_SIZE );
-	configASSERT( strcmp( ( const char * ) cRAMBuffer, pcFullPath ) == 0 );
+	configASSERT( strcmp( cRAMBuffer, pcFullPath ) == 0 );
 
 	/* Generate the file name. */
 	sprintf( cFileName, "%s.txt", pcDirectory2 );

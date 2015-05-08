@@ -8,7 +8,7 @@
 
 /*------------------------------------------------------------------------
   taskutility.C
-  - 
+  -
 -------------------------------------------------------------------------*/
 
 /*************************@INCLUDE_START************************/
@@ -24,9 +24,9 @@ static void vUART0Task( void *pvParameters );
 /*********************@GLOBAL_VARIABLES_START*******************/
 const char	ASCII[] = "0123456789ABCDEF";
 
-xTaskHandle UART_TaskHandle;
+TaskHandle_t UART_TaskHandle;
 
-static xQueueHandle xQueue;
+static QueueHandle_t xQueue;
 void InitUart0( void )
 {
 	/* Initialize UART asynchronous mode */
@@ -69,7 +69,7 @@ char Getch0( void ) /* waits for and returns incomming char 	*/
 
 void Puts0( const char *Name1 ) /* Puts a String to UART */
 {
-	volatile portSHORT	i, len;
+	volatile short	i, len;
 	len = strlen( Name1 );
 
 	for( i = 0; i < len; i++ )	/* go through string */
@@ -85,7 +85,7 @@ void Puts0( const char *Name1 ) /* Puts a String to UART */
 
 void Puthex0( unsigned long n, unsigned char digits )
 {
-	unsigned portCHAR	digit = 0, div = 0, i;
+	unsigned char	digit = 0, div = 0, i;
 
 	div = ( 4 * (digits - 1) );				/* init shift divisor */
 	for( i = 0; i < digits; i++ )
@@ -98,8 +98,8 @@ void Puthex0( unsigned long n, unsigned char digits )
 
 void Putdec0( unsigned long x, int digits )
 {
-	portSHORT	i;
-	portCHAR	buf[10], sign = 1;
+	short	i;
+	char	buf[10], sign = 1;
 
 	if( digits < 0 )
 	{					/* should be print of zero? */
@@ -138,17 +138,17 @@ void vUtilityStartTraceTask( unsigned portBASE_TYPE uxPriority )
 		portENTER_CRITICAL();
 		InitUart0();
 		portENTER_CRITICAL();
-		xTaskCreate( vUART0Task, (signed portCHAR *) "UART1", configMINIMAL_STACK_SIZE * 3, ( void * ) NULL, uxPriority, &UART_TaskHandle );
+		xTaskCreate( vUART0Task, "UART1", configMINIMAL_STACK_SIZE * 3, ( void * ) NULL, uxPriority, &UART_TaskHandle );
 	}
 }
 
 static void vUART0Task( void *pvParameters )
 {
-	static portCHAR	buff[ 800 ] = { 0 };
-	unsigned portLONG	trace_len;
-	signed portLONG		i, j, l = 0;
+	static char	buff[ 800 ] = { 0 };
+	unsigned long	trace_len;
+	signed long		i, j, l = 0;
 
-	unsigned portCHAR	ch;
+	unsigned char	ch;
 	( void ) pvParameters;
 
 	SSR0_RIE = 1;
@@ -171,7 +171,7 @@ static void vUART0Task( void *pvParameters )
 		switch( ch )
 		{
 			case '1':
-				vTaskList( (signed char *) buff );
+				vTaskList( buff );
 				Puts0( "\n\rThe current task list is as follows...." );
 				Puts0( "\n\r----------------------------------------------" );
 				Puts0( "\n\rName          State  Priority  Stack   Number" );
@@ -184,7 +184,7 @@ static void vUART0Task( void *pvParameters )
 			case '2':
 				vTaskStartTrace( (signed char *) buff, sizeof( buff ) );
 				Puts0( "\n\rThe trace started!!" );
-				vTaskDelay( (portTickType) 500 );
+				vTaskDelay( (TickType_t) 500 );
 				trace_len = ulTaskEndTrace();
 				Puts0( "\n\rThe trace ended!!" );
 				Puts0( "\n\rThe trace is as follows...." );
@@ -221,7 +221,7 @@ static void vUART0Task( void *pvParameters )
 
 __interrupt void UART0_TraceRxISR( void )
 {
-unsigned portCHAR ch;
+unsigned char ch;
 portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 	ch = RDR0;

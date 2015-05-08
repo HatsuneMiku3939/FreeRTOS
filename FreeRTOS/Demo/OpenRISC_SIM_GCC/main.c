@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -136,7 +136,7 @@ static void prvSetupHardware(void);
 
 void vApplicationIdleHook( void );
 void vApplicationTickHook( void );
-void vApplicationStackOverflowHook( xTaskHandle *pxTask,
+void vApplicationStackOverflowHook( TaskHandle_t *pxTask,
                                     signed char *pcTaskName );
 void vApplicationMallocFailedHook( void );
 
@@ -170,6 +170,9 @@ int main( int argc, char **argv )
 
     /* Create DMA demo tasks */
     vStartDmaDemoTasks( mainDMA_TASK_PRIORITY );
+
+    /* Create Event Groups demo tasks */
+    vStartEventGroupTasks();
 
     /* Create the tasks defined within this file. */
     xTaskCreate( vCheckTask,
@@ -218,12 +221,12 @@ static void vCheckTask( void *pvParameters )
             // ulErrorDetected = pdTRUE;
         }
 
-        if( xAreBlockTimeTestTasksStillRunning() != pdTRUE )
+        if( xAreBlockTimeTestTasksStillRunning() != pdPASS )
         {
             ulErrorDetected = pdTRUE;
         }
 
-        if( xAreBlockingQueuesStillRunning() != pdTRUE )
+        if( xAreBlockingQueuesStillRunning() != pdPASS )
         {
             ulErrorDetected = pdTRUE;
         }
@@ -249,7 +252,12 @@ static void vCheckTask( void *pvParameters )
         }
 
         if( xAreTimerDemoTasksStillRunning(
-                    ( portTickType ) mainCHECK_TASK_CYCLE_TIME ) != pdPASS )
+                    ( portTickType ) mainCHECK_TASK_CYCLE_TIME ) == pdFAIL )
+        {
+            ulErrorDetected = pdTRUE;
+        }
+
+        if( xAreEventGroupTasksStillRunning() != pdPASS )
         {
             ulErrorDetected = pdTRUE;
         }
@@ -297,10 +305,11 @@ void vApplicationIdleHook( void )
 
 void vApplicationTickHook( void )
 {
+    vPeriodicEventGroupsProcessing();
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTask,
+void vApplicationStackOverflowHook( TaskHandle_t *pxTask,
                                     signed char *pcTaskName )
 {
     /* prevent compiler warning */

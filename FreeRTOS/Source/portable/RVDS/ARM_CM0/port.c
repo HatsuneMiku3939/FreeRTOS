@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -72,10 +72,10 @@
 #include "task.h"
 
 /* Constants required to manipulate the NVIC. */
-#define portNVIC_SYSTICK_CTRL		( ( volatile unsigned long *) 0xe000e010 )
-#define portNVIC_SYSTICK_LOAD		( ( volatile unsigned long *) 0xe000e014 )
-#define portNVIC_INT_CTRL			( ( volatile unsigned long *) 0xe000ed04 )
-#define portNVIC_SYSPRI2			( ( volatile unsigned long *) 0xe000ed20 )
+#define portNVIC_SYSTICK_CTRL		( ( volatile uint32_t *) 0xe000e010 )
+#define portNVIC_SYSTICK_LOAD		( ( volatile uint32_t *) 0xe000e014 )
+#define portNVIC_INT_CTRL			( ( volatile uint32_t *) 0xe000ed04 )
+#define portNVIC_SYSPRI2			( ( volatile uint32_t *) 0xe000ed20 )
 #define portNVIC_SYSTICK_CLK		0x00000004
 #define portNVIC_SYSTICK_INT		0x00000002
 #define portNVIC_SYSTICK_ENABLE		0x00000001
@@ -92,7 +92,7 @@
 
 /* Each task maintains its own interrupt status in the critical nesting
 variable. */
-static unsigned portBASE_TYPE uxCriticalNesting = 0xaaaaaaaa;
+static UBaseType_t uxCriticalNesting = 0xaaaaaaaa;
 
 /*
  * Setup the timer to generate the tick interrupts.
@@ -121,18 +121,18 @@ static void prvTaskExitError( void );
 /*
  * See header file for description.
  */
-portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE pxCode, void *pvParameters )
+StackType_t *pxPortInitialiseStack( StackType_t *pxTopOfStack, TaskFunction_t pxCode, void *pvParameters )
 {
 	/* Simulate the stack frame as it would be created by a context switch
 	interrupt. */
 	pxTopOfStack--; /* Offset added to account for the way the MCU uses the stack on entry/exit of interrupts. */
 	*pxTopOfStack = portINITIAL_XPSR;	/* xPSR */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) pxCode;	/* PC */
+	*pxTopOfStack = ( StackType_t ) pxCode;	/* PC */
 	pxTopOfStack--;
-	*pxTopOfStack = ( portSTACK_TYPE ) prvTaskExitError;	/* LR */
+	*pxTopOfStack = ( StackType_t ) prvTaskExitError;	/* LR */
 	pxTopOfStack -= 5;	/* R12, R3, R2 and R1. */
-	*pxTopOfStack = ( portSTACK_TYPE ) pvParameters;	/* R0 */
+	*pxTopOfStack = ( StackType_t ) pvParameters;	/* R0 */
 	pxTopOfStack -= 8; /* R11..R4. */
 
 	return pxTopOfStack;
@@ -142,20 +142,20 @@ portSTACK_TYPE *pxPortInitialiseStack( portSTACK_TYPE *pxTopOfStack, pdTASK_CODE
 static void prvTaskExitError( void )
 {
 	/* A function that implements a task must not exit or attempt to return to
-	its caller as there is nothing to return to.  If a task wants to exit it 
+	its caller as there is nothing to return to.  If a task wants to exit it
 	should instead call vTaskDelete( NULL ).
-	
-	Artificially force an assert() to be triggered if configASSERT() is 
+
+	Artificially force an assert() to be triggered if configASSERT() is
 	defined, then stop here so application writers can catch the error. */
 	configASSERT( uxCriticalNesting == ~0UL );
-	portDISABLE_INTERRUPTS();	
+	portDISABLE_INTERRUPTS();
 	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
 void vPortSVCHandler( void )
 {
-	/* This function is no longer used, but retained for backward 
+	/* This function is no longer used, but retained for backward
 	compatibility. */
 }
 /*-----------------------------------------------------------*/
@@ -163,15 +163,15 @@ void vPortSVCHandler( void )
 __asm void prvPortStartFirstTask( void )
 {
 	extern pxCurrentTCB;
-	
+
 	PRESERVE8
-	
+
 	/* The MSP stack is not reset as, unlike on M3/4 parts, there is no vector
 	table offset register that can be used to locate the initial stack value.
 	Not all M0 parts have the application vector table at address 0. */
-	
+
 	ldr	r3, =pxCurrentTCB	/* Obtain location of pxCurrentTCB. */
-	ldr r1, [r3]			
+	ldr r1, [r3]
 	ldr r0, [r1]			/* The first item in pxCurrentTCB is the task top of stack. */
 	adds r0, #32			/* Discard everything up to r0. */
 	msr psp, r0				/* This is now the new top of stack to use in the task. */
@@ -189,7 +189,7 @@ __asm void prvPortStartFirstTask( void )
 /*
  * See header file for description.
  */
-portBASE_TYPE xPortStartScheduler( void )
+BaseType_t xPortStartScheduler( void )
 {
 	/* Make PendSV, CallSV and SysTick the same priroity as the kernel. */
 	*(portNVIC_SYSPRI2) |= portNVIC_PENDSV_PRI;
@@ -212,8 +212,9 @@ portBASE_TYPE xPortStartScheduler( void )
 
 void vPortEndScheduler( void )
 {
-  /* It is unlikely that the CM0 port will require this function as there
-    is nothing to return to.  */
+	/* Not implemented in ports where there is nothing to return to.
+	Artificially force an assert. */
+	configASSERT( uxCriticalNesting == 1000UL );
 }
 /*-----------------------------------------------------------*/
 
@@ -240,6 +241,7 @@ void vPortEnterCritical( void )
 
 void vPortExitCritical( void )
 {
+	configASSERT( uxCriticalNesting );
     uxCriticalNesting--;
     if( uxCriticalNesting == 0 )
     {
@@ -248,7 +250,7 @@ void vPortExitCritical( void )
 }
 /*-----------------------------------------------------------*/
 
-__asm unsigned long ulSetInterruptMaskFromISR( void )
+__asm uint32_t ulSetInterruptMaskFromISR( void )
 {
 	mrs r0, PRIMASK
 	cpsid i
@@ -256,7 +258,7 @@ __asm unsigned long ulSetInterruptMaskFromISR( void )
 }
 /*-----------------------------------------------------------*/
 
-__asm void vClearInterruptMaskFromISR( unsigned long ulMask )
+__asm void vClearInterruptMaskFromISR( uint32_t ulMask )
 {
 	msr PRIMASK, r0
 	bx lr
@@ -311,7 +313,7 @@ __asm void xPortPendSVHandler( void )
 
 void xPortSysTickHandler( void )
 {
-unsigned long ulPreviousMask;
+uint32_t ulPreviousMask;
 
 	ulPreviousMask = portSET_INTERRUPT_MASK_FROM_ISR();
 	{

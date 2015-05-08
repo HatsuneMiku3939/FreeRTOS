@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -112,17 +112,17 @@
 
 /* The time between cycles of the 'check' functionality - as described at the
 top of this file. */
-#define mainNO_ERROR_PERIOD					( ( portTickType ) 5000 / portTICK_RATE_MS )
+#define mainNO_ERROR_PERIOD					( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 
 /* The rate at which the LED controlled by the 'check' task will flash should an
 error have been detected. */
-#define mainERROR_PERIOD 					( ( portTickType ) 500 / portTICK_RATE_MS )
+#define mainERROR_PERIOD 					( ( TickType_t ) 500 / portTICK_PERIOD_MS )
 
 /* The LED controlled by the 'check' task. */
 #define mainCHECK_LED						( 3 )
 
 /* ComTest constants - there is no free LED for the comtest tasks. */
-#define mainCOM_TEST_BAUD_RATE				( ( unsigned portLONG ) 19200 )
+#define mainCOM_TEST_BAUD_RATE				( ( unsigned long ) 19200 )
 #define mainCOM_TEST_LED					( 5 )
 
 /* Task priorities. */
@@ -155,7 +155,7 @@ static void vRegTest2Task( void *pvParameters );
 /*-----------------------------------------------------------*/
 
 /* Counters used to detect errors within the reg test tasks. */
-static volatile unsigned portLONG ulRegTest1Counter = 0x11111111, ulRegTest2Counter = 0x22222222;
+static volatile unsigned long ulRegTest1Counter = 0x11111111, ulRegTest2Counter = 0x22222222;
 
 /*-----------------------------------------------------------*/
 
@@ -177,11 +177,11 @@ int main( void )
 	vStartInterruptQueueTasks();
 
 	/* Start the reg test tasks - defined in this file. */
-	xTaskCreate( vRegTest1Task, ( signed portCHAR * ) "Reg1", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest1Counter, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vRegTest2Task, ( signed portCHAR * ) "Reg2", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest2Counter, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vRegTest1Task, "Reg1", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest1Counter, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vRegTest2Task, "Reg2", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest2Counter, tskIDLE_PRIORITY, NULL );
 
 	/* Create the check task. */
-	xTaskCreate( prvCheckTask, ( signed portCHAR * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* The suicide tasks must be created last as they need to know how many
 	tasks were running prior to their creation in order to ascertain whether
@@ -200,7 +200,7 @@ int main( void )
 static void prvCheckTask( void *pvParameters )
 {
 unsigned ulTicksToWait = mainNO_ERROR_PERIOD, ulError = 0, ulLastRegTest1Count = 0, ulLastRegTest2Count = 0;
-portTickType xLastExecutionTime;
+TickType_t xLastExecutionTime;
 
 	( void ) pvParameters;
 
@@ -292,7 +292,7 @@ portTickType xLastExecutionTime;
 
 void prvSetupHardware( void )
 {
-extern void mcf5xxx_wr_cacr( unsigned portLONG );
+extern void mcf5xxx_wr_cacr( unsigned long );
 
 	portDISABLE_INTERRUPTS();
 
@@ -314,7 +314,7 @@ extern void mcf5xxx_wr_cacr( unsigned portLONG );
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed portCHAR *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t *pxTask, signed char *pcTaskName )
 {
 	/* This will get called if a stack overflow is detected during the context
 	switch.  Set configCHECK_FOR_STACK_OVERFLOWS to 2 to also check for stack

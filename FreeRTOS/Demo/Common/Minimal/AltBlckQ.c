@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -106,9 +106,9 @@
 /* Structure used to pass parameters to the blocking queue tasks. */
 typedef struct BLOCKING_QUEUE_PARAMETERS
 {
-	xQueueHandle xQueue;					/*< The queue to be used by the task. */
-	portTickType xBlockTime;				/*< The block time to use on queue reads/writes. */
-	volatile portSHORT *psCheckVariable;	/*< Incremented on each successful cycle to check the task is still running. */
+	QueueHandle_t xQueue;					/*< The queue to be used by the task. */
+	TickType_t xBlockTime;				/*< The block time to use on queue reads/writes. */
+	volatile short *psCheckVariable;	/*< Incremented on each successful cycle to check the task is still running. */
 } xBlockingQueueParameters;
 
 /* Task function that creates an incrementing number and posts it on a queue. */
@@ -121,11 +121,11 @@ static portTASK_FUNCTION_PROTO( vBlockingQueueConsumer, pvParameters );
 /* Variables which are incremented each time an item is removed from a queue, and
 found to be the expected value.
 These are used to check that the tasks are still running. */
-static volatile portSHORT sBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0 };
+static volatile short sBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( unsigned short ) 0, ( unsigned short ) 0, ( unsigned short ) 0 };
 
 /* Variable which are incremented each time an item is posted on a queue.   These
 are used to check that the tasks are still running. */
-static volatile portSHORT sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0 };
+static volatile short sBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( unsigned short ) 0, ( unsigned short ) 0, ( unsigned short ) 0 };
 
 /*-----------------------------------------------------------*/
 
@@ -135,8 +135,8 @@ xBlockingQueueParameters *pxQueueParameters1, *pxQueueParameters2;
 xBlockingQueueParameters *pxQueueParameters3, *pxQueueParameters4;
 xBlockingQueueParameters *pxQueueParameters5, *pxQueueParameters6;
 const unsigned portBASE_TYPE uxQueueSize1 = 1, uxQueueSize5 = 5;
-const portTickType xBlockTime = ( portTickType ) 1000 / portTICK_RATE_MS;
-const portTickType xDontBlock = ( portTickType ) 0;
+const TickType_t xBlockTime = ( TickType_t ) 1000 / portTICK_PERIOD_MS;
+const TickType_t xDontBlock = ( TickType_t ) 0;
 
 	/* Create the first two tasks as described at the top of the file. */
 	
@@ -145,7 +145,7 @@ const portTickType xDontBlock = ( portTickType ) 0;
 
 	/* Create the queue used by the first two tasks to pass the incrementing number.
 	Pass a pointer to the queue in the parameter structure. */
-	pxQueueParameters1->xQueue = xQueueCreate( uxQueueSize1, ( unsigned portBASE_TYPE ) sizeof( unsigned portSHORT ) );
+	pxQueueParameters1->xQueue = xQueueCreate( uxQueueSize1, ( unsigned portBASE_TYPE ) sizeof( unsigned short ) );
 
 	/* The consumer is created first so gets a block time as described above. */
 	pxQueueParameters1->xBlockTime = xBlockTime;
@@ -171,8 +171,8 @@ const portTickType xDontBlock = ( portTickType ) 0;
 
 	/* Note the producer has a lower priority than the consumer when the tasks are
 	spawned. */
-	xTaskCreate( vBlockingQueueConsumer, ( signed portCHAR * ) "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, NULL );
-	xTaskCreate( vBlockingQueueProducer, ( signed portCHAR * ) "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QConsB1", blckqSTACK_SIZE, ( void * ) pxQueueParameters1, uxPriority, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QProdB2", blckqSTACK_SIZE, ( void * ) pxQueueParameters2, tskIDLE_PRIORITY, NULL );
 
 	
 
@@ -180,7 +180,7 @@ const portTickType xDontBlock = ( portTickType ) 0;
 	the same mechanism but reverses the task priorities. */
 
 	pxQueueParameters3 = ( xBlockingQueueParameters * ) pvPortMalloc( sizeof( xBlockingQueueParameters ) );
-	pxQueueParameters3->xQueue = xQueueCreate( uxQueueSize1, ( unsigned portBASE_TYPE ) sizeof( unsigned portSHORT ) );
+	pxQueueParameters3->xQueue = xQueueCreate( uxQueueSize1, ( unsigned portBASE_TYPE ) sizeof( unsigned short ) );
 	pxQueueParameters3->xBlockTime = xDontBlock;
 	pxQueueParameters3->psCheckVariable = &( sBlockingProducerCount[ 1 ] );
 
@@ -189,15 +189,15 @@ const portTickType xDontBlock = ( portTickType ) 0;
 	pxQueueParameters4->xBlockTime = xBlockTime;
 	pxQueueParameters4->psCheckVariable = &( sBlockingConsumerCount[ 1 ] );
 
-	xTaskCreate( vBlockingQueueConsumer, ( signed portCHAR * ) "QProdB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vBlockingQueueProducer, ( signed portCHAR * ) "QConsB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QProdB3", blckqSTACK_SIZE, ( void * ) pxQueueParameters3, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QConsB4", blckqSTACK_SIZE, ( void * ) pxQueueParameters4, uxPriority, NULL );
 
 
 
 	/* Create the last two tasks as described above.  The mechanism is again just
 	the same.  This time both parameter structures are given a block time. */
 	pxQueueParameters5 = ( xBlockingQueueParameters * ) pvPortMalloc( sizeof( xBlockingQueueParameters ) );
-	pxQueueParameters5->xQueue = xQueueCreate( uxQueueSize5, ( unsigned portBASE_TYPE ) sizeof( unsigned portSHORT ) );
+	pxQueueParameters5->xQueue = xQueueCreate( uxQueueSize5, ( unsigned portBASE_TYPE ) sizeof( unsigned short ) );
 	pxQueueParameters5->xBlockTime = xBlockTime;
 	pxQueueParameters5->psCheckVariable = &( sBlockingProducerCount[ 2 ] );
 
@@ -206,21 +206,21 @@ const portTickType xDontBlock = ( portTickType ) 0;
 	pxQueueParameters6->xBlockTime = xBlockTime;
 	pxQueueParameters6->psCheckVariable = &( sBlockingConsumerCount[ 2 ] );	
 
-	xTaskCreate( vBlockingQueueProducer, ( signed portCHAR * ) "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vBlockingQueueConsumer, ( signed portCHAR * ) "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueProducer, "QProdB5", blckqSTACK_SIZE, ( void * ) pxQueueParameters5, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vBlockingQueueConsumer, "QConsB6", blckqSTACK_SIZE, ( void * ) pxQueueParameters6, tskIDLE_PRIORITY, NULL );
 }
 /*-----------------------------------------------------------*/
 
 static portTASK_FUNCTION( vBlockingQueueProducer, pvParameters )
 {
-unsigned portSHORT usValue = 0;
+unsigned short usValue = 0;
 xBlockingQueueParameters *pxQueueParameters;
-portSHORT sErrorEverOccurred = pdFALSE;
+short sErrorEverOccurred = pdFALSE;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt blocking queue producer task started.\r\n";
+		const char * const pcTaskStartMsg = "Alt blocking queue producer task started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -253,14 +253,14 @@ portSHORT sErrorEverOccurred = pdFALSE;
 
 static portTASK_FUNCTION( vBlockingQueueConsumer, pvParameters )
 {
-unsigned portSHORT usData, usExpectedValue = 0;
+unsigned short usData, usExpectedValue = 0;
 xBlockingQueueParameters *pxQueueParameters;
-portSHORT sErrorEverOccurred = pdFALSE;
+short sErrorEverOccurred = pdFALSE;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt blocking queue consumer task started.\r\n";
+		const char * const pcTaskStartMsg = "Alt blocking queue consumer task started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -300,8 +300,8 @@ portSHORT sErrorEverOccurred = pdFALSE;
 /* This is called to check that all the created tasks are still running. */
 portBASE_TYPE xAreAltBlockingQueuesStillRunning( void )
 {
-static portSHORT sLastBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0 };
-static portSHORT sLastBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0, ( unsigned portSHORT ) 0 };
+static short sLastBlockingConsumerCount[ blckqNUM_TASK_SETS ] = { ( unsigned short ) 0, ( unsigned short ) 0, ( unsigned short ) 0 };
+static short sLastBlockingProducerCount[ blckqNUM_TASK_SETS ] = { ( unsigned short ) 0, ( unsigned short ) 0, ( unsigned short ) 0 };
 portBASE_TYPE xReturn = pdPASS, xTasks;
 
 	/* Not too worried about mutual exclusion on these variables as they are 16

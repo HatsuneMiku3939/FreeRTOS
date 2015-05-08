@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -98,7 +98,7 @@
 #define configQUEUE_REGISTRY_SIZE		10
 #define configUSE_COUNTING_SEMAPHORES	0
 
-#define configMAX_PRIORITIES		( ( unsigned portBASE_TYPE ) 6 )
+#define configMAX_PRIORITIES		( 6 )
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 /* Set the following definitions to 1 to include the API function, or zero

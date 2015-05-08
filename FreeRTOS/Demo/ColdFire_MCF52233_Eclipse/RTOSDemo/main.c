@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -153,11 +153,11 @@ static void vRegTest2Task( void *pvParameters );
 /*-----------------------------------------------------------*/
 
 /* Counters used to detect errors within the reg test tasks. */
-static volatile unsigned portLONG ulRegTest1Counter = 0x11111111, ulRegTest2Counter = 0x22222222;
+static volatile unsigned long ulRegTest1Counter = 0x11111111, ulRegTest2Counter = 0x22222222;
 
-/* Any errors that the check task finds in any tasks are latched into 
+/* Any errors that the check task finds in any tasks are latched into
 ulErrorCode, and then displayed via the WEB server. */
-static unsigned portLONG ulErrorCode = 0UL;
+static unsigned long ulErrorCode = 0UL;
 
 /*-----------------------------------------------------------*/
 
@@ -167,7 +167,7 @@ int main( void )
 	prvSetupHardware();
 
 	/* Create the WEB server task. */
-	xTaskCreate( vuIP_Task, ( signed portCHAR * ) "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
+	xTaskCreate( vuIP_Task, "uIP", mainBASIC_WEB_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY - 1, NULL );
 
 	/* Start the standard demo tasks. */
 	vStartLEDFlashTasks( tskIDLE_PRIORITY );
@@ -180,11 +180,11 @@ int main( void )
     vStartRecursiveMutexTasks();
 
 	/* Start the reg test tasks - defined in this file. */
-	xTaskCreate( vRegTest1Task, ( signed portCHAR * ) "Reg1", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest1Counter, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vRegTest2Task, ( signed portCHAR * ) "Reg2", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest2Counter, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vRegTest1Task, "Reg1", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest1Counter, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vRegTest2Task, "Reg2", configMINIMAL_STACK_SIZE, ( void * ) &ulRegTest2Counter, tskIDLE_PRIORITY, NULL );
 
 	/* Create the check task. */
-	xTaskCreate( prvCheckTask, ( signed portCHAR * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -266,7 +266,7 @@ portTickType xLastExecutionTime;
 }
 /*-----------------------------------------------------------*/
 
-unsigned portLONG ulGetErrorCode( void )
+unsigned long ulGetErrorCode( void )
 {
 	/* Returns the error code for display via the WEB server. */
 	return ulErrorCode;
@@ -323,7 +323,7 @@ static const unsigned long _cfm[6] = {
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed portCHAR *pcTaskName )
+void vApplicationStackOverflowHook( xTaskHandle *pxTask, signed char *pcTaskName )
 {
 	/* This will get called if a stack overflow is detected during the context
 	switch.  Set configCHECK_FOR_STACK_OVERFLOWS to 2 to also check for stack

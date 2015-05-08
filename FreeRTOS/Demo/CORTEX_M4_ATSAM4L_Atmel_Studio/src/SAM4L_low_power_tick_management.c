@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -88,7 +88,6 @@
 /* Constants required to pend a PendSV interrupt from the tick ISR if the
 preemptive scheduler is being used.  These are just standard bits and registers
 within the Cortex-M core itself. */
-#define portNVIC_INT_CTRL_REG	( * ( ( volatile unsigned long * ) 0xe000ed04 ) )
 #define portNVIC_PENDSVSET_BIT	( 1UL << 28UL )
 
 /* The alarm used to generate interrupts in the asynchronous timer. */
@@ -122,7 +121,7 @@ static const uint32_t ulAlarmValueForOneTick = ( configSYSTICK_CLOCK_HZ / config
 /* Holds the maximum number of ticks that can be suppressed - which is
 basically how far into the future an interrupt can be generated. Set
 during initialisation. */
-static portTickType xMaximumPossibleSuppressedTicks = 0;
+static TickType_t xMaximumPossibleSuppressedTicks = 0;
 
 /* Flag set from the tick interrupt to allow the sleep processing to know if
 sleep mode was exited because of an AST interrupt or a different interrupt. */
@@ -248,14 +247,14 @@ static void prvEnableAST( void )
 /*-----------------------------------------------------------*/
 
 /* Override the default definition of vPortSuppressTicksAndSleep() that is weakly
-defined in the FreeRTOS Cortex-M3 port layet with a version that manages the
+defined in the FreeRTOS Cortex-M3 port layer with a version that manages the
 asynchronous timer (AST), as the tick is generated from the low power AST and
 not the SysTick as would normally be the case on a Cortex-M. */
-void vPortSuppressTicksAndSleep( portTickType xExpectedIdleTime )
+void vPortSuppressTicksAndSleep( TickType_t xExpectedIdleTime )
 {
 uint32_t ulAlarmValue, ulCompleteTickPeriods, ulInterruptStatus;
 eSleepModeStatus eSleepAction;
-portTickType xModifiableIdleTime;
+TickType_t xModifiableIdleTime;
 enum sleepmgr_mode xSleepMode;
 
 	/* THIS FUNCTION IS CALLED WITH THE SCHEDULER SUSPENDED. */
@@ -372,6 +371,12 @@ enum sleepmgr_mode xSleepMode;
 			/* The alarm value is set to whatever fraction of a single tick
 			period remains. */
 			ulAlarmValue = ast_read_counter_value( AST ) - ( ulCompleteTickPeriods * ulAlarmValueForOneTick );
+			if( ulAlarmValue == 0 )
+			{
+				/* There is no fraction remaining. */
+				ulAlarmValue = ulAlarmValueForOneTick;
+				ulCompleteTickPeriods++;
+			}
 			ast_write_alarm0_value( AST, ulAlarmValue );
 		}
 

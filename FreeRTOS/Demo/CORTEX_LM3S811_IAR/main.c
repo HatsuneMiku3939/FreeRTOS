@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -119,7 +119,7 @@
 #include "BlockQ.h"
 
 /* Delay between cycles of the 'check' task. */
-#define mainCHECK_DELAY						( ( portTickType ) 5000 / portTICK_RATE_MS )
+#define mainCHECK_DELAY						( ( TickType_t ) 5000 / portTICK_PERIOD_MS )
 
 /* UART configuration - note this does not use the FIFO so is not very
 efficient. */
@@ -137,8 +137,8 @@ efficient. */
 
 /* Misc. */
 #define mainQUEUE_SIZE				( 3 )
-#define mainDEBOUNCE_DELAY			( ( portTickType ) 150 / portTICK_RATE_MS )
-#define mainNO_DELAY				( ( portTickType ) 0 )
+#define mainDEBOUNCE_DELAY			( ( TickType_t ) 150 / portTICK_PERIOD_MS )
+#define mainNO_DELAY				( ( TickType_t ) 0 )
 /*
  * Configure the processor and peripherals for this demo.
  */
@@ -161,15 +161,15 @@ static void vButtonHandlerTask( void *pvParameters );
 static void vPrintTask( void *pvParameter );
 
 /* String that is transmitted on the UART. */
-static portCHAR *cMessage = "Task woken by button interrupt! --- ";
-static volatile portCHAR *pcNextChar;
+static char *cMessage = "Task woken by button interrupt! --- ";
+static volatile char *pcNextChar;
 
 /* The semaphore used to wake the button handler task from within the GPIO
 interrupt handler. */
-xSemaphoreHandle xButtonSemaphore;
+SemaphoreHandle_t xButtonSemaphore;
 
 /* The queue used to send strings to the print task for display on the LCD. */
-xQueueHandle xPrintQueue;
+QueueHandle_t xPrintQueue;
 
 /*-----------------------------------------------------------*/
 
@@ -184,7 +184,7 @@ int main( void )
 	xSemaphoreTake( xButtonSemaphore, 0 );
 
 	/* Create the queue used to pass message to vPrintTask. */
-	xPrintQueue = xQueueCreate( mainQUEUE_SIZE, sizeof( portCHAR * ) );
+	xPrintQueue = xQueueCreate( mainQUEUE_SIZE, sizeof( char * ) );
 
 	/* Start the standard demo tasks. */
 	vStartIntegerMathTasks( tskIDLE_PRIORITY );
@@ -210,9 +210,9 @@ int main( void )
 static void vCheckTask( void *pvParameters )
 {
 portBASE_TYPE xErrorOccurred = pdFALSE;
-portTickType xLastExecutionTime;
-const portCHAR *pcPassMessage = "PASS";
-const portCHAR *pcFailMessage = "FAIL";
+TickType_t xLastExecutionTime;
+const char *pcPassMessage = "PASS";
+const char *pcFailMessage = "FAIL";
 
 	/* Initialise xLastExecutionTime so the first call to vTaskDelayUntil()
 	works correctly. */
@@ -305,7 +305,7 @@ static void prvSetupHardware( void )
 
 static void vButtonHandlerTask( void *pvParameters )
 {
-const portCHAR *pcInterruptMessage = "Int";
+const char *pcInterruptMessage = "Int";
 
 	for( ;; )
 	{
@@ -340,7 +340,7 @@ const portCHAR *pcInterruptMessage = "Int";
 
 void vUART_ISR(void)
 {
-unsigned portLONG ulStatus;
+unsigned long ulStatus;
 
 	/* What caused the interrupt. */
 	ulStatus = UARTIntStatus( UART0_BASE, pdTRUE );
@@ -379,7 +379,7 @@ portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
 
 static void vPrintTask( void *pvParameters )
 {
-portCHAR *pcMessage;
+char *pcMessage;
 unsigned portBASE_TYPE uxLine = 0, uxRow = 0;
 
 	for( ;; )

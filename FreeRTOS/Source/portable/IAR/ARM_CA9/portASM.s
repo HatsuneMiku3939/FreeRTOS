@@ -1,5 +1,5 @@
 ;/*
-;    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd.
+;    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
 ;    All rights reserved
 ;
 ;
@@ -130,7 +130,8 @@ FreeRTOS_IRQ_Handler
 
 	; Call the interrupt handler
 	PUSH	{r0-r3, lr}
-	BL		vApplicationIRQHandler
+	LDR		r1, =vApplicationIRQHandler
+	BLX		r1
 	POP		{r0-r3, lr}
 	ADD		sp, sp, r2
 
@@ -184,7 +185,8 @@ switch_before_exit
 	; vTaskSwitchContext() if vTaskSwitchContext() uses LDRD or STRD
 	; instructions, or 8 byte aligned stack allocated data.  LR does not need
 	; saving as a new LR will be loaded by portRESTORE_CONTEXT anyway.
-	BL		vTaskSwitchContext
+	LDR		r0, =vTaskSwitchContext
+	BLX		r0
 
 	; Restore the context of, and branch to, the task selected to execute next.
 	portRESTORE_CONTEXT

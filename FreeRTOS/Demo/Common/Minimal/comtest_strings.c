@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -72,18 +72,18 @@
  * See http://www.serialporttool.com/CommEcho.htm for a suitable echo server
  * for Windows hosts.
  *
- * The timer sends a string to the UART, toggles an LED, then resets itself by 
- * changing its own period.  The period is calculated as a pseudo random number 
+ * The timer sends a string to the UART, toggles an LED, then resets itself by
+ * changing its own period.  The period is calculated as a pseudo random number
  * between comTX_MAX_BLOCK_TIME and comTX_MIN_BLOCK_TIME.
  *
- * The task blocks on an Rx queue waiting for a character to become available.  
- * Received characters are checked to ensure they match those transmitted by the 
- * Tx timer.  An error is latched if characters are missing, incorrect, or 
+ * The task blocks on an Rx queue waiting for a character to become available.
+ * Received characters are checked to ensure they match those transmitted by the
+ * Tx timer.  An error is latched if characters are missing, incorrect, or
  * arrive too slowly.
  *
  * How characters are actually transmitted and received is port specific.  Demos
  * that include this test/demo file will provide example drivers.  The Tx timer
- * executes in the context of the timer service (daemon) task, and must 
+ * executes in the context of the timer service (daemon) task, and must
  * therefore never attempt to block.
  *
  */
@@ -119,9 +119,9 @@
 /* The Tx timer transmits the sequence of characters at a pseudo random
 interval that is capped between comTX_MAX_BLOCK_TIME and
 comTX_MIN_BLOCK_TIME. */
-#define comTX_MAX_BLOCK_TIME		( ( portTickType ) 0x96 )
-#define comTX_MIN_BLOCK_TIME		( ( portTickType ) 0x32 )
-#define comOFFSET_TIME				( ( portTickType ) 3 )
+#define comTX_MAX_BLOCK_TIME		( ( TickType_t ) 0x96 )
+#define comTX_MIN_BLOCK_TIME		( ( TickType_t ) 0x32 )
+#define comOFFSET_TIME				( ( TickType_t ) 3 )
 
 /* States for the simple state machine implemented in the Rx task. */
 #define comtstWAITING_START_OF_STRING 	0
@@ -132,20 +132,20 @@ a bit so more than one character can be processed at a time.  This is relative
 to comTX_MIN_BLOCK_TIME to ensure it is never longer than the shortest gap
 between transmissions.  It could be worked out more scientifically from the
 baud rate being used. */
-#define comSHORT_DELAY				( comTX_MIN_BLOCK_TIME >> ( portTickType ) 2 )
+#define comSHORT_DELAY				( comTX_MIN_BLOCK_TIME >> ( TickType_t ) 2 )
 
 /* The string that is transmitted and received. */
 #define comTRANSACTED_STRING		"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
 
 /* A block time of 0 simply means "don't block". */
-#define comtstDONT_BLOCK			( portTickType ) 0
+#define comtstDONT_BLOCK			( TickType_t ) 0
 
 /* Handle to the com port used by both tasks. */
 static xComPortHandle xPort = NULL;
 
 /* The callback function allocated to the transmit timer, as described in the
 comments at the top of this file. */
-static void prvComTxTimerCallback( xTimerHandle xTimer );
+static void prvComTxTimerCallback( TimerHandle_t xTimer );
 
 /* The receive task as described in the comments at the top of this file. */
 static void vComRxTask( void *pvParameters );
@@ -161,7 +161,7 @@ static volatile unsigned portBASE_TYPE uxRxLoops = 0UL;
 
 /* The timer used to periodically transmit the string.  This is the timer that
 has prvComTxTimerCallback allocated to it as its callback function. */
-static xTimerHandle xTxTimer = NULL;
+static TimerHandle_t xTxTimer = NULL;
 
 /* The string length is held at file scope so the Tx timer does not need to
 calculate it each time it executes. */
@@ -188,15 +188,15 @@ void vStartComTestStringsTasks( unsigned portBASE_TYPE uxPriority, unsigned long
 
 	/* Create the Rx task and the Tx timer.  The timer is started from the
 	Rx task. */
-	xTaskCreate( vComRxTask, ( signed char * ) "COMRx", comSTACK_SIZE, NULL, uxPriority, ( xTaskHandle * ) NULL );
-	xTxTimer = xTimerCreate( ( const signed char * ) "TxTimer", comTX_MIN_BLOCK_TIME, pdFALSE, NULL, prvComTxTimerCallback );
+	xTaskCreate( vComRxTask, "COMRx", comSTACK_SIZE, NULL, uxPriority, ( TaskHandle_t * ) NULL );
+	xTxTimer = xTimerCreate( "TxTimer", comTX_MIN_BLOCK_TIME, pdFALSE, NULL, prvComTxTimerCallback );
 	configASSERT( xTxTimer );
 }
 /*-----------------------------------------------------------*/
 
-static void prvComTxTimerCallback( xTimerHandle xTimer )
+static void prvComTxTimerCallback( TimerHandle_t xTimer )
 {
-portTickType xTimeToWait;
+TickType_t xTimeToWait;
 
 	/* The parameter is not used in this case. */
 	( void ) xTimer;
@@ -205,7 +205,7 @@ portTickType xTimeToWait;
 	sample driver provided with this demo.  However - as this is a timer,
 	it executes in the context of the timer task and therefore must not
 	block. */
-	vSerialPutString( xPort, ( const signed char * const ) comTRANSACTED_STRING, xStringLength );
+	vSerialPutString( xPort, comTRANSACTED_STRING, xStringLength );
 
 	/* Toggle an LED to give a visible indication that another transmission
 	has been performed. */
@@ -233,7 +233,7 @@ portTickType xTimeToWait;
 static void vComRxTask( void *pvParameters )
 {
 portBASE_TYPE xState = comtstWAITING_START_OF_STRING, xErrorOccurred = pdFALSE;
-signed char *pcExpectedByte, cRxedChar;
+char *pcExpectedByte, cRxedChar;
 const xComPortHandle xPort = NULL;
 
 	/* The parameter is not used in this example. */
@@ -245,7 +245,7 @@ const xComPortHandle xPort = NULL;
 
 	/* The first expected Rx character is the first in the string that is
 	transmitted. */
-	pcExpectedByte = ( signed char * ) comTRANSACTED_STRING;
+	pcExpectedByte = comTRANSACTED_STRING;
 
 	for( ;; )
 	{
@@ -269,9 +269,9 @@ const xComPortHandle xPort = NULL;
 					xState = comtstWAITING_END_OF_STRING;
 					pcExpectedByte++;
 
-					/* Block for a short period.  This just allows the Rx queue 
+					/* Block for a short period.  This just allows the Rx queue
 					to contain more than one character, and therefore prevent
-					thrashing reads to the queue, and repetitive context 
+					thrashing reads to the queue, and repetitive context
 					switches as	each character is received. */
 					vTaskDelay( comSHORT_DELAY );
 				}
@@ -298,7 +298,7 @@ const xComPortHandle xPort = NULL;
 						}
 
 						/* Go back to wait for the start of the next string. */
-						pcExpectedByte = ( signed char * ) comTRANSACTED_STRING;
+						pcExpectedByte = comTRANSACTED_STRING;
 						xState = comtstWAITING_START_OF_STRING;
 					}
 					else

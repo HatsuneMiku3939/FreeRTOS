@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -76,8 +76,8 @@
  ******************************************************************************
  *
  * main_full() creates all the demo application tasks and a software timer, then
- * starts the scheduler.  The web documentation provides more details of the 
- * standard demo application tasks, which provide no particular functionality, 
+ * starts the scheduler.  The web documentation provides more details of the
+ * standard demo application tasks, which provide no particular functionality,
  * but do provide a good example of how to use the FreeRTOS API.
  *
  * In addition to the standard demo tasks, the following tasks and tests are
@@ -85,18 +85,18 @@
  *
  * "Check" timer - The check software timer period is initially set to three
  * seconds.  The callback function associated with the check software timer
- * checks that all the standard demo tasks are not only still executing, but 
- * are executing without reporting any errors.  If the check software timer 
- * discovers that a task has either stalled, or reported an error, then it 
- * changes its own execution period from the initial three seconds, to just 
- * 200ms.  The check software timer callback function also toggles the green 
- * LED each time it is called.  This provides a visual indication of the system 
- * status:  If the green LED toggles every three seconds, then no issues have 
- * been discovered.  If the green LED toggles every 200ms, then an issue has 
+ * checks that all the standard demo tasks are not only still executing, but
+ * are executing without reporting any errors.  If the check software timer
+ * discovers that a task has either stalled, or reported an error, then it
+ * changes its own execution period from the initial three seconds, to just
+ * 200ms.  The check software timer callback function also toggles the green
+ * LED each time it is called.  This provides a visual indication of the system
+ * status:  If the green LED toggles every three seconds, then no issues have
+ * been discovered.  If the green LED toggles every 200ms, then an issue has
  * been discovered with at least one task.
  *
  * See the documentation page for this demo on the FreeRTOS.org web site for
- * full information, including hardware setup requirements. 
+ * full information, including hardware setup requirements.
  */
 
 /* Standard includes. */
@@ -140,13 +140,13 @@
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* The standard demo flash timers can be used to flash any number of LEDs.  In
 this case, because only three LEDs are available, and one is in use by the
@@ -169,13 +169,13 @@ for the comtest, so the LED number is deliberately out of range. */
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*-----------------------------------------------------------*/
 
 void main_full( void )
 {
-xTimerHandle xCheckTimer = NULL;
+TimerHandle_t xCheckTimer = NULL;
 
 	/* Start all the other standard demo/test tasks.  The have not particular
 	functionality, but do demonstrate how to use the FreeRTOS API and test the
@@ -191,39 +191,39 @@ xTimerHandle xCheckTimer = NULL;
 	vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
 	vStartLEDFlashTimers( mainNUMBER_OF_FLASH_TIMERS_LEDS );
 	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED );
-	
+
 	/* Create the software timer that performs the 'check' functionality,
 	as described at the top of this file. */
-	xCheckTimer = xTimerCreate( ( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-								( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-								( void * ) 0,						/* The ID is not used, so can be set to anything. */
-								prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
-							  );	
-	
+	xCheckTimer = xTimerCreate( "CheckTimer",					/* A text name, purely to help debugging. */
+								( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+								pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+								( void * ) 0,					/* The ID is not used, so can be set to anything. */
+								prvCheckTimerCallback			/* The callback function that inspects the status of all the other tasks. */
+							  );
+
 	if( xCheckTimer != NULL )
 	{
 		xTimerStart( xCheckTimer, mainDONT_BLOCK );
 	}
 
-	/* The set of tasks created by the following function call have to be 
-	created last as they keep account of the number of tasks they expect to see 
+	/* The set of tasks created by the following function call have to be
+	created last as they keep account of the number of tasks they expect to see
 	running. */
 	vCreateSuicidalTasks( mainCREATOR_TASK_PRIORITY );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
-	
+
 	/* If all is well, the scheduler will now be running, and the following line
 	will never be reached.  If the following line does execute, then there was
 	insufficient FreeRTOS heap memory available for the idle and/or timer tasks
 	to be created.  See the memory management section on the FreeRTOS web site
 	for more details. */
-	for( ;; );	
+	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 unsigned long ulErrorFound = pdFALSE;
@@ -275,7 +275,7 @@ unsigned long ulErrorFound = pdFALSE;
 	{
 		ulErrorFound = pdTRUE;
 	}
-	
+
 	if( xAreComTestTasksStillRunning() != pdTRUE )
 	{
 		ulErrorFound = pdTRUE;
@@ -285,7 +285,7 @@ unsigned long ulErrorFound = pdFALSE;
 	the LED toggles every mainCHECK_TIMER_PERIOD_MS milliseconds then
 	everything is ok.  A faster toggle indicates an error. */
 	vParTestToggleLED( mainCHECK_LED );
-	
+
 	/* Have any errors been latch in ulErrorFound?  If so, shorten the
 	period of the check timer to mainERROR_CHECK_TIMER_PERIOD_MS milliseconds.
 	This will result in an increase in the rate at which mainCHECK_LED
@@ -295,7 +295,7 @@ unsigned long ulErrorFound = pdFALSE;
 		if( lChangedTimerPeriodAlready == pdFALSE )
 		{
 			lChangedTimerPeriodAlready = pdTRUE;
-			
+
 			/* This call to xTimerChangePeriod() uses a zero block time.
 			Functions called from inside of a timer callback function must
 			*never* attempt	to block. */

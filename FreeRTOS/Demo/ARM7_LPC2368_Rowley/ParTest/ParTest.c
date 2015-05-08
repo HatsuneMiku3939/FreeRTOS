@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -121,7 +121,7 @@ unsigned long ulLED = partstFIRST_IO, ulCurrentState;
 		attached. */
 		ulLED <<= ( unsigned long ) uxLED;
 
-		/* If this bit is already set, clear it, and visa versa. */
+		/* If this bit is already set, clear it, and vice versa. */
 		ulCurrentState = FIO2PIN;
 		if( ulCurrentState & ulLED )
 		{

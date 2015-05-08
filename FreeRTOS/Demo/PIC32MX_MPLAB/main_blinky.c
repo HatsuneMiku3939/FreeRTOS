@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -75,7 +75,7 @@
  * required to configure the hardware, are defined in main.c.
  ******************************************************************************
  *
- * main_blinky() creates one queue, two tasks, and one software timer.  It then 
+ * main_blinky() creates one queue, two tasks, and one software timer.  It then
  * starts the scheduler.
  *
  * The Blinky Software Timer:
@@ -121,8 +121,8 @@
 #define	mainQUEUE_SEND_TASK_PRIORITY		( tskIDLE_PRIORITY + 1 )
 
 /* The rate at which data is sent to the queue.  The 200ms value is converted
-to ticks using the portTICK_RATE_MS constant. */
-#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_RATE_MS )
+to ticks using the portTICK_PERIOD_MS constant. */
+#define mainQUEUE_SEND_FREQUENCY_MS			( 200 / portTICK_PERIOD_MS )
 
 /* The number of items the queue can hold.  This is 1 as the receive task
 will remove items as they are added, meaning the send task should always find
@@ -135,8 +135,8 @@ functionality. */
 #define mainQUEUE_RECEIVE_PARAMETER			( 0x22UL )
 
 /* The period of the blinky software timer.  The period is specified in ms and
-converted to ticks using the portTICK_RATE_MS constant. */
-#define mainBLINKY_TIMER_PERIOD				( 50 / portTICK_RATE_MS )
+converted to ticks using the portTICK_PERIOD_MS constant. */
+#define mainBLINKY_TIMER_PERIOD				( 50 / portTICK_PERIOD_MS )
 
 /* The LED used by the communicating tasks and the blinky timer respectively. */
 #define mainTASKS_LED						( 0 )
@@ -157,8 +157,8 @@ static void prvQueueSendTask( void *pvParameters );
  * The callback function for the blinky software timer, as described at the top
  * of this file.
  */
-static void prvBlinkyTimerCallback( xTimerHandle xTimer );
- 
+static void prvBlinkyTimerCallback( TimerHandle_t xTimer );
+
 /*
  * Called by main() to create the simply blinky style application if
  * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1.
@@ -168,13 +168,13 @@ void main_blinky( void );
 /*-----------------------------------------------------------*/
 
 /* The queue used by both tasks. */
-static xQueueHandle xQueue = NULL;
+static QueueHandle_t xQueue = NULL;
 
 /*-----------------------------------------------------------*/
 
 void main_blinky( void )
 {
-xTimerHandle xTimer;
+TimerHandle_t xTimer;
 
 	/* Create the queue. */
 	xQueue = xQueueCreate( mainQUEUE_LENGTH, sizeof( unsigned long ) );
@@ -184,28 +184,28 @@ xTimerHandle xTimer;
 		/* Create the two tasks as described in the comments at the top of this
 		file. */
 		xTaskCreate( prvQueueReceiveTask,					/* The function that implements the task. */
-					( signed char * ) "Rx", 				/* The text name assigned to the task - for debug only as it is not used by the kernel. */
+					"Rx", 									/* The text name assigned to the task - for debug only as it is not used by the kernel. */
 					configMINIMAL_STACK_SIZE, 				/* The size of the stack to allocate to the task. */
 					( void * ) mainQUEUE_RECEIVE_PARAMETER, /* The parameter passed to the task - just to check the functionality. */
 					mainQUEUE_RECEIVE_TASK_PRIORITY, 		/* The priority assigned to the task. */
 					NULL );									/* The task handle is not required, so NULL is passed. */
 
-		xTaskCreate( prvQueueSendTask, ( signed char * ) "TX", configMINIMAL_STACK_SIZE, ( void * ) mainQUEUE_SEND_PARAMETER, mainQUEUE_SEND_TASK_PRIORITY, NULL );
+		xTaskCreate( prvQueueSendTask, "TX", configMINIMAL_STACK_SIZE, ( void * ) mainQUEUE_SEND_PARAMETER, mainQUEUE_SEND_TASK_PRIORITY, NULL );
 
 		/* Create the blinky software timer as described at the top of this
 		file. */
-		xTimer = xTimerCreate( 	( const signed char * ) "Blinky",	/* A text name, purely to help debugging. */
-								( mainBLINKY_TIMER_PERIOD ),		/* The timer period. */
-								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-								( void * ) 0,						/* The ID is not used, so can be set to anything. */
-								prvBlinkyTimerCallback				/* The callback function that inspects the status of all the other tasks. */
-							);	
-		
+		xTimer = xTimerCreate( 	"Blinky",					/* A text name, purely to help debugging. */
+								( mainBLINKY_TIMER_PERIOD ),/* The timer period. */
+								pdTRUE,						/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+								( void * ) 0,				/* The ID is not used, so can be set to anything. */
+								prvBlinkyTimerCallback		/* The callback function that inspects the status of all the other tasks. */
+							);
+
 		if( xTimer != NULL )
 		{
 			xTimerStart( xTimer, mainDONT_BLOCK );
 		}
-				
+
 		/* Start the tasks and timer running. */
 		vTaskStartScheduler();
 	}
@@ -221,7 +221,7 @@ xTimerHandle xTimer;
 
 static void prvQueueSendTask( void *pvParameters )
 {
-portTickType xNextWakeTime;
+TickType_t xNextWakeTime;
 const unsigned long ulValueToSend = 100UL;
 
 	/* Check the task parameter is as expected. */
@@ -272,7 +272,7 @@ unsigned long ulReceivedValue;
 }
 /*-----------------------------------------------------------*/
 
-static void prvBlinkyTimerCallback( xTimerHandle xTimer )
+static void prvBlinkyTimerCallback( TimerHandle_t xTimer )
 {
 	/* This function is called when the blinky software time expires.  All the
 	function does is toggle the LED.  LED mainTIMER_LED should therefore toggle

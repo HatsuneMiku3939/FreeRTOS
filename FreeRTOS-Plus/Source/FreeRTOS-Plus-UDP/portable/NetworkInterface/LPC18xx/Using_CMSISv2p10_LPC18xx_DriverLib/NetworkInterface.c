@@ -1,5 +1,5 @@
 /*
- * FreeRTOS+UDP V1.0.2 (C) 2013 Real Time Engineers ltd.
+ * FreeRTOS+UDP V1.0.3 (C) 2014 Real Time Engineers ltd.
  * All rights reserved
  *
  * This file is part of the FreeRTOS+UDP distribution.  The FreeRTOS+UDP license
@@ -19,9 +19,9 @@
  *
  * - Commercial licensing -
  * Businesses and individuals that for commercial or other reasons cannot comply
- * with the terms of the GPL V2 license must obtain a commercial license before 
- * incorporating FreeRTOS+UDP into proprietary software for distribution in any 
- * form.  Commercial licenses can be purchased from http://shop.freertos.org/udp 
+ * with the terms of the GPL V2 license must obtain a commercial license before
+ * incorporating FreeRTOS+UDP into proprietary software for distribution in any
+ * form.  Commercial licenses can be purchased from http://shop.freertos.org/udp
  * and do not require any source files to be changed.
  *
  * FreeRTOS+UDP is distributed in the hope that it will be useful.  You cannot
@@ -124,7 +124,7 @@ extern uint8_t ucMACAddress[ 6 ];
 		possible priority to ensure the interrupt handler can return directly to
 		it no matter which task was running when the interrupt occurred. */
 		xTaskCreate( 	prvEMACDeferredInterruptHandlerTask,		/* The function that implements the task. */
-						( const signed char * const ) "MACTsk",
+						"MACTsk",
 						configMINIMAL_STACK_SIZE,	/* Stack allocated to the task (defined in words, not bytes). */
 						NULL, 						/* The task parameter is not used. */
 						configMAX_PRIORITIES - 1, 	/* The priority assigned to the task. */

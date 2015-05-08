@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -164,8 +164,8 @@
 
 /* The rate at which the on board LED will toggle when there is/is not an
 error. */
-#define mainNO_ERROR_FLASH_PERIOD_MS	( ( portTickType ) 5000 / portTICK_RATE_MS	)
-#define mainERROR_FLASH_PERIOD_MS		( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_FLASH_PERIOD_MS	( ( TickType_t ) 5000 / portTICK_PERIOD_MS	)
+#define mainERROR_FLASH_PERIOD_MS		( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 #define mainON_BOARD_LED_BIT			( ( unsigned long ) 7 )
 
 /* Constant used by the standard timer test functions.  The timers created by
@@ -265,8 +265,8 @@ int main( void )
 
 static void prvCheckTask( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_FLASH_PERIOD_MS;
-portTickType xLastExecutionTime;
+TickType_t xDelayPeriod = mainNO_ERROR_FLASH_PERIOD_MS;
+TickType_t xLastExecutionTime;
 
 	/* Just to stop compiler warnings. */
 	( void ) pvParameters;
@@ -494,11 +494,11 @@ static void prvOptionallyCreateComprehensveTestApplication( void )
 		vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
 
 		/* Create the register test tasks, as described at the top of this file. */
-		xTaskCreate( prvRegisterCheckTask1, ( signed char * ) "Reg 1", configMINIMAL_STACK_SIZE, &ulRegisterTest1Count, tskIDLE_PRIORITY, NULL );
-		xTaskCreate( prvRegisterCheckTask2, ( signed char * ) "Reg 2", configMINIMAL_STACK_SIZE, &ulRegisterTest2Count, tskIDLE_PRIORITY, NULL );
+		xTaskCreate( prvRegisterCheckTask1, "Reg 1", configMINIMAL_STACK_SIZE, &ulRegisterTest1Count, tskIDLE_PRIORITY, NULL );
+		xTaskCreate( prvRegisterCheckTask2, "Reg 2", configMINIMAL_STACK_SIZE, &ulRegisterTest2Count, tskIDLE_PRIORITY, NULL );
 
 		/* Start the check task - which is defined in this file. */
-		xTaskCreate( prvCheckTask, ( signed char * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+		xTaskCreate( prvCheckTask, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 		/* This task has to be created last as it keeps account of the number of tasks
 		it expects to see running. */

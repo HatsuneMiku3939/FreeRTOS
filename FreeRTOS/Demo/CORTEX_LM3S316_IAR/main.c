@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -134,12 +134,12 @@
 #include "DriverLib.h"
 
 /* The time to delay between writing each character to the LCD. */
-#define mainCHAR_WRITE_DELAY		( 2 / portTICK_RATE_MS )
+#define mainCHAR_WRITE_DELAY		( 2 / portTICK_PERIOD_MS )
 
 /* The time to delay between writing each string to the LCD. */
-#define mainSTRING_WRITE_DELAY		( 400 / portTICK_RATE_MS )
+#define mainSTRING_WRITE_DELAY		( 400 / portTICK_PERIOD_MS )
 
-#define mainADC_DELAY				( 200 / portTICK_RATE_MS )
+#define mainADC_DELAY				( 200 / portTICK_PERIOD_MS )
 
 /* The number of flash co-routines to create. */
 #define mainNUM_FLASH_CO_ROUTINES	( 5 )
@@ -188,7 +188,7 @@ static void prvLCDMessageTask( void * pvParameters );
  * The co-routine that reads the ADC and sends messages for display on the
  * bottom row of the LCD.
  */
-static void prvADCCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex );
+static void prvADCCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex );
 
 /*
  * Function to simply set a known value into the general purpose registers
@@ -227,7 +227,7 @@ defined within this file. */
 unsigned portBASE_TYPE uxErrorStatus = pdPASS;
 
 /* The queue used to transmit messages to the LCD task. */
-static xQueueHandle xLCDQueue;
+static QueueHandle_t xLCDQueue;
 
 /*-----------------------------------------------------------*/
 
@@ -278,14 +278,14 @@ char *pcStringsToDisplay[] = {
 									""
 								};
 
-xQueueHandle *pxLCDQueue;	
+QueueHandle_t *pxLCDQueue;	
 xLCDMessage xMessageToSend;
 portBASE_TYPE xIndex = 0;
 
 	/* To test the parameter passing mechanism, the queue on which messages are
 	posted is passed in as a parameter even though it is available as a file
 	scope variable anyway. */
-	pxLCDQueue = ( xQueueHandle * ) pvParameters;
+	pxLCDQueue = ( QueueHandle_t * ) pvParameters;
 
 	for( ;; )
 	{
@@ -318,7 +318,7 @@ portBASE_TYPE xIndex = 0;
 void prvLCDTask( void * pvParameters )
 {
 unsigned portBASE_TYPE uxIndex;
-xQueueHandle *pxLCDQueue;
+QueueHandle_t *pxLCDQueue;
 xLCDMessage xReceivedMessage;
 char *pcString;
 const unsigned char ucCFGData[] = {	
@@ -335,7 +335,7 @@ const unsigned char ucCFGData[] = {
 	/* To test the parameter passing mechanism, the queue on which messages are
 	received is passed in as a parameter even though it is available as a file
 	scope variable anyway. */
-	pxLCDQueue = ( xQueueHandle * ) pvParameters;
+	pxLCDQueue = ( QueueHandle_t * ) pvParameters;
 
 	/* Configure the LCD. */
 	uxIndex = 0;
@@ -378,7 +378,7 @@ const unsigned char ucCFGData[] = {
 }
 /*-----------------------------------------------------------*/
 
-static void prvADCCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex )
+static void prvADCCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex )
 {
 static unsigned long ulADCValue;
 static char cMessageBuffer[ mainMAX_ADC_STRING_LEN ];

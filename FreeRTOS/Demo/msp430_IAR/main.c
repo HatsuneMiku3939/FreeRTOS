@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -104,8 +104,8 @@
 #include "PollQ.h"
 
 /* Constants required for hardware setup. */
-#define mainALL_BITS_OUTPUT		( ( unsigned portCHAR ) 0xff )
-#define mainMAX_FREQUENCY		( ( unsigned portCHAR ) 121 )
+#define mainALL_BITS_OUTPUT		( ( unsigned char ) 0xff )
+#define mainMAX_FREQUENCY		( ( unsigned char ) 121 )
 
 /* Constants that define the LED's used by the various tasks. [in this case
 the '*' characters on the LCD represent LED's] */
@@ -119,21 +119,21 @@ the '*' characters on the LCD represent LED's] */
 #define mainLED_TASK_PRIORITY			( tskIDLE_PRIORITY + 1 )
 
 /* Baud rate used by the COM test tasks. */
-#define mainCOM_TEST_BAUD_RATE			( ( unsigned portLONG ) 19200 )
+#define mainCOM_TEST_BAUD_RATE			( ( unsigned long ) 19200 )
 
 /* The frequency at which the 'Check' tasks executes.  See the comments at the
 top of the page.  When the system is operating error free the 'Check' task
 toggles an LED every three seconds.  If an error is discovered in any task the
 rate is increased to 500 milliseconds.  [in this case the '*' characters on the
 LCD represent LED's]*/
-#define mainNO_ERROR_CHECK_DELAY		( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_CHECK_DELAY			( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_CHECK_DELAY		( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_CHECK_DELAY			( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 
 /* The constants used in the calculation. */
-#define intgCONST1				( ( portLONG ) 123 )
-#define intgCONST2				( ( portLONG ) 234567 )
-#define intgCONST3				( ( portLONG ) -3 )
-#define intgCONST4				( ( portLONG ) 7 )
+#define intgCONST1				( ( long ) 123 )
+#define intgCONST2				( ( long ) 234567 )
+#define intgCONST3				( ( long ) -3 )
+#define intgCONST4				( ( long ) 7 )
 #define intgEXPECTED_ANSWER		( ( ( intgCONST1 + intgCONST2 ) * intgCONST3 ) / intgCONST4 )
 
 /*
@@ -146,7 +146,7 @@ static void vErrorChecks( void *pvParameters );
  * Called by the Check task.  Returns pdPASS if all the other tasks are found
  * to be operating without error - otherwise returns pdFAIL.
  */
-static portSHORT prvCheckOtherTasksAreStillRunning( void );
+static short prvCheckOtherTasksAreStillRunning( void );
 
 /*
  * Perform the hardware setup required by the ES449 in order to run the demo
@@ -156,7 +156,7 @@ static void prvSetupHardware( void );
 
 
 portBASE_TYPE xLocalError = pdFALSE;
-volatile unsigned portLONG ulIdleLoops = 0UL;
+volatile unsigned long ulIdleLoops = 0UL;
 
 /*-----------------------------------------------------------*/
 
@@ -176,7 +176,7 @@ int main( void )
 	vStartPolledQueueTasks( mainQUEUE_POLL_PRIORITY );
 
 	/* Start the 'Check' task which is defined in this file. */
-	xTaskCreate( vErrorChecks, ( const signed portCHAR * const ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );	
+	xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
@@ -189,7 +189,7 @@ int main( void )
 
 static portTASK_FUNCTION( vErrorChecks, pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY;
+TickType_t xDelayPeriod = mainNO_ERROR_CHECK_DELAY;
 
 	/* Cycle for ever, delaying then checking all the other tasks are still
 	operating without error. */
@@ -215,10 +215,10 @@ portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY;
 }
 /*-----------------------------------------------------------*/
 
-static portSHORT prvCheckOtherTasksAreStillRunning( void )
+static short prvCheckOtherTasksAreStillRunning( void )
 {
-static portSHORT sNoErrorFound = pdTRUE;
-static unsigned portLONG ulLastIdleLoopCount = 0UL;
+static short sNoErrorFound = pdTRUE;
+static unsigned long ulLastIdleLoopCount = 0UL;
 
 	/* The demo tasks maintain a count that increments every cycle of the task
 	provided that the task has never encountered an error.  This function
@@ -255,7 +255,7 @@ static unsigned portLONG ulLastIdleLoopCount = 0UL;
     {
         ulLastIdleLoopCount = ulIdleLoops;
     }
-	
+
 	return sNoErrorFound;
 }
 /*-----------------------------------------------------------*/
@@ -291,7 +291,7 @@ void vApplicationIdleHook( void )
 {
 /* These variables are all effectively set to constants so they are volatile to
 ensure the compiler does not just get rid of them. */
-volatile portLONG lValue;
+volatile long lValue;
 
 	/* Keep performing a calculation and checking the result against a constant. */
 	for( ;; )

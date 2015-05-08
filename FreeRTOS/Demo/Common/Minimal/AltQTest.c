@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -127,26 +127,26 @@ static portBASE_TYPE xErrorDetected = pdFALSE;
 
 /* Counters that are incremented on each cycle of a test.  This is used to
 detect a stalled task - a test that is no longer running. */
-static volatile unsigned portLONG ulLoopCounter = 0;
-static volatile unsigned portLONG ulLoopCounter2 = 0;
+static volatile unsigned long ulLoopCounter = 0;
+static volatile unsigned long ulLoopCounter2 = 0;
 
 /* The variable that is guarded by the mutex in the mutex demo tasks. */
-static volatile unsigned portLONG ulGuardedVariable = 0;
+static volatile unsigned long ulGuardedVariable = 0;
 
 /* Handles used in the mutext test to suspend and resume the high and medium
 priority mutex test tasks. */
-static xTaskHandle xHighPriorityMutexTask, xMediumPriorityMutexTask;
+static TaskHandle_t xHighPriorityMutexTask, xMediumPriorityMutexTask;
 
 /*-----------------------------------------------------------*/
 
 void vStartAltGenericQueueTasks( unsigned portBASE_TYPE uxPriority )
 {
-xQueueHandle xQueue;
-xSemaphoreHandle xMutex;
+QueueHandle_t xQueue;
+SemaphoreHandle_t xMutex;
 
 	/* Create the queue that we are going to use for the
 	prvSendFrontAndBackTest demo. */
-	xQueue = xQueueCreate( genqQUEUE_LENGTH, sizeof( unsigned portLONG ) );
+	xQueue = xQueueCreate( genqQUEUE_LENGTH, sizeof( unsigned long ) );
 
 	/* vQueueAddToRegistry() adds the queue to the queue registry, if one is
 	in use.  The queue registry is provided as a means for kernel aware 
@@ -154,12 +154,12 @@ xSemaphoreHandle xMutex;
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( xQueue, ( signed portCHAR * ) "Alt_Gen_Test_Queue" );
+	vQueueAddToRegistry( xQueue, "Alt_Gen_Test_Queue" );
 
 	/* Create the demo task and pass it the queue just created.  We are
 	passing the queue handle by value so it does not matter that it is
 	declared on the stack here. */
-	xTaskCreate( prvSendFrontAndBackTest, ( signed portCHAR * ) "FGenQ", configMINIMAL_STACK_SIZE, ( void * ) xQueue, uxPriority, NULL );
+	xTaskCreate( prvSendFrontAndBackTest, "FGenQ", configMINIMAL_STACK_SIZE, ( void * ) xQueue, uxPriority, NULL );
 
 	/* Create the mutex used by the prvMutexTest task. */
 	xMutex = xSemaphoreCreateMutex();
@@ -170,32 +170,32 @@ xSemaphoreHandle xMutex;
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( ( xQueueHandle ) xMutex, ( signed portCHAR * ) "Alt_Q_Mutex" );
+	vQueueAddToRegistry( ( QueueHandle_t ) xMutex, "Alt_Q_Mutex" );
 
 	/* Create the mutex demo tasks and pass it the mutex just created.  We are
 	passing the mutex handle by value so it does not matter that it is declared
 	on the stack here. */
-	xTaskCreate( prvLowPriorityMutexTask, ( signed portCHAR * ) "FMuLow", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, NULL );
-	xTaskCreate( prvMediumPriorityMutexTask, ( signed portCHAR * ) "FMuMed", configMINIMAL_STACK_SIZE, NULL, genqMUTEX_MEDIUM_PRIORITY, &xMediumPriorityMutexTask );
-	xTaskCreate( prvHighPriorityMutexTask, ( signed portCHAR * ) "FMuHigh", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_HIGH_PRIORITY, &xHighPriorityMutexTask );
+	xTaskCreate( prvLowPriorityMutexTask, "FMuLow", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, NULL );
+	xTaskCreate( prvMediumPriorityMutexTask, "FMuMed", configMINIMAL_STACK_SIZE, NULL, genqMUTEX_MEDIUM_PRIORITY, &xMediumPriorityMutexTask );
+	xTaskCreate( prvHighPriorityMutexTask, "FMuHigh", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_HIGH_PRIORITY, &xHighPriorityMutexTask );
 }
 /*-----------------------------------------------------------*/
 
 static void prvSendFrontAndBackTest( void *pvParameters )
 {
-unsigned portLONG ulData, ulData2;
-xQueueHandle xQueue;
+unsigned long ulData, ulData2;
+QueueHandle_t xQueue;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt queue SendToFront/SendToBack/Peek test started.\r\n";
+		const char * const pcTaskStartMsg = "Alt queue SendToFront/SendToBack/Peek test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
 	#endif
 
-	xQueue = ( xQueueHandle ) pvParameters;
+	xQueue = ( QueueHandle_t ) pvParameters;
 
 	for( ;; )
 	{
@@ -411,12 +411,12 @@ xQueueHandle xQueue;
 
 static void prvLowPriorityMutexTask( void *pvParameters )
 {
-xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
+SemaphoreHandle_t xMutex = ( SemaphoreHandle_t ) pvParameters;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Fast mutex with priority inheritance test started.\r\n";
+		const char * const pcTaskStartMsg = "Fast mutex with priority inheritance test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -530,7 +530,7 @@ static void prvMediumPriorityMutexTask( void *pvParameters )
 
 static void prvHighPriorityMutexTask( void *pvParameters )
 {
-xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
+SemaphoreHandle_t xMutex = ( SemaphoreHandle_t ) pvParameters;
 
 	( void ) pvParameters;
 
@@ -561,7 +561,7 @@ xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
 /* This is called to check that all the created tasks are still running. */
 portBASE_TYPE xAreAltGenericQueueTasksStillRunning( void )
 {
-static unsigned portLONG ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
+static unsigned long ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
 
 	/* If the demo task is still running then we expect the loopcounters to
 	have incremented since this function was last called. */

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -105,7 +105,7 @@ mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is used to select between the two.
 The simply blinky demo is implemented and described in main_blinky.c.  The more 
 comprehensive test and demo application is implemented and described in 
 main_full.c. */
-#define mainCREATE_SIMPLE_BLINKY_DEMO_ONLY	1
+#define mainCREATE_SIMPLE_BLINKY_DEMO_ONLY	0
 
 /*
  * main_blinky() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 1.
@@ -125,7 +125,7 @@ void vFullDemoIdleFunction( void );
 within this file. */
 void vApplicationMallocFailedHook( void );
 void vApplicationIdleHook( void );
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName );
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName );
 void vApplicationTickHook( void );
 
 /*
@@ -199,16 +199,20 @@ void vApplicationIdleHook( void )
 	function, because it is the responsibility of the idle task to clean up
 	memory allocated by the kernel to any task that has since been deleted. */
 
-	/* The trace can be stopped with any key press. */
-	if( _kbhit() != pdFALSE )
-	{
-		if( xTraceRunning == pdTRUE )
+	/* Uncomment the following code to allow the trace to be stopped with any 
+	key press.  The code is commented out by default as the kbhit() function
+	interferes with the run time behaviour. */
+	/* 
+		if( _kbhit() != pdFALSE )
 		{
-			vTraceStop();
-			prvSaveTraceFile();
-			xTraceRunning = pdFALSE;
+			if( xTraceRunning == pdTRUE )
+			{
+				vTraceStop();
+				prvSaveTraceFile();
+				xTraceRunning = pdFALSE;
+			}
 		}
-	}
+	*/
 
 	#if ( mainCREATE_SIMPLE_BLINKY_DEMO_ONLY != 1 )
 	{
@@ -220,7 +224,7 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -257,20 +261,36 @@ void vApplicationTickHook( void )
 
 void vAssertCalled( unsigned long ulLine, const char * const pcFileName )
 {
+static portBASE_TYPE xPrinted = pdFALSE;
+volatile uint32_t ulSetToNonZeroInDebuggerToContinue = 0;
+
 	/* Parameters are not used. */
 	( void ) ulLine;
 	( void ) pcFileName;
 
-	taskDISABLE_INTERRUPTS();
-
-	/* Stop the trace recording. */
-	if( xTraceRunning == pdTRUE )
+	taskENTER_CRITICAL();
 	{
-		vTraceStop();
-		prvSaveTraceFile();
+		/* Stop the trace recording. */
+		if( xPrinted == pdFALSE )
+		{
+			xPrinted = pdTRUE;
+			if( xTraceRunning == pdTRUE )
+			{
+				vTraceStop();
+				prvSaveTraceFile();
+			}
+		}
+
+		/* You can step out of this function to debug the assertion by using
+		the debugger to set ulSetToNonZeroInDebuggerToContinue to a non-zero
+		value. */
+		while( ulSetToNonZeroInDebuggerToContinue == 0 )
+		{
+			__asm{ NOP };
+			__asm{ NOP };
+		}
 	}
-		
-	for( ;; );
+	taskEXIT_CRITICAL();
 }
 /*-----------------------------------------------------------*/
 

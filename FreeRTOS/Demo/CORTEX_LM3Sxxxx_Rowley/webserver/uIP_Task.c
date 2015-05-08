@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -134,7 +134,7 @@ clock_time_t clock_time( void );
 /*-----------------------------------------------------------*/
 
 /* The semaphore used by the ISR to wake the uIP task. */
-extern xSemaphoreHandle xEMACSemaphore;
+extern SemaphoreHandle_t xEMACSemaphore;
 
 /*-----------------------------------------------------------*/
 
@@ -301,7 +301,7 @@ void vApplicationProcessFormInput( char *pcInputString, portBASE_TYPE xInputLeng
 {
 char *c, *pcText;
 static char cMessageForDisplay[ 32 ];
-extern xQueueHandle xOLEDQueue;
+extern QueueHandle_t xOLEDQueue;
 xOLEDMessage xOLEDMessage;
 
 	/* Process the form input sent by the IO page of the served HTML. */

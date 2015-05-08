@@ -143,7 +143,7 @@ err_t xReturn;
 		xReturn = ERR_OK;
 	}
 	else
-	{		
+	{
 		/* The queue was already full. */
 		xReturn = ERR_MEM;
 		SYS_STATS_INC( mbox.err );
@@ -180,7 +180,7 @@ err_t xReturn;
 u32_t sys_arch_mbox_fetch( sys_mbox_t *pxMailBox, void **ppvBuffer, u32_t ulTimeOut )
 {
 void *pvDummy;
-portTickType xStartTime, xEndTime, xElapsed;
+TickType_t xStartTime, xEndTime, xElapsed;
 unsigned long ulReturn;
 
 	xStartTime = xTaskGetTickCount();
@@ -192,14 +192,14 @@ unsigned long ulReturn;
 
 	if( ulTimeOut != 0UL )
 	{
-		if( pdTRUE == xQueueReceive( *pxMailBox, &( *ppvBuffer ), ulTimeOut/ portTICK_RATE_MS ) )
+		if( pdTRUE == xQueueReceive( *pxMailBox, &( *ppvBuffer ), ulTimeOut/ portTICK_PERIOD_MS ) )
 		{
 			xEndTime = xTaskGetTickCount();
-			xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
+			xElapsed = ( xEndTime - xStartTime ) * portTICK_PERIOD_MS;
 
 			ulReturn = xElapsed;
 		}
-		else 
+		else
 		{
 			/* Timed out. */
 			*ppvBuffer = NULL;
@@ -210,7 +210,7 @@ unsigned long ulReturn;
 	{
 		while( pdTRUE != xQueueReceive( *pxMailBox, &( *ppvBuffer ), portMAX_DELAY ) );
 		xEndTime = xTaskGetTickCount();
-		xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
+		xElapsed = ( xEndTime - xStartTime ) * portTICK_PERIOD_MS;
 
 		if( xElapsed == 0UL )
 		{
@@ -321,17 +321,17 @@ err_t xReturn = ERR_MEM;
  *---------------------------------------------------------------------------*/
 u32_t sys_arch_sem_wait( sys_sem_t *pxSemaphore, u32_t ulTimeout )
 {
-portTickType xStartTime, xEndTime, xElapsed;
+TickType_t xStartTime, xEndTime, xElapsed;
 unsigned long ulReturn;
 
 	xStartTime = xTaskGetTickCount();
 
 	if( ulTimeout != 0UL )
 	{
-		if( xSemaphoreTake( *pxSemaphore, ulTimeout / portTICK_RATE_MS ) == pdTRUE )
+		if( xSemaphoreTake( *pxSemaphore, ulTimeout / portTICK_PERIOD_MS ) == pdTRUE )
 		{
 			xEndTime = xTaskGetTickCount();
-			xElapsed = (xEndTime - xStartTime) * portTICK_RATE_MS;
+			xElapsed = (xEndTime - xStartTime) * portTICK_PERIOD_MS;
 			ulReturn = xElapsed;
 		}
 		else
@@ -343,7 +343,7 @@ unsigned long ulReturn;
 	{
 		while( xSemaphoreTake( *pxSemaphore, portMAX_DELAY ) != pdTRUE );
 		xEndTime = xTaskGetTickCount();
-		xElapsed = ( xEndTime - xStartTime ) * portTICK_RATE_MS;
+		xElapsed = ( xEndTime - xStartTime ) * portTICK_PERIOD_MS;
 
 		if( xElapsed == 0UL )
 		{
@@ -359,22 +359,22 @@ unsigned long ulReturn;
 /** Create a new mutex
  * @param mutex pointer to the mutex to create
  * @return a new mutex */
-err_t sys_mutex_new( sys_mutex_t *pxMutex ) 
+err_t sys_mutex_new( sys_mutex_t *pxMutex )
 {
 err_t xReturn = ERR_MEM;
 
 	*pxMutex = xSemaphoreCreateMutex();
 
-	if( *pxMutex != NULL ) 
+	if( *pxMutex != NULL )
 	{
 		xReturn = ERR_OK;
 		SYS_STATS_INC_USED( mutex );
-	} 
-	else 
+	}
+	else
 	{
 		SYS_STATS_INC( mutex.err );
 	}
-	
+
 	return xReturn;
 }
 
@@ -464,11 +464,11 @@ u32_t sys_now(void)
  *---------------------------------------------------------------------------*/
 sys_thread_t sys_thread_new( const char *pcName, void( *pxThread )( void *pvParameters ), void *pvArg, int iStackSize, int iPriority )
 {
-xTaskHandle xCreatedTask;
+TaskHandle_t xCreatedTask;
 portBASE_TYPE xResult;
 sys_thread_t xReturn;
 
-	xResult = xTaskCreate( pxThread, ( signed char * ) pcName, iStackSize, pvArg, iPriority, &xCreatedTask );
+	xResult = xTaskCreate( pxThread, pcName, iStackSize, pvArg, iPriority, &xCreatedTask );
 
 	if( xResult == pdPASS )
 	{

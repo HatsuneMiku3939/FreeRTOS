@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -126,7 +126,7 @@ static const unsigned long ulInterruptsPer10ms = tmrtestHIGH_FREQUENCY_TIMER_TES
 static const unsigned long ulSemaphoreGiveRate_ms = 10UL;
 
 /* The semaphore used to synchronise the interrupt with the task. */
-static xSemaphoreHandle xHighFrequencyTimerSemaphore = NULL;
+static SemaphoreHandle_t xHighFrequencyTimerSemaphore = NULL;
 
 /* Holds the count of the number of times the task is unblocked by the timer. */
 static volatile unsigned long ulHighFrequencyTaskIterations = 0UL;
@@ -144,7 +144,7 @@ unsigned long ulCompareMatchBits;
 	
 	/* Create the task that pends on the semaphore that is given by the
 	high frequency interrupt. */
-	xTaskCreate( prvHighFrequencyTimerTask, ( signed char * ) "HFTmr", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL );
+	xTaskCreate( prvHighFrequencyTimerTask, "HFTmr", configMINIMAL_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL );
 	
 	/* Setup the interrupt itself.	The STM module clock divider is setup when 
 	the tick interrupt is configured - which is when the scheduler is started - 

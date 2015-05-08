@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -111,13 +111,13 @@ static void prvCountingSemaphoreTask( void *pvParameters );
  * Utility function to increment the semaphore count value up from zero to
  * countMAX_COUNT_VALUE.
  */
-static void prvIncrementSemaphoreCount( xSemaphoreHandle xSemaphore, unsigned portBASE_TYPE *puxLoopCounter );
+static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore, unsigned portBASE_TYPE *puxLoopCounter );
 
 /*
  * Utility function to decrement the semaphore count value up from 
  * countMAX_COUNT_VALUE to zero.
  */
-static void prvDecrementSemaphoreCount( xSemaphoreHandle xSemaphore, unsigned portBASE_TYPE *puxLoopCounter );
+static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore, unsigned portBASE_TYPE *puxLoopCounter );
 
 /*-----------------------------------------------------------*/
 
@@ -125,7 +125,7 @@ static void prvDecrementSemaphoreCount( xSemaphoreHandle xSemaphore, unsigned po
 typedef struct COUNT_SEM_STRUCT
 {
 	/* The semaphore to be used for the demo. */
-	xSemaphoreHandle xSemaphore;
+	SemaphoreHandle_t xSemaphore;
 
 	/* Set to countSTART_AT_MAX_COUNT if the semaphore should be created with
 	its count value set to its max count value, or countSTART_AT_ZERO if it
@@ -161,21 +161,21 @@ void vStartCountingSemaphoreTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( ( xQueueHandle ) xParameters[ 0 ].xSemaphore, ( signed portCHAR * ) "Counting_Sem_1" );
-	vQueueAddToRegistry( ( xQueueHandle ) xParameters[ 1 ].xSemaphore, ( signed portCHAR * ) "Counting_Sem_2" );
+	vQueueAddToRegistry( ( QueueHandle_t ) xParameters[ 0 ].xSemaphore, "Counting_Sem_1" );
+	vQueueAddToRegistry( ( QueueHandle_t ) xParameters[ 1 ].xSemaphore, "Counting_Sem_2" );
 
 
 	/* Were the semaphores created? */
 	if( ( xParameters[ 0 ].xSemaphore != NULL ) || ( xParameters[ 1 ].xSemaphore != NULL ) )
 	{
 		/* Create the demo tasks, passing in the semaphore to use as the parameter. */
-		xTaskCreate( prvCountingSemaphoreTask, ( signed portCHAR * ) "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), tskIDLE_PRIORITY, NULL );
-		xTaskCreate( prvCountingSemaphoreTask, ( signed portCHAR * ) "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), tskIDLE_PRIORITY, NULL );		
+		xTaskCreate( prvCountingSemaphoreTask, "CNT1", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 0 ] ), tskIDLE_PRIORITY, NULL );
+		xTaskCreate( prvCountingSemaphoreTask, "CNT2", configMINIMAL_STACK_SIZE, ( void * ) &( xParameters[ 1 ] ), tskIDLE_PRIORITY, NULL );		
 	}
 }
 /*-----------------------------------------------------------*/
 
-static void prvDecrementSemaphoreCount( xSemaphoreHandle xSemaphore, unsigned portBASE_TYPE *puxLoopCounter )
+static void prvDecrementSemaphoreCount( SemaphoreHandle_t xSemaphore, unsigned portBASE_TYPE *puxLoopCounter )
 {
 unsigned portBASE_TYPE ux;
 
@@ -211,7 +211,7 @@ unsigned portBASE_TYPE ux;
 }
 /*-----------------------------------------------------------*/
 
-static void prvIncrementSemaphoreCount( xSemaphoreHandle xSemaphore, unsigned portBASE_TYPE *puxLoopCounter )
+static void prvIncrementSemaphoreCount( SemaphoreHandle_t xSemaphore, unsigned portBASE_TYPE *puxLoopCounter )
 {
 unsigned portBASE_TYPE ux;
 
@@ -252,9 +252,9 @@ static void prvCountingSemaphoreTask( void *pvParameters )
 xCountSemStruct *pxParameter;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Counting semaphore demo started.\r\n";
+		const char * const pcTaskStartMsg = "Counting semaphore demo started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );

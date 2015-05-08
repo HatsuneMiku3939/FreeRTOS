@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -101,7 +101,7 @@ Changes from V1.2.5
 Changes from V2.0.0
 
 	+ Delay periods are now specified using variables and constants of
-	  portTickType rather than unsigned long.
+	  TickType_t rather than unsigned long.
 
 Changes from V2.2.0
 
@@ -160,7 +160,7 @@ again. */
 #define mainCHECK_TASK_LED				( 7 )
 
 /* The period between executions of the check task. */
-#define mainCHECK_PERIOD				( ( portTickType ) 3000 / portTICK_RATE_MS  )
+#define mainCHECK_PERIOD				( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
 
 /* An address in the EEPROM used to count resets.  This is used to check that
 the demo application is not unexpectedly resetting. */

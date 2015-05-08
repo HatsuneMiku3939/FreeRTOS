@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -115,7 +115,7 @@ posted to the 'hook' co-routines. */
 /*
  * The co-routine function itself.
  */
-static void prvHookCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex );
+static void prvHookCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex );
 
 
 /*
@@ -130,12 +130,12 @@ void vApplicationTickHook( void );
 /* Queues used to send data FROM a co-routine TO the tick hook function.
 The hook functions received (Rx's) on these queues.  One queue per
 'hook' co-routine. */
-static xQueueHandle xHookRxQueues[ hookNUM_HOOK_CO_ROUTINES ];
+static QueueHandle_t xHookRxQueues[ hookNUM_HOOK_CO_ROUTINES ];
 
 /* Queues used to send data FROM the tick hook TO a co-routine function.
 The hood function transmits (Tx's) on these queues.  One queue per
 'hook' co-routine. */
-static xQueueHandle xHookTxQueues[ hookNUM_HOOK_CO_ROUTINES ];
+static QueueHandle_t xHookTxQueues[ hookNUM_HOOK_CO_ROUTINES ];
 
 /* Set to true if an error is detected at any time. */
 static portBASE_TYPE xCoRoutineErrorDetected = pdFALSE;
@@ -217,7 +217,7 @@ signed portBASE_TYPE xIndex, xCoRoutineWoken;
 }
 /*-----------------------------------------------------------*/
 
-static void prvHookCoRoutine( xCoRoutineHandle xHandle, unsigned portBASE_TYPE uxIndex )
+static void prvHookCoRoutine( CoRoutineHandle_t xHandle, unsigned portBASE_TYPE uxIndex )
 {
 static unsigned portBASE_TYPE uxReceivedValue[ hookNUM_HOOK_CO_ROUTINES ];
 portBASE_TYPE xResult;

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -125,7 +125,7 @@ typedef enum
 volatile xI2CMessage *pxCurrentMessage = NULL;	
 
 /* The queue of messages waiting to be transmitted. */
-static xQueueHandle xMessagesForTx;
+static QueueHandle_t xMessagesForTx;
 
 /* Flag used to indicate whether or not the ISR is amid sending a message. */
 unsigned long ulBusFree = ( unsigned long ) pdTRUE;
@@ -137,7 +137,7 @@ volatile long lTransactionCompleted = pdTRUE;
 
 /*-----------------------------------------------------------*/
 
-void vI2CISRCreateQueues( unsigned portBASE_TYPE uxQueueLength, xQueueHandle *pxTxMessages, unsigned long **ppulBusFree )
+void vI2CISRCreateQueues( unsigned portBASE_TYPE uxQueueLength, QueueHandle_t *pxTxMessages, unsigned long **ppulBusFree )
 {
 	/* Create the queues used to hold Rx and Tx characters. */
 	xMessagesForTx = xQueueCreate( uxQueueLength, ( unsigned portBASE_TYPE ) sizeof( xI2CMessage * ) );

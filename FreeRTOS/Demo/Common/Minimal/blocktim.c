@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -88,19 +88,19 @@
 
 /* Task behaviour. */
 #define bktQUEUE_LENGTH				( 5 )
-#define bktSHORT_WAIT				( ( ( portTickType ) 20 ) / portTICK_RATE_MS )
+#define bktSHORT_WAIT				( ( ( TickType_t ) 20 ) / portTICK_PERIOD_MS )
 #define bktPRIMARY_BLOCK_TIME		( 10 )
 #define bktALLOWABLE_MARGIN			( 15 )
 #define bktTIME_TO_BLOCK			( 175 )
-#define bktDONT_BLOCK				( ( portTickType ) 0 )
+#define bktDONT_BLOCK				( ( TickType_t ) 0 )
 #define bktRUN_INDICATOR			( ( unsigned portBASE_TYPE ) 0x55 )
 
 /* The queue on which the tasks block. */
-static xQueueHandle xTestQueue;
+static QueueHandle_t xTestQueue;
 
 /* Handle to the secondary task is required by the primary task for calls
 to vTaskSuspend/Resume(). */
-static xTaskHandle xSecondary;
+static TaskHandle_t xSecondary;
 
 /* Used to ensure that tasks are still executing without error. */
 static volatile portBASE_TYPE xPrimaryCycles = 0, xSecondaryCycles = 0;
@@ -127,19 +127,19 @@ void vCreateBlockTimeTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( xTestQueue, ( signed char * ) "Block_Time_Queue" );
+	vQueueAddToRegistry( xTestQueue, "Block_Time_Queue" );
 
 	/* Create the two test tasks. */
-	xTaskCreate( vPrimaryBlockTimeTestTask, ( signed char * )"BTest1", configMINIMAL_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, NULL );
-	xTaskCreate( vSecondaryBlockTimeTestTask, ( signed char * )"BTest2", configMINIMAL_STACK_SIZE, NULL, bktSECONDARY_PRIORITY, &xSecondary );
+	xTaskCreate( vPrimaryBlockTimeTestTask, "BTest1", configMINIMAL_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, NULL );
+	xTaskCreate( vSecondaryBlockTimeTestTask, "BTest2", configMINIMAL_STACK_SIZE, NULL, bktSECONDARY_PRIORITY, &xSecondary );
 }
 /*-----------------------------------------------------------*/
 
 static void vPrimaryBlockTimeTestTask( void *pvParameters )
 {
 portBASE_TYPE xItem, xData;
-portTickType xTimeWhenBlocking;
-portTickType xTimeToBlock, xBlockedTime;
+TickType_t xTimeWhenBlocking;
+TickType_t xTimeToBlock, xBlockedTime;
 
 	( void ) pvParameters;
 
@@ -153,7 +153,7 @@ portTickType xTimeToBlock, xBlockedTime;
 		{
 			/* The queue is empty. Attempt to read from the queue using a block
 			time.  When we wake, ensure the delta in time is as expected. */
-			xTimeToBlock = ( portTickType ) ( bktPRIMARY_BLOCK_TIME << xItem );
+			xTimeToBlock = ( TickType_t ) ( bktPRIMARY_BLOCK_TIME << xItem );
 
 			xTimeWhenBlocking = xTaskGetTickCount();
 
@@ -204,7 +204,7 @@ portTickType xTimeToBlock, xBlockedTime;
 		{
 			/* The queue is full. Attempt to write to the queue using a block
 			time.  When we wake, ensure the delta in time is as expected. */
-			xTimeToBlock = ( portTickType ) ( bktPRIMARY_BLOCK_TIME << xItem );
+			xTimeToBlock = ( TickType_t ) ( bktPRIMARY_BLOCK_TIME << xItem );
 
 			xTimeWhenBlocking = xTaskGetTickCount();
 
@@ -388,7 +388,7 @@ portTickType xTimeToBlock, xBlockedTime;
 
 static void vSecondaryBlockTimeTestTask( void *pvParameters )
 {
-portTickType xTimeWhenBlocking, xBlockedTime;
+TickType_t xTimeWhenBlocking, xBlockedTime;
 portBASE_TYPE xData;
 
 	( void ) pvParameters;

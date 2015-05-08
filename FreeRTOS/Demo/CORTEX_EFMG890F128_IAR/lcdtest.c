@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -70,9 +70,9 @@
 /* Demo includes. */
 #include "lcdtest.h"
 
-#define lcdSHORT_DELAY		( 60 / portTICK_RATE_MS )
-#define lcdQUARTER_SECOND	( 250 / portTICK_RATE_MS )
-#define lcdONE_SECOND		( 1000 / portTICK_RATE_MS )
+#define lcdSHORT_DELAY		( 60 / portTICK_PERIOD_MS )
+#define lcdQUARTER_SECOND	( 250 / portTICK_PERIOD_MS )
+#define lcdONE_SECOND		( 1000 / portTICK_PERIOD_MS )
 
 void vLCDTask( void *pvParameters )
 {

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -128,13 +128,13 @@
 
 /* The period after which the check timer will expire provided no errors have
 been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* A block time of zero simply means "don't block". */
 #define mainDONT_BLOCK						( 0UL )
@@ -156,7 +156,7 @@ extern void vMainToggleLED( void );
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * Called by main() to create the comprehensive test/demo application if
@@ -176,7 +176,7 @@ volatile unsigned long ulRegTest1LoopCounter = 0UL, ulRegTest2LoopCounter = 0UL;
 
 void main_full( void )
 {
-xTimerHandle xCheckTimer = NULL;
+TimerHandle_t xCheckTimer = NULL;
 /* The register test tasks are asm functions that don't use a stack.  The
 stack allocated just has to be large enough to hold the task context, and
 for the additional required for the stack overflow checking to work (if
@@ -194,14 +194,14 @@ const size_t xRegTestStackSize = 25U;
 	These are naked functions that don't use any stack.  A stack still has
 	to be allocated to hold the task context. */
 	xTaskCreate( 	vRegTest1Task,			/* Function that implements the task. */
-					( signed char * ) "Reg1", /* Text name of the task. */
+					"Reg1", 				/* Text name of the task. */
 					xRegTestStackSize,		/* Stack allocated to the task. */
 					NULL, 					/* The task parameter is not used. */
 					tskIDLE_PRIORITY, 		/* The priority to assign to the task. */
 					NULL );					/* Don't receive a handle back, it is not needed. */
 
 	xTaskCreate( 	vRegTest2Task,			/* Function that implements the task. */
-					( signed char * ) "Reg2", /* Text name of the task. */
+					"Reg2", 				/* Text name of the task. */
 					xRegTestStackSize,		/* Stack allocated to the task. */
 					NULL, 					/* The task parameter is not used. */
 					tskIDLE_PRIORITY, 		/* The priority to assign to the task. */
@@ -209,11 +209,11 @@ const size_t xRegTestStackSize = 25U;
 
 	/* Create the software timer that performs the 'check' functionality,
 	as described at the top of this file. */
-	xCheckTimer = xTimerCreate( ( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-								( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-								pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-								( void * ) 0,						/* The ID is not used, so can be set to anything. */
-								prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
+	xCheckTimer = xTimerCreate( "CheckTimer",					/* A text name, purely to help debugging. */
+								( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+								pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+								( void * ) 0,					/* The ID is not used, so can be set to anything. */
+								prvCheckTimerCallback			/* The callback function that inspects the status of all the other tasks. */
 							  );
 
 	/* If the software timer was created successfully, start it.  It won't
@@ -238,7 +238,7 @@ const size_t xRegTestStackSize = 25U;
 /*-----------------------------------------------------------*/
 
 /* See the description at the top of this file. */
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;

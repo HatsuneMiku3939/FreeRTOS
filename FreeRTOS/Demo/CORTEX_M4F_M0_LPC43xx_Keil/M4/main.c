@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -150,13 +150,13 @@
 
 /* The period after which the check timer will expire, in ms, provided no errors
 have been reported by any of the standard demo tasks.  ms are converted to the
-equivalent in ticks using the portTICK_RATE_MS constant. */
-#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_RATE_MS )
+equivalent in ticks using the portTICK_PERIOD_MS constant. */
+#define mainCHECK_TIMER_PERIOD_MS			( 3000UL / portTICK_PERIOD_MS )
 
 /* The period at which the check timer will expire, in ms, if an error has been
 reported in one of the standard demo tasks.  ms are converted to the equivalent
-in ticks using the portTICK_RATE_MS constant. */
-#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_RATE_MS )
+in ticks using the portTICK_PERIOD_MS constant. */
+#define mainERROR_CHECK_TIMER_PERIOD_MS 	( 200UL / portTICK_PERIOD_MS )
 
 /* Set mainCREATE_SIMPLE_LED_FLASHER_DEMO_ONLY to 1 to create a simple demo.
 Set mainCREATE_SIMPLE_LED_FLASHER_DEMO_ONLY to 0 to create a much more
@@ -175,7 +175,7 @@ static void prvSetupHardware( void );
 /*
  * The check timer callback function, as described at the top of this file.
  */
-static void prvCheckTimerCallback( xTimerHandle xTimer );
+static void prvCheckTimerCallback( TimerHandle_t xTimer );
 
 /*
  * Register check tasks, and the tasks used to write over and check the contents
@@ -227,13 +227,13 @@ int main( void )
 
 	/* Start the scheduler. */
 	vTaskStartScheduler();
-	
+
 	/* Infinite loop */
-	for( ;; );	
+	for( ;; );
 }
 /*-----------------------------------------------------------*/
 
-static void prvCheckTimerCallback( xTimerHandle xTimer )
+static void prvCheckTimerCallback( TimerHandle_t xTimer )
 {
 static long lChangedTimerPeriodAlready = pdFALSE;
 static unsigned long ulLastRegTest1Value = 0, ulLastRegTest2Value = 0;
@@ -291,7 +291,7 @@ unsigned long ulErrorFound = pdFALSE;
 	{
 		ulErrorFound |= 0x01UL << 9UL;
 	}
-	
+
 	/* Check that the register test 1 task is still running. */
 	if( ulLastRegTest1Value == ulRegTest1LoopCounter )
 	{
@@ -309,8 +309,8 @@ unsigned long ulErrorFound = pdFALSE;
 	/* Toggle the check LED to give an indication of the system status.  If
 	the LED toggles every mainCHECK_TIMER_PERIOD_MS milliseconds then
 	everything is ok.  A faster toggle indicates an error. */
-	vParTestToggleLED( mainCHECK_LED );	
-	
+	vParTestToggleLED( mainCHECK_LED );
+
 	/* Have any errors been latch in ulErrorFound?  If so, shorten the
 	period of the check timer to mainERROR_CHECK_TIMER_PERIOD_MS milliseconds.
 	This will result in an increase in the rate at which mainCHECK_LED
@@ -320,7 +320,7 @@ unsigned long ulErrorFound = pdFALSE;
 		if( lChangedTimerPeriodAlready == pdFALSE )
 		{
 			lChangedTimerPeriodAlready = pdTRUE;
-			
+
 			/* This call to xTimerChangePeriod() uses a zero block time.
 			Functions called from inside of a timer callback function must
 			*never* attempt	to block. */
@@ -339,10 +339,10 @@ extern void Hitex_CGU_Init( void );
 
 	/* Wind the clock speed up in steps to its maximum. */
 	Hitex_CGU_Init();
-	
+
 	/* Ensure all priority bits are assigned as preemption priority bits. */
 	NVIC_SetPriorityGrouping( 0 );
-	
+
 	/* Setup the LED outputs. */
 	vParTestInitialise();
 }
@@ -352,7 +352,7 @@ static void prvOptionallyCreateComprehensveTestApplication( void )
 {
 	#if ( mainCREATE_SIMPLE_LED_FLASHER_DEMO_ONLY == 0 )
 	{
-	xTimerHandle xCheckTimer = NULL;
+	TimerHandle_t xCheckTimer = NULL;
 
 		/* Start all the other standard demo/test tasks. */
 		vStartIntegerMathTasks( tskIDLE_PRIORITY );
@@ -367,21 +367,21 @@ static void prvOptionallyCreateComprehensveTestApplication( void )
 
 		/* Most importantly, start the tasks that use the FPU. */
 		vStartMathTasks( mainFLOP_TASK_PRIORITY );
-		
+
 		/* Create the register check tasks, as described at the top of this
 		file */
-		xTaskCreate( vRegTest1Task, ( signed char * ) "Reg1", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
-		xTaskCreate( vRegTest2Task, ( signed char * ) "Reg2", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
+		xTaskCreate( vRegTest1Task, "Reg1", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
+		xTaskCreate( vRegTest2Task, "Reg2", configMINIMAL_STACK_SIZE, ( void * ) NULL, tskIDLE_PRIORITY, NULL );
 
 		/* Create the software timer that performs the 'check' functionality,
 		as described at the top of this file. */
-		xCheckTimer = xTimerCreate( ( const signed char * ) "CheckTimer",/* A text name, purely to help debugging. */
-									( mainCHECK_TIMER_PERIOD_MS ),		/* The timer period, in this case 3000ms (3s). */
-									pdTRUE,								/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
-									( void * ) 0,						/* The ID is not used, so can be set to anything. */
-									prvCheckTimerCallback				/* The callback function that inspects the status of all the other tasks. */
-								  );	
-		
+		xCheckTimer = xTimerCreate( "CheckTimer",					/* A text name, purely to help debugging. */
+									( mainCHECK_TIMER_PERIOD_MS ),	/* The timer period, in this case 3000ms (3s). */
+									pdTRUE,							/* This is an auto-reload timer, so xAutoReload is set to pdTRUE. */
+									( void * ) 0,					/* The ID is not used, so can be set to anything. */
+									prvCheckTimerCallback			/* The callback function that inspects the status of all the other tasks. */
+								  );
+
 		if( xCheckTimer != NULL )
 		{
 			xTimerStart( xCheckTimer, mainDONT_BLOCK );
@@ -435,7 +435,7 @@ void vApplicationIdleHook( void )
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	( void ) pcTaskName;
 	( void ) pxTask;
@@ -450,7 +450,7 @@ void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName 
 
 void vApplicationTickHook( void )
 {
-	/* This function will be called by each tick interrupt if 
+	/* This function will be called by each tick interrupt if
 	configUSE_TICK_HOOK is set to 1 in FreeRTOSConfig.h.  User code can be
 	added here, but the tick hook is called from an interrupt context, so
 	code must not attempt to block, and only the interrupt safe FreeRTOS API

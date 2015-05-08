@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -128,7 +128,7 @@ clock_time_t clock_time( void );
 /*-----------------------------------------------------------*/
 
 /* The semaphore used by the ISR to wake the uIP task. */
-extern xSemaphoreHandle xEMACSemaphore;
+extern SemaphoreHandle_t xEMACSemaphore;
 
 /*-----------------------------------------------------------*/
 
@@ -258,7 +258,7 @@ static void prvENET_Send(void)
 
 static void prvSetMACAddress( void )
 {
-unsigned portLONG ulUser0, ulUser1;
+unsigned long ulUser0, ulUser1;
 unsigned char pucMACArray[8];
 struct uip_eth_addr xAddr;
 
@@ -286,11 +286,11 @@ struct uip_eth_addr xAddr;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationProcessFormInput( portCHAR *pcInputString, portBASE_TYPE xInputLength )
+void vApplicationProcessFormInput( char *pcInputString, portBASE_TYPE xInputLength )
 {
 char *c, *pcText;
-static portCHAR cMessageForDisplay[ 32 ];
-extern xQueueHandle xOLEDQueue;
+static char cMessageForDisplay[ 32 ];
+extern QueueHandle_t xOLEDQueue;
 xOLEDMessage xOLEDMessage;
 
 	/* Process the form input sent by the IO page of the served HTML. */

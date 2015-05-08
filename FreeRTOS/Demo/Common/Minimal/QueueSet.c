@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -118,7 +118,7 @@ queuesetPRIORITY_CHANGE_LOOPS number of values are sent to a queue. */
 /* A delay inserted when the Tx task changes its priority to be above the idle
 task priority to ensure the idle priority tasks get some CPU time before the
 next iteration of the queue set Tx task. */
-#define queuesetTX_LOOP_DELAY	( 200 / portTICK_RATE_MS )
+#define queuesetTX_LOOP_DELAY	( 200 / portTICK_PERIOD_MS )
 
 /* The allowable maximum deviation between a received value and the expected
 received value.  A deviation will occur when data is received from a queue
@@ -189,14 +189,14 @@ static void prvSRand( unsigned long ulSeed );
 /*-----------------------------------------------------------*/
 
 /* The queues that are added to the set. */
-static xQueueHandle xQueues[ queuesetNUM_QUEUES_IN_SET ] = { 0 };
+static QueueHandle_t xQueues[ queuesetNUM_QUEUES_IN_SET ] = { 0 };
 
 /* Counts how many times each queue in the set is used to ensure all the
 queues are used. */
 static unsigned long ulQueueUsedCounter[ queuesetNUM_QUEUES_IN_SET ] = { 0 };
 
 /* The handle of the queue set to which the queues are added. */
-static xQueueSetHandle xQueueSet;
+static QueueSetHandle_t xQueueSet;
 
 /* If the prvQueueSetReceivingTask() task has not detected any errors then
 it increments ulCycleCounter on each iteration.
@@ -222,15 +222,15 @@ static volatile unsigned long ulISRTxValue = queuesetINITIAL_ISR_TX_VALUE;
 static unsigned long ulNextRand = 0;
 
 /* The task handles are stored so their priorities can be changed. */
-xTaskHandle xQueueSetSendingTask, xQueueSetReceivingTask;
+TaskHandle_t xQueueSetSendingTask, xQueueSetReceivingTask;
 
 /*-----------------------------------------------------------*/
 
 void vStartQueueSetTasks( void )
 {
 	/* Create the tasks. */
-	xTaskCreate( prvQueueSetSendingTask, ( signed char * ) "SetTx", configMINIMAL_STACK_SIZE, NULL, queuesetMEDIUM_PRIORITY, &xQueueSetSendingTask );
-	xTaskCreate( prvQueueSetReceivingTask, ( signed char * ) "SetRx", configMINIMAL_STACK_SIZE, ( void * ) xQueueSetSendingTask, queuesetMEDIUM_PRIORITY, &xQueueSetReceivingTask );
+	xTaskCreate( prvQueueSetSendingTask, "SetTx", configMINIMAL_STACK_SIZE, NULL, queuesetMEDIUM_PRIORITY, &xQueueSetSendingTask );
+	xTaskCreate( prvQueueSetReceivingTask, "SetRx", configMINIMAL_STACK_SIZE, ( void * ) xQueueSetSendingTask, queuesetMEDIUM_PRIORITY, &xQueueSetReceivingTask );
 
 	/* It is important that the sending task does not attempt to write to a
 	queue before the queue has been created.  It is therefore placed into the
@@ -292,7 +292,7 @@ portBASE_TYPE xReturn = pdPASS, x;
 static void prvQueueSetSendingTask( void *pvParameters )
 {
 unsigned long ulTaskTxValue = 0, ulQueueToWriteTo;
-xQueueHandle xQueueInUse;
+QueueHandle_t xQueueInUse;
 
 	/* Remove compiler warning about the unused parameter. */
 	( void ) pvParameters;
@@ -390,7 +390,7 @@ static eRelativePriorities ePriorities = eEqualPriority;
 static void prvQueueSetReceivingTask( void *pvParameters )
 {
 unsigned long ulReceived;
-xQueueHandle xActivatedQueue;
+QueueHandle_t xActivatedQueue;
 
 	/* Remove compiler warnings. */
 	( void ) pvParameters;
@@ -570,7 +570,7 @@ portBASE_TYPE xReturn = pdPASS;
 
 static void prvReceiveFromQueueInSetFromISR( void )
 {
-xQueueSetMemberHandle xActivatedQueue;
+QueueSetMemberHandle_t xActivatedQueue;
 unsigned long ulReceived;
 
 	/* See if any of the queues in the set contain data. */

@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V7.6.0 - Copyright (C) 2013 Real Time Engineers Ltd. 
+    FreeRTOS V8.0.0 - Copyright (C) 2014 Real Time Engineers Ltd. 
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -85,19 +85,19 @@
 
 /* Task behaviour. */
 #define bktQUEUE_LENGTH				( 5 )
-#define bktSHORT_WAIT				( ( ( portTickType ) 20 ) / portTICK_RATE_MS )
+#define bktSHORT_WAIT				( ( ( TickType_t ) 20 ) / portTICK_PERIOD_MS )
 #define bktPRIMARY_BLOCK_TIME		( 10 )
 #define bktALLOWABLE_MARGIN			( 12 )
 #define bktTIME_TO_BLOCK			( 175 )
-#define bktDONT_BLOCK				( ( portTickType ) 0 )
+#define bktDONT_BLOCK				( ( TickType_t ) 0 )
 #define bktRUN_INDICATOR			( ( unsigned portBASE_TYPE ) 0x55 )
 
 /* The queue on which the tasks block. */
-static xQueueHandle xTestQueue;
+static QueueHandle_t xTestQueue;
 
 /* Handle to the secondary task is required by the primary task for calls
 to vTaskSuspend/Resume(). */
-static xTaskHandle xSecondary;
+static TaskHandle_t xSecondary;
 
 /* Used to ensure that tasks are still executing without error. */
 static portBASE_TYPE xPrimaryCycles = 0, xSecondaryCycles = 0;
@@ -124,25 +124,25 @@ void vCreateAltBlockTimeTasks( void )
 	is not being used.  The call to vQueueAddToRegistry() will be removed
 	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
 	defined to be less than 1. */
-	vQueueAddToRegistry( xTestQueue, ( signed portCHAR * ) "AltBlockQueue" );
+	vQueueAddToRegistry( xTestQueue, "AltBlockQueue" );
 
 
 	/* Create the two test tasks. */
-	xTaskCreate( vPrimaryBlockTimeTestTask, ( signed portCHAR * )"FBTest1", configMINIMAL_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, NULL );
-	xTaskCreate( vSecondaryBlockTimeTestTask, ( signed portCHAR * )"FBTest2", configMINIMAL_STACK_SIZE, NULL, bktSECONDARY_PRIORITY, &xSecondary );
+	xTaskCreate( vPrimaryBlockTimeTestTask, "FBTest1", configMINIMAL_STACK_SIZE, NULL, bktPRIMARY_PRIORITY, NULL );
+	xTaskCreate( vSecondaryBlockTimeTestTask, "FBTest2", configMINIMAL_STACK_SIZE, NULL, bktSECONDARY_PRIORITY, &xSecondary );
 }
 /*-----------------------------------------------------------*/
 
 static void vPrimaryBlockTimeTestTask( void *pvParameters )
 {
 portBASE_TYPE xItem, xData;
-portTickType xTimeWhenBlocking;
-portTickType xTimeToBlock, xBlockedTime;
+TickType_t xTimeWhenBlocking;
+TickType_t xTimeToBlock, xBlockedTime;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt primary block time test started.\r\n";
+		const char * const pcTaskStartMsg = "Alt primary block time test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
@@ -415,13 +415,13 @@ portTickType xTimeToBlock, xBlockedTime;
 
 static void vSecondaryBlockTimeTestTask( void *pvParameters )
 {
-portTickType xTimeWhenBlocking, xBlockedTime;
+TickType_t xTimeWhenBlocking, xBlockedTime;
 portBASE_TYPE xData;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
 	
-		const portCHAR * const pcTaskStartMsg = "Alt secondary block time test started.\r\n";
+		const char * const pcTaskStartMsg = "Alt secondary block time test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
