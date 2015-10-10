@@ -14,6 +14,6 @@ SIM     = $(TARGET)-sim
 GDB     = $(TARGET)-gdb
 
 #-----------------------------------------------------------
-WARNINGS= -Wshadow -Wpointer-arith -Wbad-function-cast -Wcast-align -Wsign-compare \
+WARNINGS= -Wshadow -Wpointer-arith -Wcast-align -Wsign-compare \
 		-Waggregate-return -Wstrict-prototypes -Wunused
 

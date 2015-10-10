@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,38 +45,42 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 /*
  * Creates all the demo application tasks, then starts the scheduler.  The WEB
  * documentation provides more details of the demo application tasks.
- * 
- * Main.c also creates a task called "Check".  This only executes every three 
- * seconds but has the highest priority so is guaranteed to get processor time.  
+ *
+ * Main.c also creates a task called "Check".  This only executes every three
+ * seconds but has the highest priority so is guaranteed to get processor time.
  * Its main function is to check that all the other tasks are still operational.
- * Each task (other than the "flash" tasks) maintains a unique count that is 
- * incremented each time the task successfully completes its function.  Should 
- * any error occur within such a task the count is permanently halted.  The 
+ * Each task (other than the "flash" tasks) maintains a unique count that is
+ * incremented each time the task successfully completes its function.  Should
+ * any error occur within such a task the count is permanently halted.  The
  * check task inspects the count of each task to ensure it has changed since
- * the last time the check task executed.  If all the count variables have 
+ * the last time the check task executed.  If all the count variables have
  * changed all the tasks are still executing error free, and the check task
- * toggles the onboard LED.  Should any task contain an error at any time 
+ * toggles the onboard LED.  Should any task contain an error at any time
  * the LED toggle rate will change from 3 seconds to 500ms.
  *
- * To check the operation of the memory allocator the check task also 
- * dynamically creates a task before delaying, and deletes it again when it 
+ * To check the operation of the memory allocator the check task also
+ * dynamically creates a task before delaying, and deletes it again when it
  * wakes.  If memory cannot be allocated for the new task the call to xTaskCreate
  * will fail and an error is signalled.  The dynamically created task itself
  * allocates and frees memory just to give the allocator a bit more exercise.
@@ -128,11 +125,11 @@ and mainCOM_TEST_LED + 1 is toggles on each character Rx. */
 
 /* LED that is toggled by the check task.  The check task periodically checks
 that all the other tasks are operating without error.  If no errors are found
-the LED is toggled with mainCHECK_PERIOD frequency.  If an error is found 
+the LED is toggled with mainCHECK_PERIOD frequency.  If an error is found
 the the toggle rate increases to mainERROR_CHECK_PERIOD. */
 #define mainCHECK_TASK_LED				( 5 )
-#define mainCHECK_PERIOD				( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_CHECK_PERIOD			( ( portTickType ) 500 / portTICK_RATE_MS )
+#define mainCHECK_PERIOD				( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_CHECK_PERIOD			( ( TickType_t ) 500 / portTICK_PERIOD_MS )
 
 /* Constants used by the vMemCheckTask() task. */
 #define mainCOUNT_INITIAL_VALUE		( ( unsigned long ) 0 )
@@ -181,10 +178,10 @@ int main( void )
 	vStartBlockingQueueTasks( mainBLOCK_Q_PRIORITY );
 
 	/* Start the 'Check' task. */
-	xTaskCreate( vErrorChecks, ( signed char * )"Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
+	xTaskCreate( vErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
-	/* In this port, to use preemptive scheduler define configUSE_PREEMPTION 
-	as 1 in portmacro.h.  To use the cooperative scheduler define 
+	/* In this port, to use preemptive scheduler define configUSE_PREEMPTION
+	as 1 in portmacro.h.  To use the cooperative scheduler define
 	configUSE_PREEMPTION as 0. */
 	vTaskStartScheduler();
 
@@ -197,21 +194,21 @@ int main( void )
  * Cycle for ever, delaying then checking all the other tasks are still
  * operating without error.  If an error is detected then the delay period
  * is decreased from mainCHECK_PERIOD to mainERROR_CHECK_PERIOD so
- * the on board LED flash rate will increase. 
+ * the on board LED flash rate will increase.
  *
  * In addition to the standard tests the memory allocator is tested through
- * the dynamic creation and deletion of a task each cycle.  Each time the 
+ * the dynamic creation and deletion of a task each cycle.  Each time the
  * task is created memory must be allocated for its stack.  When the task is
- * deleted this memory is returned to the heap.  If the task cannot be created 
+ * deleted this memory is returned to the heap.  If the task cannot be created
  * then it is likely that the memory allocation failed.   In addition the
- * dynamically created task allocates and frees memory while it runs. 
+ * dynamically created task allocates and frees memory while it runs.
  */
 static void vErrorChecks( void *pvParameters )
 {
-portTickType xDelayPeriod = mainCHECK_PERIOD;
+TickType_t xDelayPeriod = mainCHECK_PERIOD;
 volatile unsigned long ulMemCheckTaskRunningCount;
-xTaskHandle xCreatedTask;
-portTickType xLastWakeTime;
+TaskHandle_t xCreatedTask;
+TickType_t xLastWakeTime;
 
 	/* Initialise xLastWakeTime to ensure the first call to vTaskDelayUntil()
 	functions correctly. */
@@ -223,28 +220,28 @@ portTickType xLastWakeTime;
 		later that it has changed. */
 		ulMemCheckTaskRunningCount = mainCOUNT_INITIAL_VALUE;
 
-		/* Dynamically create a task - passing ulMemCheckTaskRunningCount as a 
-		parameter. */		
+		/* Dynamically create a task - passing ulMemCheckTaskRunningCount as a
+		parameter. */
 		xCreatedTask = mainNO_TASK;
-		if( xTaskCreate( vMemCheckTask, ( signed char * ) "MEM_CHECK", configMINIMAL_STACK_SIZE, ( void * ) &ulMemCheckTaskRunningCount, tskIDLE_PRIORITY, &xCreatedTask ) != pdPASS )
+		if( xTaskCreate( vMemCheckTask, "MEM_CHECK", configMINIMAL_STACK_SIZE, ( void * ) &ulMemCheckTaskRunningCount, tskIDLE_PRIORITY, &xCreatedTask ) != pdPASS )
 		{
 			/* Could not create the task - we have probably run out of heap. */
 			xDelayPeriod = mainERROR_CHECK_PERIOD;
 		}
 
 
-		/* Delay until it is time to execute again.  The delay period is 
+		/* Delay until it is time to execute again.  The delay period is
 		shorter following an error. */
 		vTaskDelayUntil( &xLastWakeTime, xDelayPeriod );
 
-	
+
 		/* Delete the dynamically created task. */
 		if( xCreatedTask != mainNO_TASK )
 		{
 			vTaskDelete( xCreatedTask );
 		}
 
-		/* Check all the standard demo application tasks are executing without 
+		/* Check all the standard demo application tasks are executing without
 		error.  ulMemCheckTaskRunningCount is checked to ensure it was
 		modified by the task just deleted. */
 		if( prvCheckOtherTasksAreStillRunning( ulMemCheckTaskRunningCount ) != pdPASS )
@@ -260,7 +257,7 @@ portTickType xLastWakeTime;
 
 /*
  * 	Check each set of tasks in turn to see if they have experienced any
- *	error conditions. 
+ *	error conditions.
  */
 static long prvCheckOtherTasksAreStillRunning( unsigned long ulMemCheckTaskCount )
 {
@@ -322,10 +319,10 @@ static long lErrorOccurred = pdFALSE;
 	vErrorChecks task to check the operation of the memory allocator.  Each time
 	the task is created memory is allocated for the stack and TCB.  Each time
 	the task is deleted this memory is returned to the heap.  This task itself
-	exercises the allocator by allocating and freeing blocks. 
-	
-	The task executes at the idle priority so does not require a delay. 
-	
+	exercises the allocator by allocating and freeing blocks.
+
+	The task executes at the idle priority so does not require a delay.
+
 	pulMemCheckTaskRunningCounter is incremented each cycle to indicate to the
 	vErrorChecks() task that this task is still executing without error. */
 
@@ -340,12 +337,12 @@ static long lErrorOccurred = pdFALSE;
 		}
 		else
 		{
-			/* Reset the count so an error is detected by the 
+			/* Reset the count so an error is detected by the
 			prvCheckOtherTasksAreStillRunning() function. */
 			*pulMemCheckTaskRunningCounter = mainCOUNT_INITIAL_VALUE;
 		}
 
-		/* Allocate some memory - just to give the allocator some extra 
+		/* Allocate some memory - just to give the allocator some extra
 		exercise.  This has to be in a critical section to ensure the
 		task does not get deleted while it has memory allocated. */
 		vTaskSuspendAll();

@@ -40,7 +40,7 @@
 struct timeoutlist
 {
 	struct sys_timeouts timeouts;
-	xTaskHandle pid;
+	TaskHandle_t pid;
 };
 
 /* This is the number of threads that can be started with sys_thread_new() */
@@ -54,10 +54,10 @@ static u16_t s_nextthread = 0;
 //  Creates an empty mailbox.
 sys_mbox_t sys_mbox_new(int size)
 {
-	xQueueHandle mbox;
-	
+	QueueHandle_t mbox;
+
 	( void ) size;
-	
+
 	mbox = xQueueCreate( archMESG_QUEUE_LENGTH, sizeof( void * ) );
 
 #if SYS_STATS
@@ -85,7 +85,7 @@ void sys_mbox_free(sys_mbox_t mbox)
 #if SYS_STATS
 	    lwip_stats.sys.mbox.err++;
 #endif /* SYS_STATS */
-			
+
 		// TODO notify the user of failure.
 	}
 
@@ -117,11 +117,11 @@ err_t result;
    else {
       // could not post, queue must be full
       result = ERR_MEM;
-			
+
 #if SYS_STATS
       lwip_stats.sys.mbox.err++;
 #endif /* SYS_STATS */
-			
+
    }
 
    return result;
@@ -146,7 +146,7 @@ err_t result;
 u32_t sys_arch_mbox_fetch(sys_mbox_t mbox, void **msg, u32_t timeout)
 {
 void *dummyptr;
-portTickType StartTime, EndTime, Elapsed;
+TickType_t StartTime, EndTime, Elapsed;
 
 	StartTime = xTaskGetTickCount();
 
@@ -154,20 +154,20 @@ portTickType StartTime, EndTime, Elapsed;
 	{
 		msg = &dummyptr;
 	}
-		
+
 	if ( timeout != 0 )
 	{
-		if ( pdTRUE == xQueueReceive( mbox, &(*msg), timeout / portTICK_RATE_MS ) )
+		if ( pdTRUE == xQueueReceive( mbox, &(*msg), timeout / portTICK_PERIOD_MS ) )
 		{
 			EndTime = xTaskGetTickCount();
-			Elapsed = (EndTime - StartTime) * portTICK_RATE_MS;
-			
+			Elapsed = (EndTime - StartTime) * portTICK_PERIOD_MS;
+
 			return ( Elapsed );
 		}
 		else // timed out blocking for message
 		{
 			*msg = NULL;
-			
+
 			return SYS_ARCH_TIMEOUT;
 		}
 	}
@@ -175,9 +175,9 @@ portTickType StartTime, EndTime, Elapsed;
 	{
 		while( pdTRUE != xQueueReceive( mbox, &(*msg), portMAX_DELAY ) ){} // time is arbitrary
 		EndTime = xTaskGetTickCount();
-		Elapsed = (EndTime - StartTime) * portTICK_RATE_MS;
-		
-		return ( Elapsed ); // return time blocked TODO test	
+		Elapsed = (EndTime - StartTime) * portTICK_PERIOD_MS;
+
+		return ( Elapsed ); // return time blocked TODO test
 	}
 }
 
@@ -210,20 +210,20 @@ void *dummyptr;
 //  the initial state of the semaphore.
 sys_sem_t sys_sem_new(u8_t count)
 {
-	xSemaphoreHandle  xSemaphore;
+	SemaphoreHandle_t  xSemaphore;
 
 	vSemaphoreCreateBinary( xSemaphore );
-	
+
 	if( xSemaphore == NULL )
 	{
-		
+
 #if SYS_STATS
       ++lwip_stats.sys.sem.err;
 #endif /* SYS_STATS */
-			
+
 		return SYS_SEM_NULL;	// TODO need assert
 	}
-	
+
 	if(count == 0)	// Means it can't be taken
 	{
 		xSemaphoreTake(xSemaphore,1);
@@ -235,7 +235,7 @@ sys_sem_t sys_sem_new(u8_t count)
 		lwip_stats.sys.sem.max = lwip_stats.sys.sem.used;
 	}
 #endif /* SYS_STATS */
-		
+
 	return xSemaphore;
 }
 
@@ -257,18 +257,18 @@ sys_sem_t sys_sem_new(u8_t count)
 */
 u32_t sys_arch_sem_wait(sys_sem_t sem, u32_t timeout)
 {
-portTickType StartTime, EndTime, Elapsed;
+TickType_t StartTime, EndTime, Elapsed;
 
 	StartTime = xTaskGetTickCount();
 
 	if(	timeout != 0)
 	{
-		if( xSemaphoreTake( sem, timeout / portTICK_RATE_MS ) == pdTRUE )
+		if( xSemaphoreTake( sem, timeout / portTICK_PERIOD_MS ) == pdTRUE )
 		{
 			EndTime = xTaskGetTickCount();
-			Elapsed = (EndTime - StartTime) * portTICK_RATE_MS;
-			
-			return (Elapsed); // return time blocked TODO test	
+			Elapsed = (EndTime - StartTime) * portTICK_PERIOD_MS;
+
+			return (Elapsed); // return time blocked TODO test
 		}
 		else
 		{
@@ -279,10 +279,10 @@ portTickType StartTime, EndTime, Elapsed;
 	{
 		while( xSemaphoreTake( sem, portMAX_DELAY ) != pdTRUE ){}
 		EndTime = xTaskGetTickCount();
-		Elapsed = (EndTime - StartTime) * portTICK_RATE_MS;
+		Elapsed = (EndTime - StartTime) * portTICK_PERIOD_MS;
 
-		return ( Elapsed ); // return time blocked	
-		
+		return ( Elapsed ); // return time blocked
+
 	}
 }
 
@@ -300,7 +300,7 @@ void sys_sem_free(sys_sem_t sem)
 #if SYS_STATS
       --lwip_stats.sys.sem.used;
 #endif /* SYS_STATS */
-			
+
 	vQueueDelete( sem );
 }
 
@@ -337,7 +337,7 @@ void sys_init(void)
 struct sys_timeouts *sys_arch_timeouts(void)
 {
 int i;
-xTaskHandle pid;
+TaskHandle_t pid;
 struct timeoutlist *tl;
 
 	pid = xTaskGetCurrentTaskHandle( );
@@ -367,12 +367,12 @@ struct timeoutlist *tl;
 */
 sys_thread_t sys_thread_new(char *name, void (* thread)(void *arg), void *arg, int stacksize, int prio)
 {
-xTaskHandle CreatedTask;
+TaskHandle_t CreatedTask;
 int result;
 
    if ( s_nextthread < SYS_THREAD_MAX )
    {
-      result = xTaskCreate( thread, ( signed portCHAR * ) name, stacksize, arg, prio, &CreatedTask );
+      result = xTaskCreate( thread, name, stacksize, arg, prio, &CreatedTask );
 
 	   // For each task created, store the task handle (pid) in the timers array.
 	   // This scheme doesn't allow for threads to be deleted
@@ -428,7 +428,7 @@ void sys_arch_unprotect(sys_prot_t pval)
  * Prints an assertion messages and aborts execution.
  */
 void sys_assert( const char *msg )
-{	
+{
 	( void ) msg;
 	/*FSL:only needed for debugging
 	printf(msg);

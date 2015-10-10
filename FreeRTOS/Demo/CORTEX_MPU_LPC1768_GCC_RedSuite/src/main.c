@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,18 +45,22 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 #error "The batch file Demo\CORTEX_LPC1768_GCC_RedSuite\CreateProjectDirectoryStructure.bat must be executed before the first build.  After executing the batch file hit F5 to refrech the Eclipse project, then delete this line."
@@ -74,7 +71,7 @@
  * User mode and Privileged mode, and using both the original xTaskCreate() and
  * the new xTaskCreateRestricted() API functions.  The purpose of each created
  * task is documented in the comments above the task function prototype (in
- * this file), with the task behaviour demonstrated and documented within the 
+ * this file), with the task behaviour demonstrated and documented within the
  * task function itself.  In addition a queue is used to demonstrate passing
  * data between protected/restricted tasks as well as passing data between an
  * interrupt and a protected/restricted task.
@@ -120,7 +117,7 @@ achieved. */
 /* Prototypes for functions that implement tasks. -----------*/
 /*-----------------------------------------------------------*/
 
-/* 
+/*
  * Prototype for the reg test tasks.  Amongst other things, these fill the CPU
  * registers with known values before checking that the registers still contain
  * the expected values.  Each of the two tasks use different values so an error
@@ -150,15 +147,15 @@ static void prvRegTest2Task( void *pvParameters );
 static void prvCheckTask( void *pvParameters );
 
 /*
- * Prototype for a task created in User mode using the original vTaskCreate() 
+ * Prototype for a task created in User mode using the original vTaskCreate()
  * API function.  The task demonstrates the characteristics of such a task,
  * before simply deleting itself.
  */
 static void prvOldStyleUserModeTask( void *pvParameters );
 
 /*
- * Prototype for a task created in Privileged mode using the original 
- * vTaskCreate() API function.  The task demonstrates the characteristics of 
+ * Prototype for a task created in Privileged mode using the original
+ * vTaskCreate() API function.  The task demonstrates the characteristics of
  * such a task, before simply deleting itself.
  */
 static void prvOldStylePrivilegedModeTask( void *pvParameters );
@@ -186,7 +183,7 @@ static void prvDeleteMe( void ) __attribute__((noinline));
  * If a reg test task detects an error it will delete itself, and in so doing
  * prevent itself from sending any more 'I'm Alive' messages to the check task.
  */
-static void prvSendImAlive( xQueueHandle xHandle, unsigned long ulTaskNumber );
+static void prvSendImAlive( QueueHandle_t xHandle, unsigned long ulTaskNumber );
 
 /*
  * The check task is created with access to three memory regions (plus its
@@ -203,9 +200,9 @@ static void prvTestMemoryRegions( void );
 /* The handle of the queue used to communicate between tasks and between tasks
 and interrupts.  Note that this is a file scope variable that falls outside of
 any MPU region.  As such other techniques have to be used to allow the tasks
-to gain access to the queue.  See the comments in the tasks themselves for 
+to gain access to the queue.  See the comments in the tasks themselves for
 further information. */
-static xQueueHandle xFileScopeCheckQueue = NULL;
+static QueueHandle_t xFileScopeCheckQueue = NULL;
 
 
 
@@ -219,19 +216,19 @@ stack size is defined in words, not bytes. */
 #define mainCHECK_TASK_STACK_ALIGNMENT ( mainCHECK_TASK_STACK_SIZE_WORDS * sizeof( portSTACK_TYPE ) )
 
 /* Declare the stack that will be used by the check task.  The kernel will
- automatically create an MPU region for the stack.  The stack alignment must 
- match its size, so if 128 words are reserved for the stack then it must be 
+ automatically create an MPU region for the stack.  The stack alignment must
+ match its size, so if 128 words are reserved for the stack then it must be
  aligned to ( 128 * 4 ) bytes. */
 static portSTACK_TYPE xCheckTaskStack[ mainCHECK_TASK_STACK_SIZE_WORDS ] mainALIGN_TO( mainCHECK_TASK_STACK_ALIGNMENT );
 
 /* Declare three arrays - an MPU region will be created for each array
-using the xTaskParameters structure below.  THIS IS JUST TO DEMONSTRATE THE
+using the TaskParameters_t structure below.  THIS IS JUST TO DEMONSTRATE THE
 MPU FUNCTIONALITY, the data is not used by the check tasks primary function
 of monitoring the reg test tasks and printing out status information.
 
-Note that the arrays allocate slightly more RAM than is actually assigned to 
-the MPU region.  This is to permit writes off the end of the array to be 
-detected even when the arrays are placed in adjacent memory locations (with no 
+Note that the arrays allocate slightly more RAM than is actually assigned to
+the MPU region.  This is to permit writes off the end of the array to be
+detected even when the arrays are placed in adjacent memory locations (with no
 gaps between them).  The align size must be a power of two. */
 #define mainREAD_WRITE_ARRAY_SIZE 130
 #define mainREAD_WRITE_ALIGN_SIZE 128
@@ -245,12 +242,12 @@ char cReadOnlyArray[ mainREAD_ONLY_ARRAY_SIZE ] mainALIGN_TO( mainREAD_ONLY_ALIG
 #define mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE 128
 char cPrivilegedOnlyAccessArray[ mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE ] mainALIGN_TO( mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE );
 
-/* Fill in a xTaskParameters structure to define the check task - this is the
+/* Fill in a TaskParameters_t structure to define the check task - this is the
 structure passed to the xTaskCreateRestricted() function. */
-static const xTaskParameters xCheckTaskParameters =
+static const TaskParameters_t xCheckTaskParameters =
 {
 	prvCheckTask,								/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "Check",					/* pcName			*/
+	"Check",									/* pcName			*/
 	mainCHECK_TASK_STACK_SIZE_WORDS,			/* usStackDepth	- defined in words, not bytes. */
 	( void * ) 0x12121212,						/* pvParameters - this value is just to test that the parameter is being passed into the task correctly. */
 	( tskIDLE_PRIORITY + 1 ) | portPRIVILEGE_BIT,/* uxPriority - this is the highest priority task in the system.  The task is created in privileged mode to demonstrate accessing the privileged only data. */
@@ -261,7 +258,7 @@ static const xTaskParameters xCheckTaskParameters =
 	created with different parameters.  Again, THIS IS JUST TO DEMONSTRATE THE
 	MPU FUNCTIONALITY, the data is not used by the check tasks primary function
 	of monitoring the reg test tasks and printing out status information.*/
-	{											
+	{
 		/* Base address					Length									Parameters */
         { cReadWriteArray,				mainREAD_WRITE_ALIGN_SIZE,				portMPU_REGION_READ_WRITE },
         { cReadOnlyArray,				mainREAD_ONLY_ALIGN_SIZE,				portMPU_REGION_READ_ONLY },
@@ -269,15 +266,15 @@ static const xTaskParameters xCheckTaskParameters =
 	}
 };
 
-/* Three MPU regions are defined for use by the 'check' task when the task is 
+/* Three MPU regions are defined for use by the 'check' task when the task is
 created.  These are only used to demonstrate the MPU features and are not
 actually necessary for the check task to fulfill its primary purpose.  Instead
-the MPU regions are replaced with those defined by xAltRegions prior to the 
+the MPU regions are replaced with those defined by xAltRegions prior to the
 check task receiving any data on the queue or printing any messages to the
 debug console.  The MPU region defined below covers the GPIO peripherals used
 to write to the LCD. */
-static const xMemoryRegion xAltRegions[ portNUM_CONFIGURABLE_REGIONS ] =
-{											
+static const MemoryRegion_t xAltRegions[ portNUM_CONFIGURABLE_REGIONS ] =
+{
 	/* Base address				Length			Parameters */
 	{ mainGPIO_START_ADDRESS,	( 64 * 1024 ),	portMPU_REGION_READ_WRITE },
 	{ 0,						0,				0 },
@@ -296,17 +293,17 @@ that stack size is defined in words, not bytes. */
 #define mainREG_TEST_STACK_ALIGNMENT	( mainREG_TEST_STACK_SIZE_WORDS * sizeof( portSTACK_TYPE ) )
 
 /* Declare the stacks that will be used by the reg test tasks.  The kernel will
-automatically create an MPU region for the stack.  The stack alignment must 
-match its size, so if 128 words are reserved for the stack then it must be 
+automatically create an MPU region for the stack.  The stack alignment must
+match its size, so if 128 words are reserved for the stack then it must be
 aligned to ( 128 * 4 ) bytes. */
 static portSTACK_TYPE xRegTest1Stack[ mainREG_TEST_STACK_SIZE_WORDS ] mainALIGN_TO( mainREG_TEST_STACK_ALIGNMENT );
 static portSTACK_TYPE xRegTest2Stack[ mainREG_TEST_STACK_SIZE_WORDS ] mainALIGN_TO( mainREG_TEST_STACK_ALIGNMENT );
 
-/* Fill in a xTaskParameters structure per reg test task to define the tasks. */
-static const xTaskParameters xRegTest1Parameters =
+/* Fill in a TaskParameters_t structure per reg test task to define the tasks. */
+static const TaskParameters_t xRegTest1Parameters =
 {
 	prvRegTest1Task,						/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "RegTest1",			/* pcName			*/
+	"RegTest1",								/* pcName			*/
 	mainREG_TEST_STACK_SIZE_WORDS,			/* usStackDepth		*/
 	( void * ) 0x12345678,					/* pvParameters - this value is just to test that the parameter is being passed into the task correctly. */
 	tskIDLE_PRIORITY | portPRIVILEGE_BIT,	/* uxPriority - note that this task is created with privileges to demonstrate one method of passing a queue handle into the task. */
@@ -320,10 +317,10 @@ static const xTaskParameters xRegTest1Parameters =
 };
 /*-----------------------------------------------------------*/
 
-static xTaskParameters xRegTest2Parameters =
+static TaskParameters_t xRegTest2Parameters =
 {
 	prvRegTest2Task,				/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "RegTest2",	/* pcName			*/
+	"RegTest2",						/* pcName			*/
 	mainREG_TEST_STACK_SIZE_WORDS,	/* usStackDepth		*/
 	( void * ) NULL,				/* pvParameters	- this task uses the parameter to pass in a queue handle, but the queue is not created yet. */
 	tskIDLE_PRIORITY,				/* uxPriority		*/
@@ -360,7 +357,7 @@ int main( void )
 	/* Create the tasks that are created using the original xTaskCreate() API
 	function. */
 	xTaskCreate(	prvOldStyleUserModeTask,	/* The function that implements the task. */
-					( signed char * ) "Task1",	/* Text name for the task. */
+					"Task1",					/* Text name for the task. */
 					100,						/* Stack depth in words. */
 					NULL,						/* Task parameters. */
 					3,							/* Priority and mode (user in this case). */
@@ -368,7 +365,7 @@ int main( void )
 				);
 
 	xTaskCreate(	prvOldStylePrivilegedModeTask,	/* The function that implements the task. */
-					( signed char * ) "Task2",		/* Text name for the task. */
+					"Task2",						/* Text name for the task. */
 					100,							/* Stack depth in words. */
 					NULL,							/* Task parameters. */
 					( 3 | portPRIVILEGE_BIT ),		/* Priority and mode. */
@@ -391,7 +388,7 @@ static void prvCheckTask( void *pvParameters )
 queue variable.  Take a stack copy of this before the task is set into user
 mode.  Once that task is in user mode the file scope queue variable will no
 longer be accessible but the stack copy will. */
-xQueueHandle xQueue = xFileScopeCheckQueue;
+QueueHandle_t xQueue = xFileScopeCheckQueue;
 long lMessage;
 unsigned long ulStillAliveCounts[ 2 ] = { 0 };
 char *pcStatusMessage = "PASS\r\n";
@@ -400,7 +397,7 @@ unsigned char x = 5, y = 10;
 	/* Just to remove compiler warning. */
 	( void ) pvParameters;
 
-	/* Demonstrate how the various memory regions can and can't be accessed. 
+	/* Demonstrate how the various memory regions can and can't be accessed.
 	The task privilege is set down to user mode within this function. */
 	prvTestMemoryRegions();
 
@@ -414,26 +411,26 @@ unsigned char x = 5, y = 10;
 	{
 		/* Wait for the next message to arrive. */
 		xQueueReceive( xQueue, &lMessage, portMAX_DELAY );
-		
+
 		switch( lMessage )
 		{
-			case mainREG_TEST_1_STILL_EXECUTING	:	
+			case mainREG_TEST_1_STILL_EXECUTING	:
 					/* Message from task 1, so task 1 must still be executing. */
 					( ulStillAliveCounts[ 0 ] )++;
 					break;
 
-			case mainREG_TEST_2_STILL_EXECUTING	:						
+			case mainREG_TEST_2_STILL_EXECUTING	:
 					/* Message from task 2, so task 2 must still be executing. */
 					( ulStillAliveCounts[ 1 ] )++;
 					break;
 
-			case mainPRINT_SYSTEM_STATUS		:	
+			case mainPRINT_SYSTEM_STATUS		:
 					/* Message from tick hook, time to print out the system
 					status.  If messages has stopped arriving from either reg
 					test task then the status must be set to fail. */
 					if( ( ulStillAliveCounts[ 0 ] == 0 ) || ( ulStillAliveCounts[ 1 ] == 0 )  )
 					{
-						/* One or both of the test tasks are no longer sending 
+						/* One or both of the test tasks are no longer sending
 						'still alive' messages. */
 						pcStatusMessage = "FAIL\r\n";
 					}
@@ -441,7 +438,7 @@ unsigned char x = 5, y = 10;
 					/* Print a pass/fail message to the LCD - moving the
 					message each time to provide feedback that the output
 					is still being produced.  LCD_PrintString() accesses const
-					data stored in flash, which all tasks are at liberty to do, 
+					data stored in flash, which all tasks are at liberty to do,
 					and GPIO for which an MPU region has been set up for it. */
 					LCD_ClearScreen();
 					LCD_PrintString( x>>1, y>>1, pcStatusMessage, 6, COLOR_RED );
@@ -453,7 +450,7 @@ unsigned char x = 5, y = 10;
 					break;
 
 		default :
-					/* Something unexpected happened.  Delete this task so the 
+					/* Something unexpected happened.  Delete this task so the
 					error is apparent (no output will be displayed). */
 					prvDeleteMe();
 					break;
@@ -467,8 +464,8 @@ static void prvTestMemoryRegions( void )
 long l;
 char cTemp;
 
-	/* The check task (from which this function is called) is created in the 
-	Privileged mode.  The privileged array can be both read from and written 
+	/* The check task (from which this function is called) is created in the
+	Privileged mode.  The privileged array can be both read from and written
 	to while this task is privileged. */
 	cPrivilegedOnlyAccessArray[ 0 ] = 'a';
 	if( cPrivilegedOnlyAccessArray[ 0 ] != 'a' )
@@ -479,15 +476,15 @@ char cTemp;
 	}
 
 	/* Writing off the end of the RAM allocated to this task will *NOT* cause a
-	protection fault because the task is still executing in a privileged mode.  
+	protection fault because the task is still executing in a privileged mode.
 	Uncomment the following to test. */
 	/* cPrivilegedOnlyAccessArray[ mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE ] = 'a'; */
 
 	/* Now set the task into user mode. */
 	portSWITCH_TO_USER_MODE();
-	 
-	/* Accessing the privileged only array will now cause a fault.  Uncomment 
-	the following line to test. */    
+
+	/* Accessing the privileged only array will now cause a fault.  Uncomment
+	the following line to test. */
 	/* cPrivilegedOnlyAccessArray[ 0 ] = 'a'; */
 
 	/* The read/write array can still be successfully read and written. */
@@ -503,7 +500,7 @@ char cTemp;
 	}
 
 	/* But attempting to read or write off the end of the RAM allocated to this
-	task will cause a fault.  Uncomment either of the following two lines to 
+	task will cause a fault.  Uncomment either of the following two lines to
 	test. */
 	/* cReadWriteArray[ 0 ] = cReadWriteArray[ -1 ]; */
 	/* cReadWriteArray[ mainREAD_WRITE_ALIGN_SIZE ] = 0x00; */
@@ -517,14 +514,14 @@ char cTemp;
 	/* ...but cannot be written.  Uncomment the following line to test. */
 	/* cReadOnlyArray[ 0 ] = 'a'; */
 
-	/* Writing to the first and last locations in the stack array should not 
+	/* Writing to the first and last locations in the stack array should not
 	cause a protection fault.  Note that doing this will cause the kernel to
-	detect a stack overflow if configCHECK_FOR_STACK_OVERFLOW is greater than 
+	detect a stack overflow if configCHECK_FOR_STACK_OVERFLOW is greater than
 	1. */
     xCheckTaskStack[ 0 ] = 0;
     xCheckTaskStack[ mainCHECK_TASK_STACK_SIZE_WORDS - 1 ] = 0;
 
-	/* Writing off either end of the stack array should cause a protection 
+	/* Writing off either end of the stack array should cause a protection
 	fault, uncomment either of the following two lines to test. */
 	/* xCheckTaskStack[ -1 ] = 0; */
     /* xCheckTaskStack[ mainCHECK_TASK_STACK_SIZE_WORDS ] = 0; */
@@ -537,9 +534,9 @@ static void prvRegTest1Task( void *pvParameters )
 queue variable.  Take a stack copy of this before the task is set into user
 mode.  Once this task is in user mode the file scope queue variable will no
 longer be accessible but the stack copy will. */
-xQueueHandle xQueue = xFileScopeCheckQueue;
+QueueHandle_t xQueue = xFileScopeCheckQueue;
 
-	/* Now the queue handle has been obtained the task can switch to user 
+	/* Now the queue handle has been obtained the task can switch to user
 	mode.  This is just one method of passing a handle into a protected
 	task, the other	reg test task uses the task parameter instead. */
     portSWITCH_TO_USER_MODE();
@@ -554,12 +551,12 @@ xQueueHandle xQueue = xFileScopeCheckQueue;
 
 
 	for( ;; )
-	{		
+	{
 		/* This task tests the kernel context switch mechanism by reading and
 		writing directly to registers - which requires the test to be written
 		in assembly code. */
-		__asm volatile 
-		(	
+		__asm volatile
+		(
 			"		MOV	R4, #104			\n" /* Set registers to a known value.  R0 to R1 are done in the loop below. */
 			"		MOV	R5, #105			\n"
 			"		MOV	R6, #106			\n"
@@ -582,8 +579,8 @@ xQueueHandle xQueue = xFileScopeCheckQueue;
 			"		BNE	prvDeleteMe			\n"
 			"		CMP R3, #103			\n"
 			"		BNE	prvDeleteMe			\n"
-			"		CMP	R4, #104			\n" 
-			"		BNE	prvDeleteMe			\n" 
+			"		CMP	R4, #104			\n"
+			"		BNE	prvDeleteMe			\n"
 			"		CMP	R5, #105			\n"
 			"		BNE	prvDeleteMe			\n"
 			"		CMP	R6, #106			\n"
@@ -601,7 +598,7 @@ xQueueHandle xQueue = xFileScopeCheckQueue;
 			:::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10", "r11", "r12"
 		);
 
-		/* Send mainREG_TEST_1_STILL_EXECUTING to the check task to indicate that this 
+		/* Send mainREG_TEST_1_STILL_EXECUTING to the check task to indicate that this
 		task is still functioning. */
 		prvSendImAlive( xQueue, mainREG_TEST_1_STILL_EXECUTING );
 
@@ -614,24 +611,24 @@ xQueueHandle xQueue = xFileScopeCheckQueue;
 static void prvRegTest2Task( void *pvParameters )
 {
 /* The queue handle is passed in as the task parameter.  This is one method of
-passing data into a protected task, the other reg test task uses a different 
+passing data into a protected task, the other reg test task uses a different
 method. */
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
 
 	for( ;; )
 	{
 		/* This task tests the kernel context switch mechanism by reading and
 		writing directly to registers - which requires the test to be written
 		in assembly code. */
-		__asm volatile 
-		(	
+		__asm volatile
+		(
 			"		MOV	R4, #4				\n" /* Set registers to a known value.  R0 to R1 are done in the loop below. */
 			"		MOV	R5, #5				\n"
 			"		MOV	R6, #6				\n"
 			"		MOV	R8, #8				\n" /* Frame pointer is omitted as it must not be changed. */
 			"		MOV	R9, #9				\n"
 			"		MOV	R10, 10				\n"
-			"		MOV	R11, #11			\n"						
+			"		MOV	R11, #11			\n"
 			"reg2loop:						\n"
 			"		MOV	R0, #13				\n" /* Set the scratch registers to known values - done inside the loop as they get clobbered. */
 			"		MOV	R1, #1				\n"
@@ -665,7 +662,7 @@ xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
             :::"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r8", "r9", "r10", "r11", "r12"
 		);
 
-		/* Send mainREG_TEST_2_STILL_EXECUTING to the check task to indicate that this 
+		/* Send mainREG_TEST_2_STILL_EXECUTING to the check task to indicate that this
 		task is still functioning. */
 		prvSendImAlive( xQueue, mainREG_TEST_2_STILL_EXECUTING );
 
@@ -687,8 +684,8 @@ volatile unsigned long ulReadData;
 
 	/* The idle task, and therefore this function, run in Supervisor mode and
 	can therefore access all memory.  Try reading from corners of flash and
-	RAM to ensure a memory fault does not occur. 
-	
+	RAM to ensure a memory fault does not occur.
+
 	Start with the edges of the privileged data area. */
 	pul = __privileged_data_start__;
 	ulReadData = *pul;
@@ -706,9 +703,9 @@ volatile unsigned long ulReadData;
 	pul = __FLASH_segment_end__ - 1;
 	ulReadData = *pul;
 
-	/* Reading off the end of Flash or SRAM space should cause a fault.  
+	/* Reading off the end of Flash or SRAM space should cause a fault.
 	Uncomment one of the following two pairs of lines to test. */
-	
+
 	/* pul = __FLASH_segment_end__ + 4;
 	ulReadData = *pul; */
 
@@ -729,7 +726,7 @@ const volatile unsigned long *pulStandardPeripheralRegister = ( volatile unsigne
 volatile unsigned long *pul;
 volatile unsigned long ulReadData;
 
-/* The following lines are commented out to prevent the unused variable 
+/* The following lines are commented out to prevent the unused variable
 compiler warnings when the tests that use the variable are also commented out.
 extern unsigned long __privileged_functions_start__[];
 const volatile unsigned long *pulSystemPeripheralRegister = ( volatile unsigned long * ) 0xe000e014; */
@@ -769,17 +766,17 @@ const volatile unsigned long *pulSystemPeripheralRegister = ( volatile unsigned 
 
 	/* pul = __privileged_functions_start__;
 	ulReadData = *pul; */
-	
+
 	/* pul = __privileged_functions_end__ - 1;
 	ulReadData = *pul; */
 
 	/* pul = __privileged_data_start__;
-	ulReadData = *pul; */ 
-	
+	ulReadData = *pul; */
+
 	/* pul = __privileged_data_end__ - 1;
 	ulReadData = *pul; */
 
-	/* Must not just run off the end of a task function, so delete this task. 
+	/* Must not just run off the end of a task function, so delete this task.
 	Note that because this task was created using xTaskCreate() the stack was
 	allocated dynamically and I have not included any code to free it again. */
 	vTaskDelete( NULL );
@@ -802,10 +799,10 @@ const volatile unsigned long *pulStandardPeripheralRegister = ( volatile unsigne
 
 	( void ) pvParameters;
 
-	/* This task is created in Privileged mode using the original xTaskCreate() 
-	API	function.  It should have access to all Flash and RAM including that 
-	marked as Privileged access only.  So reading from the start and end of the 
-	non-privileged RAM should not cause a problem (the privileged RAM is the 
+	/* This task is created in Privileged mode using the original xTaskCreate()
+	API	function.  It should have access to all Flash and RAM including that
+	marked as Privileged access only.  So reading from the start and end of the
+	non-privileged RAM should not cause a problem (the privileged RAM is the
 	first block at the bottom of the RAM memory). */
 	pul = __privileged_data_end__ + 1;
 	ulReadData = *pul;
@@ -827,7 +824,7 @@ const volatile unsigned long *pulStandardPeripheralRegister = ( volatile unsigne
 	pul = __privileged_functions_end__ - 1;
 	ulReadData = *pul;
 	pul = __privileged_data_start__;
-	ulReadData = *pul;	
+	ulReadData = *pul;
 	pul = __privileged_data_end__ - 1;
 	ulReadData = *pul;
 
@@ -836,7 +833,7 @@ const volatile unsigned long *pulStandardPeripheralRegister = ( volatile unsigne
     ulReadData = *pulSystemPeripheralRegister;
 	ulReadData = *pulStandardPeripheralRegister;
 
-	/* Must not just run off the end of a task function, so delete this task. 
+	/* Must not just run off the end of a task function, so delete this task.
 	Note that because this task was created using xTaskCreate() the stack was
 	allocated dynamically and I have not included any code to free it again. */
 	vTaskDelete( NULL );
@@ -849,7 +846,7 @@ static void prvDeleteMe( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvSendImAlive( xQueueHandle xHandle, unsigned long ulTaskNumber )
+static void prvSendImAlive( QueueHandle_t xHandle, unsigned long ulTaskNumber )
 {
 	if( xHandle != NULL )
 	{
@@ -872,84 +869,84 @@ void prvSetupHardware( void )
 	if ( SC->PLL0STAT & ( 1 << 25 ) )
 	{
 		/* Enable PLL, disconnected. */
-		SC->PLL0CON = 1;			
+		SC->PLL0CON = 1;
 		SC->PLL0FEED = PLLFEED_FEED1;
 		SC->PLL0FEED = PLLFEED_FEED2;
 	}
-	
+
 	/* Disable PLL, disconnected. */
-	SC->PLL0CON = 0;				
+	SC->PLL0CON = 0;
 	SC->PLL0FEED = PLLFEED_FEED1;
 	SC->PLL0FEED = PLLFEED_FEED2;
-	    
+
 	/* Enable main OSC. */
-	SC->SCS |= 0x20;			
+	SC->SCS |= 0x20;
 	while( !( SC->SCS & 0x40 ) );
-	
+
 	/* select main OSC, 12MHz, as the PLL clock source. */
-	SC->CLKSRCSEL = 0x1;		
-	
+	SC->CLKSRCSEL = 0x1;
+
 	SC->PLL0CFG = 0x20031;
 	SC->PLL0FEED = PLLFEED_FEED1;
 	SC->PLL0FEED = PLLFEED_FEED2;
-	      
+
 	/* Enable PLL, disconnected. */
-	SC->PLL0CON = 1;				
+	SC->PLL0CON = 1;
 	SC->PLL0FEED = PLLFEED_FEED1;
 	SC->PLL0FEED = PLLFEED_FEED2;
-	
+
 	/* Set clock divider. */
 	SC->CCLKCFG = 0x03;
-	
+
 	/* Configure flash accelerator. */
 	SC->FLASHCFG = 0x403a;
-	
+
 	/* Check lock bit status. */
-	while( ( ( SC->PLL0STAT & ( 1 << 26 ) ) == 0 ) );	
-	    
+	while( ( ( SC->PLL0STAT & ( 1 << 26 ) ) == 0 ) );
+
 	/* Enable and connect. */
-	SC->PLL0CON = 3;				
+	SC->PLL0CON = 3;
 	SC->PLL0FEED = PLLFEED_FEED1;
 	SC->PLL0FEED = PLLFEED_FEED2;
-	while( ( ( SC->PLL0STAT & ( 1 << 25 ) ) == 0 ) );	
+	while( ( ( SC->PLL0STAT & ( 1 << 25 ) ) == 0 ) );
 
-	
-	
-	
+
+
+
 	/* Configure the clock for the USB. */
-	  
+
 	if( SC->PLL1STAT & ( 1 << 9 ) )
 	{
 		/* Enable PLL, disconnected. */
-		SC->PLL1CON = 1;			
+		SC->PLL1CON = 1;
 		SC->PLL1FEED = PLLFEED_FEED1;
 		SC->PLL1FEED = PLLFEED_FEED2;
 	}
-	
+
 	/* Disable PLL, disconnected. */
-	SC->PLL1CON = 0;				
+	SC->PLL1CON = 0;
 	SC->PLL1FEED = PLLFEED_FEED1;
 	SC->PLL1FEED = PLLFEED_FEED2;
-	
+
 	SC->PLL1CFG = 0x23;
 	SC->PLL1FEED = PLLFEED_FEED1;
 	SC->PLL1FEED = PLLFEED_FEED2;
-	      
+
 	/* Enable PLL, disconnected. */
-	SC->PLL1CON = 1;				
+	SC->PLL1CON = 1;
 	SC->PLL1FEED = PLLFEED_FEED1;
 	SC->PLL1FEED = PLLFEED_FEED2;
 	while( ( ( SC->PLL1STAT & ( 1 << 10 ) ) == 0 ) );
-	
+
 	/* Enable and connect. */
-	SC->PLL1CON = 3;				
+	SC->PLL1CON = 3;
 	SC->PLL1FEED = PLLFEED_FEED1;
 	SC->PLL1FEED = PLLFEED_FEED2;
 	while( ( ( SC->PLL1STAT & ( 1 << 9 ) ) == 0 ) );
 
 	/*  Setup the peripheral bus to be the same as the PLL output (64 MHz). */
 	SC->PCLKSEL0 = 0x05555555;
-	
+
 	/* Prepare the LCD. */
 	LCDdriver_initialisation();
 	LCD_PrintString( 5, 10, "FreeRTOS.org", 14, COLOR_GREEN);
@@ -959,7 +956,7 @@ void prvSetupHardware( void )
 void vApplicationTickHook( void )
 {
 static unsigned long ulCallCount;
-const unsigned long ulCallsBetweenSends = 5000 / portTICK_RATE_MS;
+const unsigned long ulCallsBetweenSends = 5000 / portTICK_PERIOD_MS;
 const unsigned long ulMessage = mainPRINT_SYSTEM_STATUS;
 portBASE_TYPE xDummy;
 
@@ -975,8 +972,8 @@ portBASE_TYPE xDummy;
 		ulCallCount = 0;
 
 		/* Send a message to the check task to command it to check that all
-		the tasks are still running then print out the status. 
-		
+		the tasks are still running then print out the status.
+
 		This is running in an ISR so has to use the "FromISR" version of
 		xQueueSend().  Because it is in an ISR it is running with privileges
 		so can access xFileScopeCheckQueue directly. */
@@ -985,9 +982,9 @@ portBASE_TYPE xDummy;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
-	/* If configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2 then this 
+	/* If configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2 then this
 	function will automatically get called if a task overflows its stack. */
 	( void ) pxTask;
 	( void ) pcTaskName;

@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,44 +45,48 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 
 /*****
  *
  * See http://www.freertos.org/Documentation/FreeRTOS-documentation-and-book.html
- * for an introductory guide to using real time kernels, and FreeRTOS in 
- * particular. 
+ * for an introductory guide to using real time kernels, and FreeRTOS in
+ * particular.
  *
  *****
- *  
+ *
  * The DICE-KIT-16FX has two 7 segment displays and two buttons that can
  * generate interrupts.  This example uses this IO as follows:
  *
  *
- * - Left 7 segment display - 
+ * - Left 7 segment display -
  *
- * 7 'flash' tasks are created, each of which toggles a single segment of the 
- * left display.  Each task executes at a fixed frequency, with a different 
+ * 7 'flash' tasks are created, each of which toggles a single segment of the
+ * left display.  Each task executes at a fixed frequency, with a different
  * frequency being used by each task.
  *
  * When button SW2 is pressed an interrupt is generated that wakes up a 'dice'
  * task.  The dice task suspends the 7 tasks that are accessing the left display
  * before simulating a dice being thrown by generating a random number between
  * 1 and 6.  After the number has been generated the task sleeps for 5 seconds,
- * if SW2 is pressed again within the 5 seconds another random number is 
+ * if SW2 is pressed again within the 5 seconds another random number is
  * generated, if SW2 is not pressed within the 5 seconds then the 7 tasks are
  * un-suspended and will once again toggle the segments of the left hand display.
  *
@@ -106,12 +103,12 @@
  * Only one dice task is actually defined.  Two instances of this single
  * definition are created, the first to simulate a dice being thrown on the left
  * display, and the other to simulate a dice being thrown on the right display.
- * The task parameter is used to let the dice tasks know which display to 
+ * The task parameter is used to let the dice tasks know which display to
  * control.
  *
  * Both dice tasks and the flash tasks operate completely independently under
  * the control of FreeRTOS.  11 tasks and 7 co-routines are created in total,
- * including the idle task. 
+ * including the idle task.
  *
  * The co-routines all execute within a single low priority task.
  *
@@ -163,10 +160,10 @@ void main( void )
 	vCreateFlashTasksAndCoRoutines();
 
 	/* Create a 'dice' task to control the left hand display. */
-	xTaskCreate( vDiceTask, ( signed char * ) "Dice1", configMINIMAL_STACK_SIZE, ( void * ) configLEFT_DISPLAY, mainDICE_PRIORITY, NULL );
+	xTaskCreate( vDiceTask, "Dice1", configMINIMAL_STACK_SIZE, ( void * ) configLEFT_DISPLAY, mainDICE_PRIORITY, NULL );
 
 	/* Create a 'dice' task to control the right hand display. */
-	xTaskCreate( vDiceTask, ( signed char * ) "Dice2", configMINIMAL_STACK_SIZE, ( void * ) configRIGHT_DISPLAY, mainDICE_PRIORITY, NULL );
+	xTaskCreate( vDiceTask, "Dice2", configMINIMAL_STACK_SIZE, ( void * ) configRIGHT_DISPLAY, mainDICE_PRIORITY, NULL );
 
 	/* Start the scheduler running. */
 	vTaskStartScheduler();
@@ -184,7 +181,7 @@ static void prvSetupHardware( void )
 	scheduler has been started. */
 	InitIrqLevels();
 	portDISABLE_INTERRUPTS();
-	__set_il( 7 );	
+	__set_il( 7 );
 
 	/* Set Port3 as output (7Segment Display). */
 	DDR03  = 0xff;
@@ -213,7 +210,7 @@ static void prvSetupHardware( void )
 
 	/* Enable external interrupt 8. */
 	PIER00_IE0 = 1;
-	
+
 	/* LB0, LA0 = 11 -> falling edge. */
 	ELVRL1_LB8 = 1;
 	ELVRL1_LA8 = 1;
@@ -224,13 +221,13 @@ static void prvSetupHardware( void )
 
 	/* Enable external interrupt 9. */
 	PIER00_IE1 = 1;
-	
+
 	/* LB1, LA1 = 11 -> falling edge. */
 	ELVRL1_LB9 = 1;
 	ELVRL1_LA9 = 1;
 
 	/* Reset and enable the interrupt request. */
 	EIRR1_ER9 = 0;
-	ENIR1_EN9 = 1;	
+	ENIR1_EN9 = 1;
 }
 

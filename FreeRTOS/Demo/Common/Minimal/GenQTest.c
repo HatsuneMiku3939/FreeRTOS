@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,27 +45,31 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 
-/* 
- * Tests the extra queue functionality introduced in FreeRTOS.org V4.5.0 - 
- * including xQueueSendToFront(), xQueueSendToBack(), xQueuePeek() and 
- * mutex behaviour. 
+/*
+ * Tests the extra queue functionality introduced in FreeRTOS.org V4.5.0 -
+ * including xQueueSendToFront(), xQueueSendToBack(), xQueuePeek() and
+ * mutex behaviour.
  *
- * See the comments above the prvSendFrontAndBackTest() and 
+ * See the comments above the prvSendFrontAndBackTest() and
  * prvLowPriorityMutexTask() prototypes below for more information.
  */
 
@@ -128,79 +125,79 @@ static void prvHighPriorityMutexTask( void *pvParameters );
 
 /* Flag that will be latched to pdTRUE should any unexpected behaviour be
 detected in any of the tasks. */
-static portBASE_TYPE xErrorDetected = pdFALSE;
+static volatile BaseType_t xErrorDetected = pdFALSE;
 
 /* Counters that are incremented on each cycle of a test.  This is used to
 detect a stalled task - a test that is no longer running. */
-static volatile unsigned portLONG ulLoopCounter = 0;
-static volatile unsigned portLONG ulLoopCounter2 = 0;
+static volatile uint32_t ulLoopCounter = 0;
+static volatile uint32_t ulLoopCounter2 = 0;
 
 /* The variable that is guarded by the mutex in the mutex demo tasks. */
-static volatile unsigned portLONG ulGuardedVariable = 0;
+static volatile uint32_t ulGuardedVariable = 0;
 
 /* Handles used in the mutext test to suspend and resume the high and medium
 priority mutex test tasks. */
-static xTaskHandle xHighPriorityMutexTask, xMediumPriorityMutexTask;
+static TaskHandle_t xHighPriorityMutexTask, xMediumPriorityMutexTask;
 
 /*-----------------------------------------------------------*/
 
-void vStartGenericQueueTasks( unsigned portBASE_TYPE uxPriority )
+void vStartGenericQueueTasks( UBaseType_t uxPriority )
 {
-xQueueHandle xQueue;
-xSemaphoreHandle xMutex;
+QueueHandle_t xQueue;
+SemaphoreHandle_t xMutex;
 
 	/* Create the queue that we are going to use for the
 	prvSendFrontAndBackTest demo. */
-	xQueue = xQueueCreate( genqQUEUE_LENGTH, sizeof( unsigned portLONG ) );
+	xQueue = xQueueCreate( genqQUEUE_LENGTH, sizeof( uint32_t ) );
 
 	/* vQueueAddToRegistry() adds the queue to the queue registry, if one is
-	in use.  The queue registry is provided as a means for kernel aware 
+	in use.  The queue registry is provided as a means for kernel aware
 	debuggers to locate queues and has no purpose if a kernel aware debugger
 	is not being used.  The call to vQueueAddToRegistry() will be removed
-	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
+	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( xQueue, ( signed portCHAR * ) "Gen_Queue_Test" );
+	vQueueAddToRegistry( xQueue, "Gen_Queue_Test" );
 
 	/* Create the demo task and pass it the queue just created.  We are
 	passing the queue handle by value so it does not matter that it is
 	declared on the stack here. */
-	xTaskCreate( prvSendFrontAndBackTest, ( signed portCHAR * )"GenQ", configMINIMAL_STACK_SIZE, ( void * ) xQueue, uxPriority, NULL );
+	xTaskCreate( prvSendFrontAndBackTest, "GenQ", configMINIMAL_STACK_SIZE, ( void * ) xQueue, uxPriority, NULL );
 
 	/* Create the mutex used by the prvMutexTest task. */
 	xMutex = xSemaphoreCreateMutex();
 
 	/* vQueueAddToRegistry() adds the mutex to the registry, if one is
-	in use.  The registry is provided as a means for kernel aware 
+	in use.  The registry is provided as a means for kernel aware
 	debuggers to locate mutexes and has no purpose if a kernel aware debugger
 	is not being used.  The call to vQueueAddToRegistry() will be removed
-	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is 
+	by the pre-processor if configQUEUE_REGISTRY_SIZE is not defined or is
 	defined to be less than 1. */
-	vQueueAddToRegistry( ( xQueueHandle ) xMutex, ( signed portCHAR * ) "Gen_Queue_Mutex" );
+	vQueueAddToRegistry( ( QueueHandle_t ) xMutex, "Gen_Queue_Mutex" );
 
 	/* Create the mutex demo tasks and pass it the mutex just created.  We are
 	passing the mutex handle by value so it does not matter that it is declared
 	on the stack here. */
-	xTaskCreate( prvLowPriorityMutexTask, ( signed portCHAR * )"MuLow", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, NULL );
-	xTaskCreate( prvMediumPriorityMutexTask, ( signed portCHAR * )"MuMed", configMINIMAL_STACK_SIZE, NULL, genqMUTEX_MEDIUM_PRIORITY, &xMediumPriorityMutexTask );
-	xTaskCreate( prvHighPriorityMutexTask, ( signed portCHAR * )"MuHigh", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_HIGH_PRIORITY, &xHighPriorityMutexTask );
+	xTaskCreate( prvLowPriorityMutexTask, "MuLow", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_LOW_PRIORITY, NULL );
+	xTaskCreate( prvMediumPriorityMutexTask, "MuMed", configMINIMAL_STACK_SIZE, NULL, genqMUTEX_MEDIUM_PRIORITY, &xMediumPriorityMutexTask );
+	xTaskCreate( prvHighPriorityMutexTask, "MuHigh", configMINIMAL_STACK_SIZE, ( void * ) xMutex, genqMUTEX_HIGH_PRIORITY, &xHighPriorityMutexTask );
 }
 /*-----------------------------------------------------------*/
 
 static void prvSendFrontAndBackTest( void *pvParameters )
 {
-unsigned portLONG ulData, ulData2;
-xQueueHandle xQueue;
+uint32_t ulData, ulData2;
+QueueHandle_t xQueue;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
-	
-		const portCHAR * const pcTaskStartMsg = "Queue SendToFront/SendToBack/Peek test started.\r\n";
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
+
+		const char * const pcTaskStartMsg = "Queue SendToFront/SendToBack/Peek test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
 	#endif
 
-	xQueue = ( xQueueHandle ) pvParameters;
+	xQueue = ( QueueHandle_t ) pvParameters;
 
 	for( ;; )
 	{
@@ -315,7 +312,7 @@ xQueueHandle xQueue;
 			{
 				xErrorDetected = pdTRUE;
 			}
-			
+
 
 			/* Now try receiving the data for real.  The value should be the
 			same.  Clobber the value first so we know we really received it. */
@@ -416,16 +413,20 @@ xQueueHandle xQueue;
 
 static void prvLowPriorityMutexTask( void *pvParameters )
 {
-xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
+SemaphoreHandle_t xMutex = ( SemaphoreHandle_t ) pvParameters, xLocalMutex;
 
 	#ifdef USE_STDIO
-	void vPrintDisplayMessage( const portCHAR * const * ppcMessageToSend );
-	
-		const portCHAR * const pcTaskStartMsg = "Mutex with priority inheritance test started.\r\n";
+	void vPrintDisplayMessage( const char * const * ppcMessageToSend );
+
+		const char * const pcTaskStartMsg = "Mutex with priority inheritance test started.\r\n";
 
 		/* Queue a message for printing to say the task has started. */
 		vPrintDisplayMessage( &pcTaskStartMsg );
 	#endif
+
+	/* The local mutex is used to check the 'mutexs held' count. */
+	xLocalMutex = xSemaphoreCreateMutex();
+	configASSERT( xLocalMutex );
 
 	for( ;; )
 	{
@@ -435,10 +436,10 @@ xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
 			xErrorDetected = pdTRUE;
 		}
 
-		/* Set our guarded variable to a known start value. */
+		/* Set the guarded variable to a known start value. */
 		ulGuardedVariable = 0;
 
-		/* Our priority should be as per that assigned when the task was
+		/* This task's priority should be as per that assigned when the task was
 		created. */
 		if( uxTaskPriorityGet( NULL ) != genqMUTEX_LOW_PRIORITY )
 		{
@@ -449,65 +450,118 @@ xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
 		mutex, and block when it finds it cannot obtain it. */
 		vTaskResume( xHighPriorityMutexTask );
 
-		/* We should now have inherited the prioritoy of the high priority task,
+		#if configUSE_PREEMPTION == 0
+			taskYIELD();
+		#endif
+
+		/* Ensure the task is reporting its priority as blocked and not
+		suspended (as it would have done in versions up to V7.5.3). */
+		#if( INCLUDE_eTaskGetState == 1 )
+		{
+			configASSERT( eTaskGetState( xHighPriorityMutexTask ) == eBlocked );
+		}
+		#endif /* INCLUDE_eTaskGetState */
+
+		/* The priority of the high priority task should now have been inherited
 		as by now it will have attempted to get the mutex. */
 		if( uxTaskPriorityGet( NULL ) != genqMUTEX_HIGH_PRIORITY )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* We can attempt to set our priority to the test priority - between the
-		idle priority and the medium/high test priorities, but our actual
-		prioroity should remain at the high priority. */
+		/* Attempt to set the priority of this task to the test priority -
+		between the	idle priority and the medium/high test priorities, but the
+		actual priority should remain at the high priority. */
 		vTaskPrioritySet( NULL, genqMUTEX_TEST_PRIORITY );
 		if( uxTaskPriorityGet( NULL ) != genqMUTEX_HIGH_PRIORITY )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* Now unsuspend the medium priority task.  This should not run as our
-		inherited priority is above that of the medium priority task. */
+		/* Now unsuspend the medium priority task.  This should not run as the
+		inherited priority of this task is above that of the medium priority
+		task. */
 		vTaskResume( xMediumPriorityMutexTask );
 
-		/* If the did run then it will have incremented our guarded variable. */
+		/* If the medium priority task did run then it will have incremented the 
+		guarded variable. */
 		if( ulGuardedVariable != 0 )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* When we give back the semaphore our priority should be disinherited
-		back to the priority to which we attempted to set ourselves.  This means
-		that when the high priority task next blocks, the medium priority task
-		should execute and increment the guarded variable.   When we next run
-		both the high and medium priority tasks will have been suspended again. */
+		/* Take the local mutex too, so two mutexes are now held. */
+		if( xSemaphoreTake( xLocalMutex, genqNO_BLOCK ) != pdPASS )
+		{
+			xErrorDetected = pdTRUE;
+		}
+
+		/* When the semaphore is given back the priority of this task should not
+		yet be disinherited because the local mutex is still held.  This is a
+		simplification to allow FreeRTOS to be integrated with middleware that
+		attempts to hold multiple mutexes without bloating the code with complex
+		algorithms.  It is possible that the high priority mutex task will
+		execute as it shares a priority with this task. */
 		if( xSemaphoreGive( xMutex ) != pdPASS )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* Check that the guarded variable did indeed increment... */
+		#if configUSE_PREEMPTION == 0
+			taskYIELD();
+		#endif
+
+		/* The guarded variable is only incremented by the medium priority task,
+		which still should not have executed as this task should remain at the
+		higher priority, ensure this is the case. */
+		if( ulGuardedVariable != 0 )
+		{
+			xErrorDetected = pdTRUE;
+		}
+
+		if( uxTaskPriorityGet( NULL ) != genqMUTEX_HIGH_PRIORITY )
+		{
+			xErrorDetected = pdTRUE;
+		}
+
+		/* Now also give back the local mutex, taking the held count back to 0.
+		This time the priority of this task should be disinherited back to the
+		priority to which it was set while the mutex was held.  This means
+		the medium priority task should execute and increment the guarded 
+		variable.   When this task next	runs both the high and medium priority 
+		tasks will have been suspended again. */
+		if( xSemaphoreGive( xLocalMutex ) != pdPASS )
+		{
+			xErrorDetected = pdTRUE;
+		}
+
+		#if configUSE_PREEMPTION == 0
+			taskYIELD();
+		#endif
+
+		/* Check the guarded variable did indeed increment... */
 		if( ulGuardedVariable != 1 )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* ... and that our priority has been disinherited to
+		/* ... and that the priority of this task has been disinherited to
 		genqMUTEX_TEST_PRIORITY. */
 		if( uxTaskPriorityGet( NULL ) != genqMUTEX_TEST_PRIORITY )
 		{
 			xErrorDetected = pdTRUE;
 		}
 
-		/* Set our priority back to our original priority ready for the next
-		loop around this test. */
+		/* Set the priority of this task back to its original value, ready for
+		the next loop around this test. */
 		vTaskPrioritySet( NULL, genqMUTEX_LOW_PRIORITY );
 
-		/* Just to show we are still running. */
+		/* Just to show this task is still running. */
 		ulLoopCounter2++;
 
 		#if configUSE_PREEMPTION == 0
 			taskYIELD();
-		#endif		
+		#endif
 	}
 }
 /*-----------------------------------------------------------*/
@@ -532,7 +586,7 @@ static void prvMediumPriorityMutexTask( void *pvParameters )
 
 static void prvHighPriorityMutexTask( void *pvParameters )
 {
-xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
+SemaphoreHandle_t xMutex = ( SemaphoreHandle_t ) pvParameters;
 
 	for( ;; )
 	{
@@ -548,20 +602,20 @@ xSemaphoreHandle xMutex = ( xSemaphoreHandle ) pvParameters;
 			xErrorDetected = pdTRUE;
 		}
 
-		/* When we eventually obtain the mutex we just give it back then
-		return to suspend ready for the next test. */
+		/* When the mutex is eventually obtained it is just given back before
+		returning to suspend ready for the next cycle. */
 		if( xSemaphoreGive( xMutex ) != pdPASS )
 		{
 			xErrorDetected = pdTRUE;
-		}		
+		}
 	}
 }
 /*-----------------------------------------------------------*/
 
 /* This is called to check that all the created tasks are still running. */
-portBASE_TYPE xAreGenericQueueTasksStillRunning( void )
+BaseType_t xAreGenericQueueTasksStillRunning( void )
 {
-static unsigned portLONG ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
+static uint32_t ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
 
 	/* If the demo task is still running then we expect the loopcounters to
 	have incremented since this function was last called. */
@@ -576,12 +630,12 @@ static unsigned portLONG ulLastLoopCounter = 0, ulLastLoopCounter2 = 0;
 	}
 
 	ulLastLoopCounter = ulLoopCounter;
-	ulLastLoopCounter2 = ulLoopCounter2;	
+	ulLastLoopCounter2 = ulLoopCounter2;
 
 	/* Errors detected in the task itself will have latched xErrorDetected
 	to true. */
 
-	return !xErrorDetected;
+	return ( BaseType_t ) !xErrorDetected;
 }
 
 

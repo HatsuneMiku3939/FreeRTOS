@@ -63,8 +63,8 @@
 #define configUSE_TICK_HOOK       0
 #define configCPU_CLOCK_HZ        ( 48000000 ) /* Hz clk gen */
 #define configPBA_CLOCK_HZ        ( 24000000 )
-#define configTICK_RATE_HZ        ( ( portTickType ) 1000 )
-#define configMAX_PRIORITIES      ( ( unsigned portBASE_TYPE ) 8 )
+#define configTICK_RATE_HZ        ( ( TickType_t ) 1000 )
+#define configMAX_PRIORITIES      ( 8 )
 #define configMINIMAL_STACK_SIZE  ( ( unsigned short ) 256 )
 /* configTOTAL_HEAP_SIZE is not used when heap_3.c is used. */
 #define configTOTAL_HEAP_SIZE     ( ( size_t ) ( 1024*25 ) )
@@ -100,6 +100,12 @@ to exclude the API function. */
 /* configHEAP_INIT is a boolean indicating whether to initialize the heap with
    0xA5 in order to be able to determine the maximal heap consumption. */
 #define configHEAP_INIT               0
+
+/* This demo makes use of one or more example stats formatting functions.  These
+format the raw data provided by the uxTaskGetSystemState() function in to human
+readable ASCII form.  See the notes in the implementation of vTaskList() within 
+FreeRTOS/Source/tasks.c for limitations. */
+#define configUSE_STATS_FORMATTING_FUNCTIONS	1
 
 
 #endif /* FREERTOS_CONFIG_H */

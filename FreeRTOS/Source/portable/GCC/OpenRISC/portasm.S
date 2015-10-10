@@ -1,6 +1,9 @@
 #include "port_spr_defs.h"
-#include "portmacro.h"
 #include "FreeRTOSConfig.h"
+
+#define REDZONE_SIZE        (128)
+#define CONTEXT_SIZE        (128)
+#define STACKFRAME_SIZE     (CONTEXT_SIZE + REDZONE_SIZE)
 
 
     .file       "portasm.S"
@@ -120,7 +123,7 @@ vPortTickHandler:
     l.and   r3, r3, r4              # clear tick timer interrupt
     l.mtspr r0, r3, SPR_TTMR
 
-    l.jal   vTaskIncrementTick
+    l.jal   xTaskIncrementTick
     l.nop
 .if configUSE_PREEMPTION == 0
     # do nothing

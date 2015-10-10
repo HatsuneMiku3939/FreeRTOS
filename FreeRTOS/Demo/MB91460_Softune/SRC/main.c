@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,37 +45,41 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 
 /*
  * Creates all the demo application tasks, then starts the scheduler.  The WEB
  * documentation provides more details of the demo application tasks.
- * 
+ *
  * In addition to the standard demo tasks, the follow demo specific tasks are
  * create:
  *
- * The "Check" task.  This only executes every three seconds but has the highest 
- * priority so is guaranteed to get processor time.  Its main function is to 
- * check that all the other tasks are still operational.  Most tasks maintain 
- * a unique count that is incremented each time the task successfully completes 
- * its function.  Should any error occur within such a task the count is 
- * permanently halted.  The check task inspects the count of each task to ensure 
- * it has changed since the last time the check task executed.  If all the count 
- * variables have changed all the tasks are still executing error free, and the 
- * check task toggles the onboard LED.  Should any task contain an error at any time 
+ * The "Check" task.  This only executes every three seconds but has the highest
+ * priority so is guaranteed to get processor time.  Its main function is to
+ * check that all the other tasks are still operational.  Most tasks maintain
+ * a unique count that is incremented each time the task successfully completes
+ * its function.  Should any error occur within such a task the count is
+ * permanently halted.  The check task inspects the count of each task to ensure
+ * it has changed since the last time the check task executed.  If all the count
+ * variables have changed all the tasks are still executing error free, and the
+ * check task toggles the onboard LED.  Should any task contain an error at any time
  * the LED toggle rate will change from 3 seconds to 500ms.
  *
  * The "Register Check" tasks.  These tasks fill the CPU registers with known
@@ -91,7 +88,7 @@
  * context switch mechanism.  The register check tasks operate at low priority
  * so are switched in and out frequently.
  *
- * The "Trace Utility" task.  This can be used to obtain trace and debug 
+ * The "Trace Utility" task.  This can be used to obtain trace and debug
  * information via UART5.
  */
 
@@ -120,7 +117,7 @@
 #include "taskutility.h"
 #include "partest.h"
 #include "crflash.h"
-	
+
 /* Demo task priorities. */
 #define mainWATCHDOG_TASK_PRIORITY		( tskIDLE_PRIORITY + 5 )
 #define mainCHECK_TASK_PRIORITY			( tskIDLE_PRIORITY + 4 )
@@ -133,15 +130,15 @@
 #define mainGENERIC_QUEUE_PRIORITY		( tskIDLE_PRIORITY )
 
 /* Baud rate used by the COM test tasks. */
-#define mainCOM_TEST_BAUD_RATE			( ( unsigned portLONG ) 19200 )
+#define mainCOM_TEST_BAUD_RATE			( ( unsigned long ) 19200 )
 
-/* The frequency at which the 'Check' tasks executes.  See the comments at the 
+/* The frequency at which the 'Check' tasks executes.  See the comments at the
 top of the page.  When the system is operating error free the 'Check' task
 toggles an LED every three seconds.  If an error is discovered in any task the
-rate is increased to 500 milliseconds.  [in this case the '*' characters on the 
+rate is increased to 500 milliseconds.  [in this case the '*' characters on the
 LCD represent LEDs]*/
-#define mainNO_ERROR_CHECK_DELAY		( ( portTickType ) 3000 / portTICK_RATE_MS  )
-#define mainERROR_CHECK_DELAY			( ( portTickType ) 500 / portTICK_RATE_MS  )
+#define mainNO_ERROR_CHECK_DELAY		( ( TickType_t ) 3000 / portTICK_PERIOD_MS  )
+#define mainERROR_CHECK_DELAY			( ( TickType_t ) 500 / portTICK_PERIOD_MS  )
 
 /* The total number of LEDs available. */
 #define mainNO_CO_ROUTINE_LEDs	( 8 )
@@ -160,20 +157,20 @@ LCD represent LEDs]*/
 
 /*---------------------------------------------------------------------------*/
 
-/* 
+/*
  * The function that implements the Check task.  See the comments at the head
  * of the page for implementation details.
- */ 
+ */
 static void prvErrorChecks( void *pvParameters );
 
 /*
  * Called by the Check task.  Returns pdPASS if all the other tasks are found
  * to be operating without error - otherwise returns pdFAIL.
  */
-static portSHORT prvCheckOtherTasksAreStillRunning( void );
+static short prvCheckOtherTasksAreStillRunning( void );
 
-/* 
- * Setup the microcontroller as used by this demo. 
+/*
+ * Setup the microcontroller as used by this demo.
  */
 static void prvSetupHardware( void );
 
@@ -188,57 +185,57 @@ static void vSecondRegisterTestTask( void *pvParameters );
 
 /*---------------------------------------------------------------------------*/
 
-/* The variable that is set to true should an error be found in one of the 
+/* The variable that is set to true should an error be found in one of the
 register test tasks. */
-unsigned portLONG ulRegTestError = pdFALSE;
+unsigned long ulRegTestError = pdFALSE;
 
 /*---------------------------------------------------------------------------*/
 
 /* Start all the demo application tasks, then start the scheduler. */
 void main(void)
 {
-	/* Initialise the hardware ready for the demo. */	
+	/* Initialise the hardware ready for the demo. */
 	prvSetupHardware();
 
 	/* Start the standard demo application tasks. */
-	vStartLEDFlashTasks( mainLED_TASK_PRIORITY );	
+	vStartLEDFlashTasks( mainLED_TASK_PRIORITY );
 	vStartIntegerMathTasks( tskIDLE_PRIORITY );
 	vAltStartComTestTasks( mainCOM_TEST_PRIORITY, mainCOM_TEST_BAUD_RATE, mainCOM_TEST_LED - 1 );
 	vStartSemaphoreTasks( mainSEM_TEST_PRIORITY );
-	vStartBlockingQueueTasks ( mainQUEUE_BLOCK_PRIORITY );	
-	vStartDynamicPriorityTasks();	
-	vStartMathTasks( tskIDLE_PRIORITY );	
+	vStartBlockingQueueTasks ( mainQUEUE_BLOCK_PRIORITY );
+	vStartDynamicPriorityTasks();
+	vStartMathTasks( tskIDLE_PRIORITY );
 	vStartGenericQueueTasks( mainGENERIC_QUEUE_PRIORITY );
 	vStartQueuePeekTasks();
 	vCreateBlockTimeTasks();
 	vStartFlashCoRoutines( mainNUM_FLASH_CO_ROUTINES );
 
 	/* Start the 'Check' task which is defined in this file. */
-	xTaskCreate( prvErrorChecks, ( signed portCHAR * ) "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );	
+	xTaskCreate( prvErrorChecks, "Check", configMINIMAL_STACK_SIZE, NULL, mainCHECK_TASK_PRIORITY, NULL );
 
 	/* Start the 'Register Test' tasks as described at the top of this file. */
-	xTaskCreate( vFirstRegisterTestTask, ( signed portCHAR * ) "Reg1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
-	xTaskCreate( vSecondRegisterTestTask, ( signed portCHAR * ) "Reg2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vFirstRegisterTestTask, "Reg1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
+	xTaskCreate( vSecondRegisterTestTask, "Reg2", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL );
 
-	/* Start the task that write trace information to the UART. */	
+	/* Start the task that write trace information to the UART. */
 	vUtilityStartTraceTask( mainUTILITY_TASK_PRIORITY );
 
 	/* If we are going to service the watchdog from within a task, then create
-	the task here. */	
-	#if WATCHDOG == WTC_IN_TASK	
+	the task here. */
+	#if WATCHDOG == WTC_IN_TASK
 		vStartWatchdogTask( mainWATCHDOG_TASK_PRIORITY );
-	#endif		
-	
+	#endif
+
 	/* The suicide tasks must be started last as they record the number of other
 	tasks that exist within the system.  The value is then used to ensure at run
 	time the number of tasks that exists is within expected bounds. */
 	vCreateSuicidalTasks( mainDEATH_PRIORITY );
 
 	/* Now start the scheduler.  Following this call the created tasks should
-	be executing. */	
+	be executing. */
 	vTaskStartScheduler( );
-	
-	/* vTaskStartScheduler() will only return if an error occurs while the 
+
+	/* vTaskStartScheduler() will only return if an error occurs while the
 	idle task is being created. */
 	for( ;; );
 }
@@ -246,7 +243,7 @@ void main(void)
 
 static void prvErrorChecks( void *pvParameters )
 {
-portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
+TickType_t xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
 
 	/* Initialise xLastExecutionTime so the first call to vTaskDelayUntil()
 	works correctly. */
@@ -257,7 +254,7 @@ portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
 	for( ;; )
 	{
 		/* Wait until it is time to check again.  The time we wait here depends
-		on whether an error has been detected or not.  When an error is 
+		on whether an error has been detected or not.  When an error is
 		detected the time is shortened resulting in a faster LED flash rate. */
 		/* Perform this check every mainCHECK_DELAY milliseconds. */
 		vTaskDelayUntil( &xLastExecutionTime, xDelayPeriod );
@@ -265,7 +262,7 @@ portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
 		/* See if the other tasks are all ok. */
 		if( prvCheckOtherTasksAreStillRunning() != pdPASS )
 		{
-			/* An error occurred in one of the tasks so shorten the delay 
+			/* An error occurred in one of the tasks so shorten the delay
 			period - which has the effect of increasing the frequency of the
 			LED toggle. */
 			xDelayPeriod = mainERROR_CHECK_DELAY;
@@ -277,12 +274,12 @@ portTickType xDelayPeriod = mainNO_ERROR_CHECK_DELAY, xLastExecutionTime;
 }
 /*-----------------------------------------------------------*/
 
-static portSHORT prvCheckOtherTasksAreStillRunning( void )
+static short prvCheckOtherTasksAreStillRunning( void )
 {
 portBASE_TYPE lReturn = pdPASS;
 
 	/* The demo tasks maintain a count that increments every cycle of the task
-	provided that the task has never encountered an error.  This function 
+	provided that the task has never encountered an error.  This function
 	checks the counts maintained by the tasks to ensure they are still being
 	incremented.  A count remaining at the same value between calls therefore
 	indicates that an error has been detected. */
@@ -296,42 +293,42 @@ portBASE_TYPE lReturn = pdPASS;
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xAreSemaphoreTasksStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xAreBlockingQueuesStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xAreDynamicPriorityTasksStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xAreMathsTaskStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xIsCreateTaskStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if( xAreBlockTimeTestTasksStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if ( xAreGenericQueueTasksStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
 	}
-	
+
 	if ( xAreQueuePeekTasksStillRunning() != pdTRUE )
 	{
 		lReturn = pdFAIL;
@@ -359,7 +356,7 @@ static void prvSetupHardware( void )
 	vParTestInitialise();
 
 	/* If we are going to use the watchdog, then initialise it now. */
-	#if WATCHDOG != WTC_NONE	
+	#if WATCHDOG != WTC_NONE
 		InitWatchdog();
 	#endif
 }
@@ -408,7 +405,7 @@ static void prvSetupHardware( void )
 
 static void vFirstRegisterTestTask( void *pvParameters )
 {
-extern volatile unsigned portLONG ulCriticalNesting;
+extern volatile unsigned long ulCriticalNesting;
 
 	/* Fills the registers with known values (different to the values
 	used in vSecondRegisterTestTask()), then checks that the registers still
@@ -432,7 +429,7 @@ extern volatile unsigned portLONG ulCriticalNesting;
 			LDI	#0xbbbbbbbb, R10
 			LDI	#0xcccccccc, R11
 			LDI	#0xdddddddd, R12
-			
+
 			;Check each register still contains the expected value.
 			LDI #0x11111111, R13
 			CMP R13, R0
@@ -491,7 +488,7 @@ extern volatile unsigned portLONG ulCriticalNesting;
 		First_Set_Error:
 
 			; Latch that an error has occurred.
-			LDI #_ulRegTestError, R0			
+			LDI #_ulRegTestError, R0
 			LDI #0x00000001, R1
 			ST R1, @R0
 
@@ -506,7 +503,7 @@ extern volatile unsigned portLONG ulCriticalNesting;
 
 static void vSecondRegisterTestTask( void *pvParameters )
 {
-extern volatile unsigned portLONG ulCriticalNesting;
+extern volatile unsigned long ulCriticalNesting;
 
 	/* Fills the registers with known values (different to the values
 	used in vFirstRegisterTestTask()), then checks that the registers still
@@ -532,7 +529,7 @@ extern volatile unsigned portLONG ulCriticalNesting;
 			LDI	#0xbbbbbbbb, R11
 			LDI	#0xcccccccc, R12
 			LDI	#0xdddddddd, R0
-			
+
 			;Check each register still contains the expected value.
 			LDI #0x11111111, R13
 			CMP R13, R1
@@ -595,7 +592,7 @@ extern volatile unsigned portLONG ulCriticalNesting;
 		Second_Set_Error:
 
 			; Latch that an error has occurred.
-			LDI #_ulRegTestError, R0			
+			LDI #_ulRegTestError, R0
 			LDI #0x00000001, R1
 			ST R1, @R0
 

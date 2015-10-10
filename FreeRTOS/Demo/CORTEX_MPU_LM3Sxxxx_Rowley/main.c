@@ -1,48 +1,41 @@
 /*
-    FreeRTOS V7.3.0 - Copyright (C) 2012 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
+    All rights reserved
 
-    FEATURES AND PORTS ARE ADDED TO FREERTOS ALL THE TIME.  PLEASE VISIT 
-    http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
+    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
 
     ***************************************************************************
      *                                                                       *
-     *    FreeRTOS tutorial books are available in pdf and paperback.        *
-     *    Complete, revised, and edited pdf reference manuals are also       *
-     *    available.                                                         *
+     *    FreeRTOS provides completely free yet professionally developed,    *
+     *    robust, strictly quality controlled, supported, and cross          *
+     *    platform software that has become a de facto standard.             *
      *                                                                       *
-     *    Purchasing FreeRTOS documentation will not only help you, by       *
-     *    ensuring you get running as quickly as possible and with an        *
-     *    in-depth knowledge of how to use FreeRTOS, it will also help       *
-     *    the FreeRTOS project to continue with its mission of providing     *
-     *    professional grade, cross platform, de facto standard solutions    *
-     *    for microcontrollers - completely free of charge!                  *
+     *    Help yourself get started quickly and support the FreeRTOS         *
+     *    project by purchasing a FreeRTOS tutorial book, reference          *
+     *    manual, or both from: http://www.FreeRTOS.org/Documentation        *
      *                                                                       *
-     *    >>> See http://www.FreeRTOS.org/Documentation for details. <<<     *
-     *                                                                       *
-     *    Thank you for using FreeRTOS, and thank you for your support!      *
+     *    Thank you!                                                         *
      *                                                                       *
     ***************************************************************************
-
 
     This file is part of the FreeRTOS distribution.
 
     FreeRTOS is free software; you can redistribute it and/or modify it under
     the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation AND MODIFIED BY the FreeRTOS exception.
-    >>>NOTE<<< The modification to the GPL is included to allow you to
-    distribute a combined work that includes FreeRTOS without being obliged to
-    provide the source code for proprietary components outside of the FreeRTOS
-    kernel.  FreeRTOS is distributed in the hope that it will be useful, but
-    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-    or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-    more details. You should have received a copy of the GNU General Public
-    License and the FreeRTOS license exception along with FreeRTOS; if not it
-    can be viewed here: http://www.freertos.org/a00114.html and also obtained
-    by writing to Richard Barry, contact details for whom are available on the
-    FreeRTOS WEB site.
+    Free Software Foundation >>!AND MODIFIED BY!<< the FreeRTOS exception.
+
+    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
+    >>!   distribute a combined work that includes FreeRTOS without being   !<<
+    >>!   obliged to provide the source code for proprietary components     !<<
+    >>!   outside of the FreeRTOS kernel.                                   !<<
+
+    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
+    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+    FOR A PARTICULAR PURPOSE.  Full license text is available from the following
+    link: http://www.freertos.org/a00114.html
 
     1 tab == 4 spaces!
-    
+
     ***************************************************************************
      *                                                                       *
      *    Having a problem?  Start by reading the FAQ "My application does   *
@@ -52,18 +45,22 @@
      *                                                                       *
     ***************************************************************************
 
-    
-    http://www.FreeRTOS.org - Documentation, training, latest versions, license 
-    and contact details.  
-    
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool.
+    http://www.FreeRTOS.org - Documentation, books, training, latest versions,
+    license and Real Time Engineers Ltd. contact details.
 
-    Real Time Engineers ltd license FreeRTOS to High Integrity Systems, who sell 
-    the code with commercial support, indemnification, and middleware, under 
-    the OpenRTOS brand: http://www.OpenRTOS.com.  High Integrity Systems also
-    provide a safety engineered and independently SIL3 certified version under 
-    the SafeRTOS brand: http://www.SafeRTOS.com.
+    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
+    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
+    compatible FAT file system, and our tiny thread aware UDP/IP stack.
+
+    http://www.OpenRTOS.com - Real Time Engineers ltd license FreeRTOS to High
+    Integrity Systems to sell under the OpenRTOS brand.  Low cost OpenRTOS
+    licenses offer ticketed support, indemnification and middleware.
+
+    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
+    engineered and independently SIL3 certified version for use in safety and
+    mission critical applications that require provable dependability.
+
+    1 tab == 4 spaces!
 */
 
 
@@ -179,7 +176,7 @@ static void prvDeleteMe( void ) __attribute__((noinline));
  * If a reg test task detects an error it will delete itself, and in so doing
  * prevent itself from sending any more 'I'm Alive' messages to the check task.
  */
-static void prvSendImAlive( xQueueHandle xHandle, unsigned long ulTaskNumber );
+static void prvSendImAlive( QueueHandle_t xHandle, unsigned long ulTaskNumber );
 
 /*
  * The check task is created with access to three memory regions (plus its
@@ -198,7 +195,7 @@ and interrupts.  Note that this is a file scope variable that falls outside of
 any MPU region.  As such other techniques have to be used to allow the tasks
 to gain access to the queue.  See the comments in the tasks themselves for
 further information. */
-static xQueueHandle xFileScopeCheckQueue = NULL;
+static QueueHandle_t xFileScopeCheckQueue = NULL;
 
 
 /*-----------------------------------------------------------*/
@@ -217,7 +214,7 @@ stack size is defined in words, not bytes. */
 static portSTACK_TYPE xCheckTaskStack[ mainCHECK_TASK_STACK_SIZE_WORDS ] mainALIGN_TO( mainCHECK_TASK_STACK_ALIGNMENT );
 
 /* Declare three arrays - an MPU region will be created for each array
-using the xTaskParameters structure below.  THIS IS JUST TO DEMONSTRATE THE
+using the TaskParameters_t structure below.  THIS IS JUST TO DEMONSTRATE THE
 MPU FUNCTIONALITY, the data is not used by the check tasks primary function
 of monitoring the reg test tasks and printing out status information.
 
@@ -237,12 +234,12 @@ char cReadOnlyArray[ mainREAD_ONLY_ARRAY_SIZE ] mainALIGN_TO( mainREAD_ONLY_ALIG
 #define mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE 128
 char cPrivilegedOnlyAccessArray[ mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE ] mainALIGN_TO( mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE );
 
-/* Fill in a xTaskParameters structure to define the check task - this is the
+/* Fill in a TaskParameters_t structure to define the check task - this is the
 structure passed to the xTaskCreateRestricted() function. */
-static const xTaskParameters xCheckTaskParameters =
+static const TaskParameters_t xCheckTaskParameters =
 {
 	prvCheckTask,								/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "Check",					/* pcName			*/
+	"Check",									/* pcName			*/
 	mainCHECK_TASK_STACK_SIZE_WORDS,			/* usStackDepth	- defined in words, not bytes. */
 	( void * ) 0x12121212,						/* pvParameters - this value is just to test that the parameter is being passed into the task correctly. */
 	( tskIDLE_PRIORITY + 1 ) | portPRIVILEGE_BIT,/* uxPriority - this is the highest priority task in the system.  The task is created in privileged mode to demonstrate accessing the privileged only data. */
@@ -259,23 +256,6 @@ static const xTaskParameters xCheckTaskParameters =
         { cReadOnlyArray,				mainREAD_ONLY_ALIGN_SIZE,				portMPU_REGION_READ_ONLY },
         { cPrivilegedOnlyAccessArray,	mainPRIVILEGED_ONLY_ACCESS_ALIGN_SIZE,	portMPU_REGION_PRIVILEGED_READ_WRITE }
 	}
-};
-
-/* Three MPU regions are defined for use by the 'check' task when the task is
-created.  These are only used to demonstrate the MPU features and are not
-actually necessary for the check task to fulfill its primary purpose.  Instead
-the MPU regions are replaced with those defined by xAltRegions prior to the
-check task receiving any data on the queue or printing any messages to the
-debug console.  The region configured by xAltRegions just gives the check task
-access to the debug variables that form part of the Rowley library, and are
-accessed within the debug_printf() function. */
-extern unsigned long dbgCntrlWord_mempoll;
-static const xMemoryRegion xAltRegions[ portNUM_CONFIGURABLE_REGIONS ] =
-{
-	/* Base address						Length		Parameters */
-	{ ( void * ) &dbgCntrlWord_mempoll,	32,			portMPU_REGION_READ_WRITE },
-	{ 0,								0,			0 },
-	{ 0,								0,			0 }
 };
 
 
@@ -296,11 +276,11 @@ aligned to ( 128 * 4 ) bytes. */
 static portSTACK_TYPE xRegTest1Stack[ mainREG_TEST_STACK_SIZE_WORDS ] mainALIGN_TO( mainREG_TEST_STACK_ALIGNMENT );
 static portSTACK_TYPE xRegTest2Stack[ mainREG_TEST_STACK_SIZE_WORDS ] mainALIGN_TO( mainREG_TEST_STACK_ALIGNMENT );
 
-/* Fill in a xTaskParameters structure per reg test task to define the tasks. */
-static const xTaskParameters xRegTest1Parameters =
+/* Fill in a TaskParameters_t structure per reg test task to define the tasks. */
+static const TaskParameters_t xRegTest1Parameters =
 {
 	prvRegTest1Task,						/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "RegTest1",			/* pcName			*/
+	"RegTest1",								/* pcName			*/
 	mainREG_TEST_STACK_SIZE_WORDS,			/* usStackDepth		*/
 	( void * ) 0x12345678,					/* pvParameters - this value is just to test that the parameter is being passed into the task correctly. */
 	tskIDLE_PRIORITY | portPRIVILEGE_BIT,	/* uxPriority - note that this task is created with privileges to demonstrate one method of passing a queue handle into the task. */
@@ -314,10 +294,10 @@ static const xTaskParameters xRegTest1Parameters =
 };
 /*-----------------------------------------------------------*/
 
-static xTaskParameters xRegTest2Parameters =
+static TaskParameters_t xRegTest2Parameters =
 {
 	prvRegTest2Task,				/* pvTaskCode - the function that implements the task. */
-	( signed char * ) "RegTest2",	/* pcName			*/
+	"RegTest2",						/* pcName			*/
 	mainREG_TEST_STACK_SIZE_WORDS,	/* usStackDepth		*/
 	( void * ) NULL,				/* pvParameters	- this task uses the parameter to pass in a queue handle, but the queue is not created yet. */
 	tskIDLE_PRIORITY,				/* uxPriority		*/
@@ -354,7 +334,7 @@ int main( void )
 	/* Create the tasks that are created using the original xTaskCreate() API
 	function. */
 	xTaskCreate(	prvOldStyleUserModeTask,	/* The function that implements the task. */
-					( signed char * ) "Task1",	/* Text name for the task. */
+					"Task1",					/* Text name for the task. */
 					100,						/* Stack depth in words. */
 					NULL,						/* Task parameters. */
 					3,							/* Priority and mode (user in this case). */
@@ -362,7 +342,7 @@ int main( void )
 				);
 
 	xTaskCreate(	prvOldStylePrivilegedModeTask,	/* The function that implements the task. */
-					( signed char * ) "Task2",		/* Text name for the task. */
+					"Task2",						/* Text name for the task. */
 					100,							/* Stack depth in words. */
 					NULL,							/* Task parameters. */
 					( 3 | portPRIVILEGE_BIT ),		/* Priority and mode. */
@@ -385,27 +365,25 @@ static void prvCheckTask( void *pvParameters )
 queue variable.  Take a stack copy of this before the task is set into user
 mode.  Once that task is in user mode the file scope queue variable will no
 longer be accessible but the stack copy will. */
-xQueueHandle xQueue = xFileScopeCheckQueue;
+QueueHandle_t xQueue = xFileScopeCheckQueue;
 long lMessage;
 unsigned long ulStillAliveCounts[ 2 ] = { 0 };
 const char *pcStatusMessage = "PASS\r\n";
 
+/* The debug_printf() function uses RAM that is outside of the control of the
+application writer.  Therefore the application_defined_privileged_functions.h
+header file is used to provide a version that executes with privileges. */
+extern int MPU_debug_printf( const char *pcMessage );
+
 	/* Just to remove compiler warning. */
 	( void ) pvParameters;
-
-	/* Print out the amount of free heap space so configTOTAL_HEAP_SIZE can be
-	tuned.  The heap size is set to be very small in this example and will need
-	to be increased before many more tasks, queues or semaphores can be
-	created. */
-	debug_printf( "There are %d bytes of unused heap space.\r\n", xPortGetFreeHeapSize() );
 
 	/* Demonstrate how the various memory regions can and can't be accessed.
 	The task privilege level is set down to user mode within this function. */
 	prvTestMemoryRegions();
 
-	/* Change the memory regions allocated to this task to those initially
-	set up for demonstration purposes to those actually required by the task. */
-	vTaskAllocateMPURegions( NULL, xAltRegions );
+	/* Tests are done so lower the privilege status. */
+	portSWITCH_TO_USER_MODE();
 
 	/* This loop performs the main function of the task, which is blocking
 	on a message queue then processing each message as it arrives. */
@@ -439,7 +417,7 @@ const char *pcStatusMessage = "PASS\r\n";
 
 					/* Print a pass/fail message to the terminal.  This will be
 					visible in the CrossWorks IDE. */
-					debug_printf( pcStatusMessage );
+					MPU_debug_printf( pcStatusMessage );
 
 					/* Reset the count of 'still alive' messages. */
 					memset( ulStillAliveCounts, 0x00, sizeof( ulStillAliveCounts ) );
@@ -532,7 +510,7 @@ static void prvRegTest1Task( void *pvParameters )
 queue variable.  Take a stack copy of this before the task is set into user
 mode.  Once this task is in user mode the file scope queue variable will no
 longer be accessible but the stack copy will. */
-xQueueHandle xQueue = xFileScopeCheckQueue;
+QueueHandle_t xQueue = xFileScopeCheckQueue;
 
 	/* Now the queue handle has been obtained the task can switch to user
 	mode.  This is just one method of passing a handle into a protected
@@ -611,7 +589,7 @@ static void prvRegTest2Task( void *pvParameters )
 /* The queue handle is passed in as the task parameter.  This is one method of
 passing data into a protected task, the other reg test task uses a different
 method. */
-xQueueHandle xQueue = ( xQueueHandle ) pvParameters;
+QueueHandle_t xQueue = ( QueueHandle_t ) pvParameters;
 
 	for( ;; )
 	{
@@ -850,7 +828,7 @@ static void prvDeleteMe( void )
 }
 /*-----------------------------------------------------------*/
 
-static void prvSendImAlive( xQueueHandle xHandle, unsigned long ulTaskNumber )
+static void prvSendImAlive( QueueHandle_t xHandle, unsigned long ulTaskNumber )
 {
 	if( xHandle != NULL )
 	{
@@ -876,7 +854,7 @@ static void prvSetupHardware( void )
 void vApplicationTickHook( void )
 {
 static unsigned long ulCallCount;
-const unsigned long ulCallsBetweenSends = 5000 / portTICK_RATE_MS;
+const unsigned long ulCallsBetweenSends = 5000 / portTICK_PERIOD_MS;
 const unsigned long ulMessage = mainPRINT_SYSTEM_STATUS;
 portBASE_TYPE xDummy;
 
@@ -902,7 +880,7 @@ portBASE_TYPE xDummy;
 }
 /*-----------------------------------------------------------*/
 
-void vApplicationStackOverflowHook( xTaskHandle pxTask, signed char *pcTaskName )
+void vApplicationStackOverflowHook( TaskHandle_t pxTask, char *pcTaskName )
 {
 	/* If configCHECK_FOR_STACK_OVERFLOW is set to either 1 or 2 then this
 	function will automatically get called if a task overflows its stack. */
