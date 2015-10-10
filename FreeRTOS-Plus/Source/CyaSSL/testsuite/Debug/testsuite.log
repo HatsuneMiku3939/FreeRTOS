@@ -1,0 +1,9 @@
+﻿Build started 16/08/2014 16:37:15.
+     1>Project "C:\E\Dev\FreeRTOS\WorkingCopy\FreeRTOS-Plus\Source\CyaSSL\testsuite\testsuite.vcxproj" on node 2 (clean target(s)).
+     1>_PrepareForClean:
+         Deleting file "Debug\testsuite.lastbuildstate".
+     1>Done Building Project "C:\E\Dev\FreeRTOS\WorkingCopy\FreeRTOS-Plus\Source\CyaSSL\testsuite\testsuite.vcxproj" (clean target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.02

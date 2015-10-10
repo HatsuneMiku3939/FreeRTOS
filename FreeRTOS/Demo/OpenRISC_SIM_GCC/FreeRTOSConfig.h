@@ -1,5 +1,5 @@
 /*
-    FreeRTOS V8.0.1 - Copyright (C) 2014 Real Time Engineers Ltd.
+    FreeRTOS V8.1.0 - Copyright (C) 2014 Real Time Engineers Ltd.
     All rights reserved
 
     VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
@@ -80,36 +80,37 @@
 #include "board.h"
 #define configENABLE_BACKWARD_COMPATIBILITY 0
 
-#define configUSE_PREEMPTION            1
-#define configUSE_IDLE_HOOK             0
-#define configUSE_TICK_HOOK             1
-#define configCPU_CLOCK_HZ              ( ( unsigned long ) SYS_CLK )
-#define configSYSTICK_CLOCK_HZ          ( ( unsigned long ) SYS_CLK )
-#define configTICK_RATE_HZ              ( ( portTickType ) 1000 )
-#define configMINIMAL_STACK_SIZE        ( ( unsigned portSHORT ) 256 )
-#define configTOTAL_HEAP_SIZE           ( ( size_t ) ( 64 * 1024 ) )
-#define configMAX_TASK_NAME_LEN         ( 32 )
-#define configUSE_TRACE_FACILITY        0
-#define configUSE_16_BIT_TICKS          0
-#define configIDLE_SHOULD_YIELD         0
-#define configUSE_MUTEXES               1
-#define configUSE_RECURSIVE_MUTEXES     1
-#define configQUEUE_REGISTRY_SIZE       1
-#define configUSE_MALLOC_FAILED_HOOK    1
-#define configUSE_APPLICATION_TASK_TAG  1
-#define configUSE_COUNTING_SEMAPHORES   1
-#define configMAX_PRIORITIES            ( 10 )
+#define configUSE_PREEMPTION                    1
+#define configUSE_IDLE_HOOK                     0
+#define configUSE_TICK_HOOK                     1
+#define configCPU_CLOCK_HZ                      ( ( unsigned long ) SYS_CLK )
+#define configSYSTICK_CLOCK_HZ                  ( ( unsigned long ) SYS_CLK )
+#define configTICK_RATE_HZ                      ( ( portTickType ) 1000 )
+#define configMINIMAL_STACK_SIZE                ( ( unsigned portSHORT ) 256 )
+#define configTOTAL_HEAP_SIZE                   ( ( size_t ) ( 64 * 1024 ) )
+#define configMAX_TASK_NAME_LEN                 ( 32 )
+#define configUSE_TRACE_FACILITY                0
+#define configUSE_16_BIT_TICKS                  0
+#define configIDLE_SHOULD_YIELD                 0
+#define configUSE_MUTEXES                       1
+#define configUSE_RECURSIVE_MUTEXES             1
+#define configQUEUE_REGISTRY_SIZE               1
+#define configUSE_MALLOC_FAILED_HOOK            1
+#define configUSE_APPLICATION_TASK_TAG          1
+#define configUSE_COUNTING_SEMAPHORES           1
+#define configMAX_PRIORITIES                    10
+#define configUSE_PORT_OPTIMISED_TASK_SELECTION 0
 
 #define configGENERATE_RUN_TIME_STATS   0
 #define configCHECK_FOR_STACK_OVERFLOW  0
 
 /* Co-routine definitions. */
 #define configUSE_CO_ROUTINES           1
-#define configMAX_CO_ROUTINE_PRIORITIES ( 1 )
+#define configMAX_CO_ROUTINE_PRIORITIES 1
 
 /* Software timer definitions. */
 #define configUSE_TIMERS              1
-#define configTIMER_TASK_PRIORITY     ( 1 )
+#define configTIMER_TASK_PRIORITY     1
 #define configTIMER_QUEUE_LENGTH      5
 #define configTIMER_TASK_STACK_DEPTH  ( configMINIMAL_STACK_SIZE * 2)
 
